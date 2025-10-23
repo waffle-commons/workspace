@@ -1,0 +1,14 @@
+**/*.php~
+**/._*
+**/.dockerignore
+**/.DS_Store
+**/docker-compose.*.yaml
+**/docker-compose.*.yml
+**/docker-compose.yaml
+**/docker-compose.yml
+**/Dockerfile
+**/Thumbs.db
+.idea/
+.vscode/
+var/
+vendor/

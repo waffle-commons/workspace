@@ -1,0 +1,8 @@
+# Dev application configuration for the Waffle Workspace
+waffle:
+  tests:
+    env: '%env(APP_ENV)%'
+    enabled: true
+  random:
+    some_key: 'some_value'
+

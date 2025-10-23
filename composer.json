@@ -1,0 +1,33 @@
+{
+  "name": "waffle-commons/workspace",
+  "description": "Local development and integration testing environment for Waffle framework and components.",
+  "type": "project",
+  "version": "0.1.0-alpha1",
+  "require": {
+    "php": "^8.4",
+    "waffle-commons/waffle": "1.0.0-dev"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../waffle",
+      "options": {
+        "versions": { "waffle-commons/waffle": "1.0.0-dev" },
+        "symlink": true
+      }
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Workspace\\": "app/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "WorkspaceTests\\": "tests/app/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": false
+}
