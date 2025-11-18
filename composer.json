@@ -6,7 +6,7 @@
   "require": {
     "php": "^8.4",
     "waffle-commons/waffle": "1.0.0-dev",
-    "waffle-commons/http": "1.0.0-dev",
+    "waffle-commons/runtime": "1.0.0-dev",
     "waffle-commons/container": "1.0.0-dev"
   },
   "repositories": [
@@ -22,9 +22,9 @@
     {
       "type": "path",
       "canonical": false,
-      "url": "../http",
+      "url": "../runtime",
       "options": {
-        "versions": { "waffle-commons/http": "1.0.0-dev" },
+        "versions": { "waffle-commons/runtime": "1.0.0-dev" },
         "symlink": true
       }
     },
