@@ -1,5 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 
+declare(strict_types=1);
+
+use Waffle\Commons\Runtime\WaffleRuntime;
 use Workspace\Kernel;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -7,4 +10,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 define('APP_ROOT', realpath(path: dirname(path: __DIR__)));
 const APP_CONFIG = 'config';
 
-new Kernel()->handle();
+$kernel = new Kernel();
+
+$runtime = new WaffleRuntime();
+
+$runtime->run($kernel);
