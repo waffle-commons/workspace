@@ -11,7 +11,7 @@ class HomeService
      */
     public function sayHello(null|string $to = null): array
     {
-        $name = $to === null ? 'from Waffle' : $to;
+        $name = $to ?? 'from Waffle';
 
         return [
             "message" => "Hello {$name}!",

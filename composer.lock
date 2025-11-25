@@ -4,47 +4,252 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b7bee9cefca09c5deb9712ad08fe7dca",
+    "content-hash": "a4d4372b240b5e0bbb1ded5712912809",
     "packages": [
         {
-            "name": "waffle-commons/waffle",
+            "name": "psr/container",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/container.git",
+                "reference": "707984727bd5b2b670e59559d3ed2500240cf875"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/707984727bd5b2b670e59559d3ed2500240cf875",
+                "reference": "707984727bd5b2b670e59559d3ed2500240cf875",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Container\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common Container Interface (PHP FIG PSR-11)",
+            "homepage": "https://github.com/php-fig/container",
+            "keywords": [
+                "PSR-11",
+                "container",
+                "container-interface",
+                "container-interop",
+                "psr"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/container/issues",
+                "source": "https://github.com/php-fig/container"
+            },
+            "time": "2023-09-22T11:11:30+00:00"
+        },
+        {
+            "name": "psr/http-factory",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-factory.git",
+                "reference": "2b4765fddfe3b508ac62f829e852b1501d3f6e8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/2b4765fddfe3b508ac62f829e852b1501d3f6e8a",
+                "reference": "2b4765fddfe3b508ac62f829e852b1501d3f6e8a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1",
+                "psr/http-message": "^1.0 || ^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "PSR-17: Common interfaces for PSR-7 HTTP message factories",
+            "keywords": [
+                "factory",
+                "http",
+                "message",
+                "psr",
+                "psr-17",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-factory"
+            },
+            "time": "2024-04-15T12:06:14+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/2.0"
+            },
+            "time": "2023-04-04T09:54:51+00:00"
+        },
+        {
+            "name": "psr/log",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
+            },
+            "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "waffle-commons/container",
             "version": "1.0.0-dev",
             "dist": {
                 "type": "path",
-                "url": "../waffle",
-                "reference": "d3431911afb32270fc5c91200c45c48eb3d1f963"
+                "url": "../container",
+                "reference": "a1aff8b77290f2efa7b53885c2ce7ebd44071f5d"
             },
             "require": {
-                "php": "^8.4"
+                "php": "^8.4",
+                "psr/container": "^2.0"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
+                "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Waffle\\": "src/"
+                    "Waffle\\Commons\\Container\\": "src/"
                 }
             },
             "autoload-dev": {
                 "psr-4": {
-                    "WaffleTests\\": "tests/src/",
-                    "App\\": "public/app"
+                    "WaffleTests\\Commons\\Container\\": "tests/src/"
                 }
             },
             "scripts": {
-                "post-install-cmd": [
-                    "@post-cmd"
-                ],
-                "post-update-cmd": [
-                    "@post-cmd"
-                ],
-                "post-cmd": [
-                    "mkdir -p var/cache",
-                    "chmod -R 777 var/cache"
-                ],
                 "formatter": [
                     "vendor/bin/mago fmt"
                 ],
@@ -72,6 +277,12 @@
                 "scan": [
                     "@mago",
                     "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
                 ]
             },
             "license": [
@@ -80,7 +291,255 @@
             "authors": [
                 {
                     "name": "Leslie Petrimaux",
-                    "email": "leslie@eightyfour.ovh"
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Container component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "waffle-commons/http",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../http",
+                "reference": "16dd66fd90e1c4bb2d7033ce2b3b294159a16310"
+            },
+            "require": {
+                "php": "^8.4",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^2.0"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.0.0-beta.31",
+                "php-mock/php-mock-phpunit": "^2.13",
+                "phpunit/phpunit": "^12.0",
+                "vimeo/psalm": "^6.13"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Http\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Http\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Http component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "waffle-commons/runtime",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../runtime",
+                "reference": "d3d9f7e24961be050df3f7775effc626b3af1326"
+            },
+            "require": {
+                "php": "^8.4",
+                "waffle-commons/container": "1.0.0-dev",
+                "waffle-commons/http": "1.0.0-dev",
+                "waffle-commons/waffle": "1.0.0-dev"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.0.0-beta.31",
+                "php-mock/php-mock-phpunit": "^2.13",
+                "phpunit/phpunit": "^12.0",
+                "vimeo/psalm": "^6.13"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Runtime\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Runtime\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Runtime component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "waffle-commons/waffle",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../waffle",
+                "reference": "2c0c9ab17d5aa4f72bd5aef06941e1841fea81a6"
+            },
+            "require": {
+                "php": "^8.4",
+                "psr/container": "^2.0",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^2.0",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.0.0-beta.31",
+                "php-mock/php-mock-phpunit": "^2.13",
+                "phpunit/phpunit": "^12.0",
+                "vimeo/psalm": "^6.13",
+                "waffle-commons/container": "dev-feature/+1-psr_implementation",
+                "waffle-commons/http": "dev-feature/+1-psr_implementation"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
                 }
             ],
             "description": "A modern, minimalist, and security-focused PHP micro-framework.",
@@ -94,6 +553,9 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "waffle-commons/container": 20,
+        "waffle-commons/http": 20,
+        "waffle-commons/runtime": 20,
         "waffle-commons/waffle": 20
     },
     "prefer-stable": false,
