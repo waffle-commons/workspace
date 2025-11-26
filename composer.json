@@ -5,27 +5,22 @@
   "version": "0.1.0-alpha2",
   "require": {
     "php": "^8.4",
-    "waffle-commons/waffle": "1.0.0-dev",
-    "waffle-commons/runtime": "1.0.0-dev",
+    "waffle-commons/config": "1.0.0-dev",
     "waffle-commons/container": "1.0.0-dev",
-    "waffle-commons/http": "1.0.0-dev"
+    "waffle-commons/contracts": "1.0.0-dev",
+    "waffle-commons/http": "1.0.0-dev",
+    "waffle-commons/routing": "1.0.0-dev",
+    "waffle-commons/runtime": "1.0.0-dev",
+    "waffle-commons/security": "1.0.0-dev",
+    "waffle-commons/waffle": "1.0.0-dev"
   },
   "repositories": [
     {
       "type": "path",
       "canonical": false,
-      "url": "../waffle",
+      "url": "../config",
       "options": {
-        "versions": { "waffle-commons/waffle": "1.0.0-dev" },
-        "symlink": true
-      }
-    },
-    {
-      "type": "path",
-      "canonical": false,
-      "url": "../runtime",
-      "options": {
-        "versions": { "waffle-commons/runtime": "1.0.0-dev" },
+        "versions": { "waffle-commons/config": "1.0.0-dev" },
         "symlink": true
       }
     },
@@ -41,9 +36,54 @@
     {
       "type": "path",
       "canonical": false,
+      "url": "../contracts",
+      "options": {
+        "versions": { "waffle-commons/contracts": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
       "url": "../http",
       "options": {
         "versions": { "waffle-commons/http": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../routing",
+      "options": {
+        "versions": { "waffle-commons/routing": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../runtime",
+      "options": {
+        "versions": { "waffle-commons/runtime": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../security",
+      "options": {
+        "versions": { "waffle-commons/security": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../waffle",
+      "options": {
+        "versions": { "waffle-commons/waffle": "1.0.0-dev" },
         "symlink": true
       }
     }
