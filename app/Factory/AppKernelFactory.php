@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Workspace\Factory;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Waffle\Commons\Config\Config;use Waffle\Commons\Container\Container;
+use Waffle\Commons\Config\Config;
+use Waffle\Commons\Container\Container;
 use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\Http\ResponseEmitterInterface;
 use Waffle\Commons\Http\Emitter\ResponseEmitter;

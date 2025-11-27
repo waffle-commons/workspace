@@ -5,6 +5,7 @@
   "version": "0.1.0-alpha2",
   "require": {
     "php": "^8.4",
+    "ext-yaml": "*",
     "waffle-commons/config": "1.0.0-dev",
     "waffle-commons/container": "1.0.0-dev",
     "waffle-commons/contracts": "1.0.0-dev",
