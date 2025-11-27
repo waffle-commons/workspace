@@ -12,6 +12,7 @@
     "waffle-commons/routing": "1.0.0-dev",
     "waffle-commons/runtime": "1.0.0-dev",
     "waffle-commons/security": "1.0.0-dev",
+    "waffle-commons/utils": "1.0.0-dev",
     "waffle-commons/waffle": "1.0.0-dev"
   },
   "repositories": [
@@ -75,6 +76,15 @@
       "url": "../security",
       "options": {
         "versions": { "waffle-commons/security": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../utils",
+      "options": {
+        "versions": { "waffle-commons/utils": "1.0.0-dev" },
         "symlink": true
       }
     },
