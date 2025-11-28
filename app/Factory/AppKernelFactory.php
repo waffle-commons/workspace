@@ -11,6 +11,8 @@ use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\Http\ResponseEmitterInterface;
 use Waffle\Commons\Http\Emitter\ResponseEmitter;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
+use Waffle\Commons\Security\Container\SecureContainer;
+use Waffle\Commons\Security\Security;
 use Workspace\Kernel;
 
 /**
@@ -35,20 +37,26 @@ final class AppKernelFactory
             environment: $env,
         );
 
-        // 3. Instantiate the Kernel (from your workspace app)
-        // Note: As we migrate, we will inject the container here in the future.
-        // For now, we assume your Kernel might instantiate its dependencies internally
-        // or accept them via constructor depending on your current Kernel refactoring state.
+        // 3. Instantiate Security (from waffle-commons/security)
+        $security = new Security($config);
+
+        // 4. Wrap the container with Security Decorator
+        $secureContainer = new SecureContainer($container, $security);
+
+        // 5. Instantiate the Kernel
         $kernel = new Kernel();
 
-        // If your Kernel allows injecting the container implementation:
-        if (method_exists($kernel, 'setContainerImplementation')) {
-            $kernel->setContainerImplementation($container);
-        }
-
-        // If your Kernel allows injecting the container implementation:
+        // 6. Inject Dependencies
         if (method_exists($kernel, 'setConfiguration')) {
             $kernel->setConfiguration($config);
+        }
+        
+        if (method_exists($kernel, 'setSecurity')) {
+            $kernel->setSecurity($security);
+        }
+
+        if (method_exists($kernel, 'setContainerImplementation')) {
+            $kernel->setContainerImplementation($secureContainer);
         }
 
         return $kernel;
