@@ -389,11 +389,11 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "723ac450ab85ae21169cb46b9b2356cc13c19dd6"
+                "reference": "2fa7efb8febe79e8474ea3c4c2d6664c872c5ce1"
             },
             "require": {
                 "php": "^8.4",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -469,12 +469,12 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "1fce31412248a58c3e82ba1a38fc6fc0b971c5fa"
+                "reference": "52cc1d67d2a1a57ed362f97124f1ce4259288ec3"
             },
             "require": {
                 "php": "^8.4",
                 "psr/container": "^2.0",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -635,13 +635,13 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "822c744dc0ad49cf4494fd1cb530033f63d58ae6"
+                "reference": "3c884db5b7cce0892ddacf7b829ff450a83d8645"
             },
             "require": {
                 "php": "^8.4",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -717,11 +717,13 @@
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "fe6d5c0d9ef803e6cd040b1a654a67a25533fbda"
+                "reference": "9ef0584a36527afc0ebb70f824faf77ca195fb5b"
             },
             "require": {
                 "php": "^8.4",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "psr/http-message": "^2.0",
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -797,13 +799,13 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "b8433fe52a0e5b7537e7d27dde93b2340a538088"
+                "reference": "e3342f11074f01653967c944264104e53ce8b0f0"
             },
             "require": {
                 "php": "^8.4",
                 "psr/container": "^2.0",
                 "psr/http-message": "^1.1 || ^2.0",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -879,13 +881,13 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "a87029e54570dff9ece5c598b4e5a06716e8bd45"
+                "reference": "6159c8adf35ed922a3326094be14aee3ebc5ae48"
             },
             "require": {
                 "php": "^8.4",
                 "psr/container": "^2.0",
-                "waffle-commons/contracts": "1.0.0-dev",
-                "waffle-commons/utils": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -961,11 +963,11 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "ea069100f28a0ee8d538654c7b1c255a6d938fb5"
+                "reference": "d17de40e42a939e09e13b053598f114586f4ccbe"
             },
             "require": {
                 "php": "^8.4",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -1041,7 +1043,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "a62994968cbda2dceb09ddf1a1222f661011f49a"
+                "reference": "aea31c980a5781843bdf9b0792dd30ce13576e3d"
             },
             "require": {
                 "php": "^8.4",
@@ -1051,8 +1053,8 @@
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/log": "^3.0",
-                "waffle-commons/contracts": "1.0.0-dev",
-                "waffle-commons/utils": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",

@@ -25,7 +25,7 @@ RUN install-php-extensions \
 	intl \
 	zip \
 	opcache; \
-    apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev; \
+    apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip unzip; \
     pecl install xdebug yaml && \
     docker-php-ext-enable xdebug yaml; \
     rm -rf /var/lib/apt/lists/*

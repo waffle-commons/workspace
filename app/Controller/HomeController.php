@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Workspace\Controller;
 
-use Waffle\Attribute\Argument;
-use Waffle\Attribute\Route;
+use Waffle\Commons\Routing\Attribute\Argument;
+use Waffle\Commons\Routing\Attribute\Route;
 use Waffle\Core\BaseController;
 use Waffle\Core\View;
 use Workspace\Service\HomeService;

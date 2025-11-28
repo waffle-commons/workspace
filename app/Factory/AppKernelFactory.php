@@ -59,6 +59,17 @@ final class AppKernelFactory
             $kernel->setContainerImplementation($secureContainer);
         }
 
+        // 7. Instantiate and Boot Router
+        $controllersPath = $config->getString('waffle.paths.controllers');
+        if (is_string($controllersPath)) {
+            $router = new \Waffle\Commons\Routing\Router($root . DIRECTORY_SEPARATOR . $controllersPath);
+            $router->boot($secureContainer);
+            
+            if (method_exists($kernel, 'setRouter')) {
+                $kernel->setRouter($router);
+            }
+        }
+
         return $kernel;
     }
 
