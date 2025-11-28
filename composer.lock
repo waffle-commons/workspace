@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "babed979950ef6d8c05fd7e2b0ca8e4c",
+    "content-hash": "4f3ad21622599845e597479b8c300b54",
     "packages": [
         {
             "name": "psr/cache",
@@ -389,7 +389,7 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "b3b45e500a75d9ba73c0010652ba2b0e2f9011bd"
+                "reference": "723ac450ab85ae21169cb46b9b2356cc13c19dd6"
             },
             "require": {
                 "php": "^8.4",
@@ -469,7 +469,7 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "ac85e41c1a3ca1afae8ed6ffeb7d22098f4f9780"
+                "reference": "1fce31412248a58c3e82ba1a38fc6fc0b971c5fa"
             },
             "require": {
                 "php": "^8.4",
@@ -550,7 +550,7 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "683e048ba46327dd739902bbbda314582b55787d"
+                "reference": "eb756e457207dbdee068e52f01c4a05de80c5af1"
             },
             "require": {
                 "php": "^8.4",
@@ -635,7 +635,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "5ce860225d01948ae40b13bc0478c102d51e165b"
+                "reference": "822c744dc0ad49cf4494fd1cb530033f63d58ae6"
             },
             "require": {
                 "php": "^8.4",
@@ -797,7 +797,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "28658cdcd0d471f8b606f384cba2a1f57cbab5bc"
+                "reference": "b8433fe52a0e5b7537e7d27dde93b2340a538088"
             },
             "require": {
                 "php": "^8.4",
@@ -879,7 +879,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "617ca76aeddacf043fe50903216c7260cc5df3c1"
+                "reference": "a87029e54570dff9ece5c598b4e5a06716e8bd45"
             },
             "require": {
                 "php": "^8.4",
@@ -961,7 +961,7 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "06e41486bf60fe222210b83029cb63c77613df12"
+                "reference": "ea069100f28a0ee8d538654c7b1c255a6d938fb5"
             },
             "require": {
                 "php": "^8.4",
@@ -1041,7 +1041,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "7fd6a7a5cac4b89deaaf3259685f440ee794c15b"
+                "reference": "a62994968cbda2dceb09ddf1a1222f661011f49a"
             },
             "require": {
                 "php": "^8.4",

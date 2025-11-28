@@ -2,7 +2,7 @@
   "name": "waffle-commons/workspace",
   "description": "Local development and integration testing environment for Waffle framework and components.",
   "type": "project",
-  "version": "0.1.0-alpha2",
+  "version": "0.1.0-alpha3",
   "require": {
     "php": "^8.4",
     "ext-yaml": "*",
