@@ -35,9 +35,9 @@ the same parent directory. The recommended structure is:
     ```
     ~/waffle-commons/
     ├── workspace/     # <-- Clone this repository here
-    ├── waffle/        # <-- Clone waffle/waffle here (fork the repo if working on it)
-    ├── http/          # <-- Clone waffle-commons/http here (fork the repo if working on it)
-    ├── yaml/          # <-- Clone waffle-commons/yaml here (fork the repo if working on it)
+    ├── waffle/        # <-- Clone waffle/waffle here
+    ├── http/          # <-- Clone waffle-commons/http here
+    ├── config/        # <-- Clone waffle-commons/config here
     └── ...            # etc.
     ```
     ```shell
@@ -59,9 +59,9 @@ packages you have cloned locally and want to link.
     "require": {
         "php": "^8.4",
         "waffle-commons/waffle": "1.0.0-dev",
-        "waffle-commons/yaml": "1.0.0-dev" // Example for yaml library
-        // Add other waffle-commons packages you want to test here
-        // "waffle-commons/http": "dev-main"
+        "waffle-commons/config": "1.0.0-dev",
+        "waffle-commons/http": "1.0.0-dev"
+        // ... other components
     },
     "repositories": [
         {
@@ -77,9 +77,9 @@ packages you have cloned locally and want to link.
         {
             "type": "path",
             "canonical": false,
-            "url": "../yaml",
+            "url": "../config",
             "options": {
-                "versions": { "waffle-commons/yaml": "1.0.0-dev" },
+                "versions": { "waffle-commons/config": "1.0.0-dev" },
                 "symlink": true
             }
         }
@@ -106,7 +106,7 @@ docker exec waffle-dev composer install
 # docker-compose exec workspace composer update
 ```
 Check the `workspace/vendor/waffle-commons/` directory inside the container (or locally) – you should 
-see symlinks pointing to `../waffle`, `../yaml`, etc.
+see symlinks pointing to `../waffle`, `../config`, etc.
 
 ## Usage
  - **Accessing the Web Server:** Visit `https://localhost:8443` (or the port mapped in docker-compose.yml) 
@@ -146,3 +146,7 @@ docker down
 
 This repository is intended for contributors to the Waffle ecosystem **ONLY**. Please refer to the `CONTRIBUTING.md` 
 file in the specific repository (`waffle-commons/waffle`, `waffle-commons/*`) you wish to contribute to.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE.md](./LICENSE.md) file for details.
