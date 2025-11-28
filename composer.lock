@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "40c18d23188bf5861483787e35f2f13b",
+    "content-hash": "babed979950ef6d8c05fd7e2b0ca8e4c",
     "packages": [
         {
             "name": "psr/cache",
@@ -879,10 +879,11 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "8e4a13bf60b94e3f0c73769edf20131d6082c131"
+                "reference": "617ca76aeddacf043fe50903216c7260cc5df3c1"
             },
             "require": {
                 "php": "^8.4",
+                "psr/container": "^2.0",
                 "waffle-commons/contracts": "1.0.0-dev",
                 "waffle-commons/utils": "1.0.0-dev"
             },
@@ -1040,7 +1041,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "496ff49a5d9763f536f28a3575b28d2a87556584"
+                "reference": "7fd6a7a5cac4b89deaaf3259685f440ee794c15b"
             },
             "require": {
                 "php": "^8.4",
@@ -1139,8 +1140,9 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.4"
+        "php": "^8.4",
+        "ext-yaml": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
