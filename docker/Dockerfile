@@ -21,14 +21,13 @@ WORKDIR /waffle-commons
 
 # Install necessary PHP extensions and system packages
 RUN install-php-extensions \
-	pdo_mysql \
 	gd \
 	intl \
 	zip \
 	opcache; \
-    apt-get update && apt-get install -y --no-install-recommends bash; \
-    pecl install xdebug && \
-    docker-php-ext-enable xdebug; \
+    apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip unzip; \
+    pecl install xdebug yaml && \
+    docker-php-ext-enable xdebug yaml; \
     rm -rf /var/lib/apt/lists/*
 
 # Copy PHP configurations
