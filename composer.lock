@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f3ad21622599845e597479b8c300b54",
+    "content-hash": "efdae885915ad2ca56f4a3181c1ef4fb",
     "packages": [
         {
             "name": "psr/cache",
@@ -333,6 +333,64 @@
             "time": "2023-11-16T18:17:39+00:00"
         },
         {
+            "name": "psr/http-server-middleware",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-server-middleware.git",
+                "reference": "459eeb7efeae55b4102a951c4ecc93a11ce58d0f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-server-middleware/zipball/459eeb7efeae55b4102a951c4ecc93a11ce58d0f",
+                "reference": "459eeb7efeae55b4102a951c4ecc93a11ce58d0f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0",
+                "psr/http-message": "^1.0 || ^2.0",
+                "psr/http-server-handler": "^1.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Server\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP server-side middleware",
+            "keywords": [
+                "http",
+                "http-interop",
+                "middleware",
+                "psr",
+                "psr-15",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/http-server-middleware/issues",
+                "source": "https://github.com/php-fig/http-server-middleware"
+            },
+            "time": "2023-09-22T11:17:21+00:00"
+        },
+        {
             "name": "psr/log",
             "version": "dev-master",
             "source": {
@@ -389,10 +447,11 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "2fa7efb8febe79e8474ea3c4c2d6664c872c5ce1"
+                "reference": "514d8a604ea0cb5979c8b71236e488010dbe4b1e"
             },
             "require": {
-                "php": "^8.4",
+                "ext-yaml": "*",
+                "php": "^8.5",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
@@ -469,10 +528,10 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "52cc1d67d2a1a57ed362f97124f1ce4259288ec3"
+                "reference": "4284144caf3aa1acf9ef226ff8921870fbe8a4d8"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/container": "^2.0",
                 "waffle-commons/contracts": "self.version"
             },
@@ -550,10 +609,10 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "eb756e457207dbdee068e52f01c4a05de80c5af1"
+                "reference": "99db10f4492be568820fa291d57a51d54d8eb1fb"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/cache": "^3.0",
                 "psr/container": "^2.0",
                 "psr/event-dispatcher": "^1.0",
@@ -635,10 +694,10 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "3c884db5b7cce0892ddacf7b829ff450a83d8645"
+                "reference": "c06973be4449b638ba278345738aabfbb44476ed"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "waffle-commons/contracts": "self.version"
@@ -712,15 +771,97 @@
             }
         },
         {
+            "name": "waffle-commons/pipeline",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../pipeline",
+                "reference": "c11a5aada47d38ef36ff971b193ae9875ff5841f"
+            },
+            "require": {
+                "php": "^8.5",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0",
+                "waffle-commons/contracts": "1.0.0-dev"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.0.0-beta.31",
+                "php-mock/php-mock-phpunit": "^2.13",
+                "phpunit/phpunit": "^12.0",
+                "vimeo/psalm": "^6.13"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Pipeline\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Pipeline\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Pipeline component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "waffle-commons/routing",
             "version": "1.0.0-dev",
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "9ef0584a36527afc0ebb70f824faf77ca195fb5b"
+                "reference": "fdd8b82ad8d52b5221f3bdd557cd0957d1e93be5"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/http-message": "^2.0",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
@@ -799,10 +940,10 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "e3342f11074f01653967c944264104e53ce8b0f0"
+                "reference": "c5a3f9193f262bf97caf00a77cb2aea75f1fbe7d"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/container": "^2.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "waffle-commons/contracts": "self.version"
@@ -881,10 +1022,10 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "6159c8adf35ed922a3326094be14aee3ebc5ae48"
+                "reference": "e6d51bb0b8831971d14c09e36f619aeb83b848a0"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/container": "^2.0",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
@@ -963,11 +1104,11 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "d17de40e42a939e09e13b053598f114586f4ccbe"
+                "reference": "579460b5b0b410cb2536806b26b3bcc167cdf18a"
             },
             "require": {
-                "php": "^8.4",
-                "waffle-commons/contracts": "self.version"
+                "php": "^8.5",
+                "waffle-commons/contracts": "1.0.0-dev"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -1043,18 +1184,18 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "aea31c980a5781843bdf9b0792dd30ce13576e3d"
+                "reference": "2e2643090d01921cc15d48813b93b694b0bce1fc"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/cache": "^3.0",
                 "psr/container": "^2.0",
                 "psr/event-dispatcher": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/log": "^3.0",
-                "waffle-commons/contracts": "self.version",
-                "waffle-commons/utils": "self.version"
+                "waffle-commons/contracts": "1.0.0-dev",
+                "waffle-commons/utils": "1.0.0-dev"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
@@ -1133,6 +1274,7 @@
         "waffle-commons/container": 20,
         "waffle-commons/contracts": 20,
         "waffle-commons/http": 20,
+        "waffle-commons/pipeline": 20,
         "waffle-commons/routing": 20,
         "waffle-commons/runtime": 20,
         "waffle-commons/security": 20,
@@ -1142,7 +1284,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.4",
+        "php": "^8.5",
         "ext-yaml": "*"
     },
     "platform-dev": {},

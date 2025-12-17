@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workspace\Factory;
 
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Container\Container;
@@ -11,6 +12,10 @@ use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\Http\ResponseEmitterInterface;
 use Waffle\Commons\Http\Emitter\ResponseEmitter;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
+use Waffle\Commons\Http\Factory\ResponseFactory;
+use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
+use Waffle\Commons\Pipeline\MiddlewareStack;
+use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Security;
 use Workspace\Kernel;
@@ -31,6 +36,10 @@ final class AppKernelFactory
         // 1. Instantiate the concrete Container (from waffle-commons/container)
         $container = new Container();
 
+        if (class_exists(ResponseFactory::class)) {
+            $container->set(ResponseFactoryInterface::class, new ResponseFactory());
+        }
+
         // 2. Instantiate the concrete Config (from waffle-commons/config)
         $config = new Config(
             configDir: $rootConfig,
@@ -43,14 +52,30 @@ final class AppKernelFactory
         // 4. Wrap the container with Security Decorator
         $secureContainer = new SecureContainer($container, $security);
 
-        // 5. Instantiate the Kernel
+        // 5. Instantiate the Pipeline Middleware
+        $stack = new MiddlewareStack();
+
+        // 6. Instantiate the Kernel
         $kernel = new Kernel();
 
-        // 6. Inject Dependencies
+        // 7. Instantiate and Boot Router
+        $controllersPath = $config->getString('waffle.paths.controllers');
+        if (is_string($controllersPath)) {
+            // Instantiate Router
+            $router = new Router($root . DIRECTORY_SEPARATOR . $controllersPath);
+            $router->boot($secureContainer);
+
+            // Create the Bridge Middleware and add it to the Stack
+            // This connects the Router to the Pipeline
+            $routingMiddleware = new CoreRoutingMiddleware($router);
+            $stack->add($routingMiddleware);
+        }
+
+        // 8. Inject Dependencies
         if (method_exists($kernel, 'setConfiguration')) {
             $kernel->setConfiguration($config);
         }
-        
+
         if (method_exists($kernel, 'setSecurity')) {
             $kernel->setSecurity($security);
         }
@@ -59,15 +84,8 @@ final class AppKernelFactory
             $kernel->setContainerImplementation($secureContainer);
         }
 
-        // 7. Instantiate and Boot Router
-        $controllersPath = $config->getString('waffle.paths.controllers');
-        if (is_string($controllersPath)) {
-            $router = new \Waffle\Commons\Routing\Router($root . DIRECTORY_SEPARATOR . $controllersPath);
-            $router->boot($secureContainer);
-            
-            if (method_exists($kernel, 'setRouter')) {
-                $kernel->setRouter($router);
-            }
+        if (method_exists($kernel, 'setMiddlewareStack')) {
+            $kernel->setMiddlewareStack($stack);
         }
 
         return $kernel;
