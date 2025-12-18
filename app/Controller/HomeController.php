@@ -41,4 +41,12 @@ final class HomeController extends BaseController
     {
         return $this->jsonResponse(data: $service->sayHello(to: $name));
     }
+    /**
+     * Handles errors handling.
+     */
+    #[Route(path: 'crash', name: 'crash')]
+    public function crash(): ResponseInterface
+    {
+        throw new \RuntimeException("Something wrong appending!");
+    }
 }

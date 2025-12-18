@@ -8,8 +8,11 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Container\Container;
+use Waffle\Commons\Contracts\Constant\Constant;
 use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\Http\ResponseEmitterInterface;
+use Waffle\Commons\ErrorHandler\Middleware\ErrorHandlerMiddleware;
+use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\Http\Emitter\ResponseEmitter;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
 use Waffle\Commons\Http\Factory\ResponseFactory;
@@ -28,16 +31,19 @@ final class AppKernelFactory
     /**
      * Creates the fully assembled Kernel.
      */
-    public static function create(string $env): KernelInterface
+    public static function create(string $env = Constant::ENV_PROD, bool $debug = false): KernelInterface
     {
         /** @var string $root */
         $root = APP_ROOT;
         $rootConfig = $root . DIRECTORY_SEPARATOR . APP_CONFIG;
+
         // 1. Instantiate the concrete Container (from waffle-commons/container)
         $container = new Container();
 
+        // Register PSR-17 Factory (Required for Controllers AND ErrorHandler)
+        $responseFactory = new ResponseFactory();
         if (class_exists(ResponseFactory::class)) {
-            $container->set(ResponseFactoryInterface::class, new ResponseFactory());
+            $container->set(ResponseFactoryInterface::class, $responseFactory);
         }
 
         // 2. Instantiate the concrete Config (from waffle-commons/config)
@@ -54,6 +60,13 @@ final class AppKernelFactory
 
         // 5. Instantiate the Pipeline Middleware
         $stack = new MiddlewareStack();
+
+        // We create the renderer and the middleware.
+        // It must be PREPENDED to catch errors from all subsequent middlewares (Routing, Security, Dispatcher).
+        $errorRenderer = new JsonErrorRenderer($responseFactory, $debug);
+        $errorHandler = new ErrorHandlerMiddleware($errorRenderer);
+
+        $stack->prepend($errorHandler);
 
         // 6. Instantiate the Kernel
         $kernel = new Kernel();

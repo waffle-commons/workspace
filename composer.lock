@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "efdae885915ad2ca56f4a3181c1ef4fb",
+    "content-hash": "4fd505f48ae82ab618c7383609429536",
     "packages": [
         {
             "name": "psr/cache",
@@ -609,7 +609,7 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "99db10f4492be568820fa291d57a51d54d8eb1fb"
+                "reference": "d4dfcfa5bd7a7850946ea05453147c7176dcb6e0"
             },
             "require": {
                 "php": "^8.5",
@@ -618,6 +618,7 @@
                 "psr/event-dispatcher": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0",
                 "psr/log": "^3.0"
             },
             "require-dev": {
@@ -683,6 +684,88 @@
                 }
             ],
             "description": "Contracts component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "waffle-commons/error-handler",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../error-handler",
+                "reference": "382bf635f7e801485bea6e544ae26f8edd65bddf"
+            },
+            "require": {
+                "php": "^8.4",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^2.0",
+                "waffle-commons/contracts": "1.0.0-dev"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.0.0-beta.31",
+                "php-mock/php-mock-phpunit": "^2.13",
+                "phpunit/phpunit": "^12.0",
+                "vimeo/psalm": "^6.13"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\ErrorHandler\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\ErrorHandler\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "ErrorHandler component for Waffle framework.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -1184,7 +1267,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "2e2643090d01921cc15d48813b93b694b0bce1fc"
+                "reference": "0fc3c8653eeffec174c70238646c01f9c640ff1c"
             },
             "require": {
                 "php": "^8.5",
@@ -1193,12 +1276,14 @@
                 "psr/event-dispatcher": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0@dev",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "1.0.0-dev",
                 "waffle-commons/utils": "1.0.0-dev"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-beta.31",
+                "nyholm/psr7": "^1.8@dev",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -1273,6 +1358,7 @@
         "waffle-commons/config": 20,
         "waffle-commons/container": 20,
         "waffle-commons/contracts": 20,
+        "waffle-commons/error-handler": 20,
         "waffle-commons/http": 20,
         "waffle-commons/pipeline": 20,
         "waffle-commons/routing": 20,

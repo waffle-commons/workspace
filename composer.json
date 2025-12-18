@@ -9,6 +9,7 @@
     "waffle-commons/config": "1.0.0-dev",
     "waffle-commons/container": "1.0.0-dev",
     "waffle-commons/contracts": "1.0.0-dev",
+    "waffle-commons/error-handler": "1.0.0-dev",
     "waffle-commons/http": "1.0.0-dev",
     "waffle-commons/pipeline": "1.0.0-dev",
     "waffle-commons/routing": "1.0.0-dev",
@@ -42,6 +43,15 @@
       "url": "../contracts",
       "options": {
         "versions": { "waffle-commons/contracts": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../error-handler",
+      "options": {
+        "versions": { "waffle-commons/error-handler": "1.0.0-dev" },
         "symlink": true
       }
     },

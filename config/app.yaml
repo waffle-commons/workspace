@@ -3,9 +3,9 @@ waffle:
   # App environment (dev, prod, test). Set via server environment variable.
   env: '%env(APP_ENV)%'
   # Debug mode. Set to false in production for security.
-  debug: true
+  debug: '%env(APP_DEBUG)%'
   security:
-    level: 1
+    level: 10
   paths:
     controllers: 'app/Controller'
     services: 'app/Service'
