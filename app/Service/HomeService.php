@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Workspace\Service;
 
-class HomeService 
+final class HomeService
 {
     /**
      * @return string[]

@@ -4,12 +4,14 @@
   "type": "project",
   "version": "0.1.0-alpha3",
   "require": {
-    "php": "^8.4",
+    "php": "^8.5",
     "ext-yaml": "*",
     "waffle-commons/config": "1.0.0-dev",
     "waffle-commons/container": "1.0.0-dev",
     "waffle-commons/contracts": "1.0.0-dev",
+    "waffle-commons/error-handler": "1.0.0-dev",
     "waffle-commons/http": "1.0.0-dev",
+    "waffle-commons/pipeline": "1.0.0-dev",
     "waffle-commons/routing": "1.0.0-dev",
     "waffle-commons/runtime": "1.0.0-dev",
     "waffle-commons/security": "1.0.0-dev",
@@ -47,9 +49,27 @@
     {
       "type": "path",
       "canonical": false,
+      "url": "../error-handler",
+      "options": {
+        "versions": { "waffle-commons/error-handler": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
       "url": "../http",
       "options": {
         "versions": { "waffle-commons/http": "1.0.0-dev" },
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "canonical": false,
+      "url": "../pipeline",
+      "options": {
+        "versions": { "waffle-commons/pipeline": "1.0.0-dev" },
         "symlink": true
       }
     },

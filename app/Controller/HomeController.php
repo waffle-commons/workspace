@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Workspace\Controller;
 
+use Psr\Http\Message\ResponseInterface;
 use Waffle\Commons\Routing\Attribute\Argument;
 use Waffle\Commons\Routing\Attribute\Route;
 use Waffle\Core\BaseController;
-use Waffle\Core\View;
 use Workspace\Service\HomeService;
 
 /**
@@ -21,9 +21,9 @@ final class HomeController extends BaseController
      * Handles requests to the root path ("/").
      */
     #[Route(path: '', name: 'index')]
-    public function index(HomeService $service): View
+    public function index(HomeService $service): ResponseInterface
     {
-        return new View(data: $service->sayHello());
+        return $this->jsonResponse(data: $service->sayHello());
     }
 
     /**
@@ -37,8 +37,16 @@ final class HomeController extends BaseController
             new Argument(classType: 'string', paramName: 'name', required: false),
         ],
     )]
-    public function hello(HomeService $service, string $name): View
+    public function hello(HomeService $service, string $name): ResponseInterface
     {
-        return new View(data: $service->sayHello(to: $name));
+        return $this->jsonResponse(data: $service->sayHello(to: $name));
+    }
+    /**
+     * Handles errors handling.
+     */
+    #[Route(path: 'crash', name: 'crash')]
+    public function crash(): ResponseInterface
+    {
+        throw new \RuntimeException("Something wrong appending!");
     }
 }
