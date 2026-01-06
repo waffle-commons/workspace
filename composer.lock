@@ -447,7 +447,7 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "514d8a604ea0cb5979c8b71236e488010dbe4b1e"
+                "reference": "b7f85f70b868ceb16e5147b86ce4da3ce618f7c8"
             },
             "require": {
                 "ext-yaml": "*",
@@ -455,7 +455,7 @@
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -528,7 +528,7 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "4284144caf3aa1acf9ef226ff8921870fbe8a4d8"
+                "reference": "06fb08002236b9f6589222882a3a1d3e1d5929c0"
             },
             "require": {
                 "php": "^8.5",
@@ -536,7 +536,7 @@
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -609,7 +609,7 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "d4dfcfa5bd7a7850946ea05453147c7176dcb6e0"
+                "reference": "809ca4857e0e210cf114168407e61440d586c34f"
             },
             "require": {
                 "php": "^8.5",
@@ -622,7 +622,7 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -695,16 +695,16 @@
             "dist": {
                 "type": "path",
                 "url": "../error-handler",
-                "reference": "382bf635f7e801485bea6e544ae26f8edd65bddf"
+                "reference": "705073209b30b7ed7a9ea01e6dc88d6e8e392a9f"
             },
             "require": {
-                "php": "^8.4",
+                "php": "^8.5",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -777,7 +777,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "c06973be4449b638ba278345738aabfbb44476ed"
+                "reference": "e8ff5dd1a18a11d04e5fdebfeeaa0055da60cf50"
             },
             "require": {
                 "php": "^8.5",
@@ -786,7 +786,7 @@
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -859,16 +859,16 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "c11a5aada47d38ef36ff971b193ae9875ff5841f"
+                "reference": "e961b721ac829d93e51b416403a1f98cf6fcfb26"
             },
             "require": {
                 "php": "^8.5",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -941,7 +941,7 @@
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "fdd8b82ad8d52b5221f3bdd557cd0957d1e93be5"
+                "reference": "6995d8cc1057a6da629fb00ce6f71b3b07f06e8f"
             },
             "require": {
                 "php": "^8.5",
@@ -950,7 +950,7 @@
                 "waffle-commons/utils": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -1023,7 +1023,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "c5a3f9193f262bf97caf00a77cb2aea75f1fbe7d"
+                "reference": "d2d5152d6b904402de251984f169f69cb0a74def"
             },
             "require": {
                 "php": "^8.5",
@@ -1032,7 +1032,7 @@
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -1105,7 +1105,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "e6d51bb0b8831971d14c09e36f619aeb83b848a0"
+                "reference": "315763c2dd2fb9f86c4a1c188d3595d92eaa9cc8"
             },
             "require": {
                 "php": "^8.5",
@@ -1114,7 +1114,7 @@
                 "waffle-commons/utils": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -1187,14 +1187,14 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "579460b5b0b410cb2536806b26b3bcc167cdf18a"
+                "reference": "e6e59ff79e75a7440e5e04a89e1e7512bf4a0a16"
             },
             "require": {
                 "php": "^8.5",
-                "waffle-commons/contracts": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
@@ -1267,7 +1267,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "0fc3c8653eeffec174c70238646c01f9c640ff1c"
+                "reference": "31a2aa8148bc99522bab4c0bc1cb95a2c13e0909"
             },
             "require": {
                 "php": "^8.5",
@@ -1278,12 +1278,11 @@
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0@dev",
                 "psr/log": "^3.0",
-                "waffle-commons/contracts": "1.0.0-dev",
-                "waffle-commons/utils": "1.0.0-dev"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-beta.31",
-                "nyholm/psr7": "^1.8@dev",
+                "carthage-software/mago": "^1.0.0-rc",
                 "php-mock/php-mock-phpunit": "^2.13",
                 "phpunit/phpunit": "^12.0",
                 "vimeo/psalm": "^6.13"
