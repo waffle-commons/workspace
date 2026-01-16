@@ -16,10 +16,13 @@ use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\Http\Emitter\ResponseEmitter;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
 use Waffle\Commons\Http\Factory\ResponseFactory;
+use Waffle\Commons\Log\Enum\LogChannel;
+use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
 use Waffle\Commons\Pipeline\MiddlewareStack;
 use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Security\Container\SecureContainer;
+use Waffle\Commons\Security\Middleware\SecurityMiddleware;
 use Waffle\Commons\Security\Security;
 use Workspace\Kernel;
 
@@ -69,24 +72,36 @@ final class AppKernelFactory
         // We create the renderer and the middleware.
         // It must be PREPENDED to catch errors from all subsequent middlewares (Routing, Security, Dispatcher).
         $errorRenderer = new JsonErrorRenderer($responseFactory, $debug);
-        $errorHandler = new ErrorHandlerMiddleware($errorRenderer);
+        $errorLogger = new StreamLogger();
+        $errorHandler = new ErrorHandlerMiddleware(
+            renderer: $errorRenderer,
+            logger: $errorLogger,
+        );
 
-        $stack->prepend($errorHandler);
+        $stack->prepend(middleware: $errorHandler);
 
         // 6. Instantiate the Kernel
-        $kernel = new Kernel();
+        $kernelLogger = new StreamLogger(channel: LogChannel::CORE);
+        $kernel = new Kernel(logger: $kernelLogger);
 
         // 7. Instantiate and Boot Router
         $controllersPath = $config->getString('waffle.paths.controllers');
         if (is_string($controllersPath)) {
             // Instantiate Router
             $router = new Router($root . DIRECTORY_SEPARATOR . $controllersPath);
-            $router->boot($secureContainer);
+            $router->boot(container: $secureContainer);
 
             // Create the Bridge Middleware and add it to the Stack
             // This connects the Router to the Pipeline
             $routingMiddleware = new CoreRoutingMiddleware($router);
-            $stack->add($routingMiddleware);
+            // This connects the SecureMiddleware to the Pipeline
+            $secureLogger = new StreamLogger(channel: LogChannel::SECURITY);
+            $secureMiddleware = new SecurityMiddleware(
+                secureContainer: $secureContainer,
+                logger: $secureLogger,
+            );
+            $stack->add(middleware: $routingMiddleware);
+            $stack->add(middleware: $secureMiddleware);
         }
 
         // 8. Inject Dependencies
