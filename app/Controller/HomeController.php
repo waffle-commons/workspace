@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Workspace\Controller;
 
-use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Waffle\Commons\Contracts\Security\Attribute\Voter;
 use Waffle\Commons\Routing\Attribute\Argument;
 use Waffle\Commons\Routing\Attribute\Route;
 use Waffle\Core\BaseController;
+use Waffle\Exception\RenderingException;
 use Workspace\Service\HomeService;
 use Workspace\Voter\RestrictedAccess;
 
@@ -22,7 +22,7 @@ final class HomeController extends BaseController
 {
     /**
      * Handles requests to the root path ("/").
-     * @throws JsonException
+     * @throws RenderingException
      */
     #[Route(path: '', name: 'index')]
     public function index(HomeService $service): ResponseInterface
@@ -33,7 +33,7 @@ final class HomeController extends BaseController
     /**
      * Handles dynamic requests to "/hello/{name}".
      * This tests the router's ability to handle parameters.
-     * @throws JsonException
+     * @throws RenderingException
      */
     #[Route(
         path: 'hello/{name}',
@@ -58,7 +58,7 @@ final class HomeController extends BaseController
 
     /**
      * Handles voters handling.
-     * @throws JsonException
+     * @throws RenderingException
      */
     #[Voter(name: RestrictedAccess::class)]
     #[Route(path: 'voter', name: 'voter')]
