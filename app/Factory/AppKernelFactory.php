@@ -31,7 +31,7 @@ use Workspace\Kernel;
  */
 final class AppKernelFactory
 {
-    private static GlobalsFactory $globalsFactory;
+    public static GlobalsFactory $globalsFactory;
 
     /**
      * Creates the fully assembled Kernel.
@@ -122,21 +122,5 @@ final class AppKernelFactory
         }
 
         return $kernel;
-    }
-
-    /**
-     * Creates the PSR-7 Request from globals.
-     */
-    public static function createRequest(): ServerRequestInterface
-    {
-        return self::$globalsFactory->createFromGlobals();
-    }
-
-    /**
-     * Creates the Response Emitter.
-     */
-    public static function createEmitter(): ResponseEmitterInterface
-    {
-        return new ResponseEmitter();
     }
 }

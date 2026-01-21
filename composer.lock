@@ -1112,13 +1112,14 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "b3038db70660ec203f9539a6a3994b9a447faf14"
+                "reference": "60746db35878daf9b36e9a011482815bd788053a"
             },
             "require": {
                 "php": "^8.5",
                 "psr/container": "^2.0",
                 "psr/http-message": "^1.1 || ^2.0",
-                "waffle-commons/contracts": "self.version"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/http": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-rc",

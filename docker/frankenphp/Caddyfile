@@ -5,6 +5,14 @@
 {
 # Enable debug mode for more logs during development
     debug
+
+# Worker Mode Configuration
+# Keeps the script in memory. Adjust 'num_threads' based on CPU cores.
+    frankenphp {
+        worker /waffle-commons/workspace/public/index.php 4
+    }
+
+    order php_server before file_server
 }
 
 # Define the server for our development environment
