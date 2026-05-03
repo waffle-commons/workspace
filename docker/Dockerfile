@@ -2,8 +2,8 @@
 # Waffle Framework - FrankenPHP Development Dockerfile
 # This builds a modern, all-in-one server environment using FrankenPHP.
 #
-ARG FRANKEN_VERSION='1.10.1'
-ARG PHP_VERSION='8.5.0'
+ARG FRANKEN_VERSION='1.12.2'
+ARG PHP_VERSION='8'
 ARG OS='trixie'
 ARG USER=workspace
 ARG APP_ENV='development'

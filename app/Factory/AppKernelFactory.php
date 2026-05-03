@@ -5,21 +5,22 @@ declare(strict_types=1);
 namespace Workspace\Factory;
 
 use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Container\Container;
 use Waffle\Commons\Contracts\Constant\Constant;
 use Waffle\Commons\Contracts\Core\KernelInterface;
-use Waffle\Commons\Contracts\Http\ResponseEmitterInterface;
+use Waffle\Commons\Contracts\EventDispatcher\EventListenerInterface;
 use Waffle\Commons\ErrorHandler\Middleware\ErrorHandlerMiddleware;
 use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
-use Waffle\Commons\Http\Emitter\ResponseEmitter;
+use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
+use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
 use Waffle\Commons\Http\Factory\ResponseFactory;
 use Waffle\Commons\Log\Enum\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
 use Waffle\Commons\Pipeline\MiddlewareStack;
+use Waffle\Commons\Pipeline\Middleware\SecureHeadersMiddleware;
 use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
@@ -80,9 +81,20 @@ final class AppKernelFactory
 
         $stack->prepend(middleware: $errorHandler);
 
+        // 5b. Event Dispatcher setup
+        $listenerProvider = new ListenerProvider();
+        $eventDispatcher = new EventDispatcher($listenerProvider);
+
+        // Auto-discover listeners from EventListener directory
+        $eventListenersPath = $config->getString('waffle.paths.event_listeners');
+        if (is_dir($eventListenersPath)) {
+            self::discoverAndRegisterListeners($listenerProvider, $eventListenersPath);
+        }
+
         // 6. Instantiate the Kernel
         $kernelLogger = new StreamLogger(channel: LogChannel::CORE);
         $kernel = new Kernel(logger: $kernelLogger);
+        $kernel->setEventDispatcher($eventDispatcher);
 
         // 7. Instantiate and Boot Router
         $controllersPath = $config->getString('waffle.paths.controllers');
@@ -102,6 +114,9 @@ final class AppKernelFactory
             );
             $stack->add(middleware: $routingMiddleware);
             $stack->add(middleware: $secureMiddleware);
+
+            // Secure headers middleware
+            $stack->add(middleware: new SecureHeadersMiddleware());
         }
 
         // 8. Inject Dependencies
@@ -122,5 +137,99 @@ final class AppKernelFactory
         }
 
         return $kernel;
+    }
+
+    /**
+     * Auto-discovers and registers event listeners from a directory.
+     * Scans for classes implementing EventListenerInterface with #[AsEventListener] attributes.
+     */
+    private static function discoverAndRegisterListeners(ListenerProvider $provider, string $directory): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = file_get_contents($file->getPathname());
+            if ($content === false) {
+                continue;
+            }
+
+            // Quick check: does this file contain AsEventListener attribute?
+            if (!str_contains($content, 'AsEventListener')) {
+                continue;
+            }
+
+            // Extract FQCN using token_get_all (same approach as ReflectionTrait)
+            $fqcn = self::extractClassName($file->getPathname());
+            if ($fqcn === '' || !class_exists($fqcn)) {
+                continue;
+            }
+
+            $instance = new $fqcn();
+
+            if ($instance instanceof EventListenerInterface) {
+                $provider->register($instance);
+            }
+        }
+    }
+
+    /**
+     * Extracts the fully qualified class name from a PHP file using token_get_all.
+     */
+    private static function extractClassName(string $path): string
+    {
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            return '';
+        }
+
+        $tokens = token_get_all($contents);
+        $namespace = '';
+        $class = '';
+        $count = count($tokens);
+
+        for ($i = 0; $i < $count; $i++) {
+            $token = $tokens[$i];
+
+            if (is_array($token) && $token[0] === T_NAMESPACE) {
+                while (++$i < $count) {
+                    if ($tokens[$i] === ';' || $tokens[$i] === '{') {
+                        break;
+                    }
+                    if (is_array($tokens[$i])) {
+                        $namespace .= $tokens[$i][1];
+                    }
+                }
+                continue;
+            }
+
+            if (is_array($token) && in_array($token[0], [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true)) {
+                $j = $i;
+                while (++$j < $count) {
+                    if (is_array($tokens[$j]) && $tokens[$j][0] === T_STRING) {
+                        $class = $tokens[$j][1];
+                        break 2;
+                    }
+                    if ($tokens[$j] === '{') {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($class === '') {
+            return '';
+        }
+
+        return $namespace ? $namespace . '\\' . $class : $class;
     }
 }

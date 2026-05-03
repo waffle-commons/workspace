@@ -14,4 +14,8 @@ waffle:
   paths:
     controllers: 'app/Controller'
     services: 'app/Service'
+    event_listeners: 'app/EventListener'
+  log:
+    channel: app
+    stream: 'php://stderr'
 

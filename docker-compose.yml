@@ -11,8 +11,8 @@ services:
       target: waffle_dev_base # Use the dev stage with Xdebug
       args:
         APP_ENV: development
-        FRANKEN_VERSION: 1.10.1
-        PHP_VERSION: 8.5.0
+        FRANKEN_VERSION: 1.12.2
+        PHP_VERSION: 8
         OS: trixie
     container_name: waffle-dev
     ports:
