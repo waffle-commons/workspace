@@ -1,4 +1,18 @@
-composer.phar
-/vendor/
-/.idea/
-composer.lock
+# Misc
+/**/.DS_Store
+
+# IDEs
+/.idea
+/.vscode
+/.idx
+
+# Framework dev specific
+/.env
+/.env.local
+/.env.*.local
+
+# Vendors
+/vendor
+
+# Cache
+/var
