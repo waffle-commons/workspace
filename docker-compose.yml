@@ -25,6 +25,8 @@ services:
       - ..:/waffle-commons
       # Mount our Caddyfile for server configuration
       - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile
+      # Mount our Starship for bash configuration
+      - ./docker/term/starship.toml:/home/workspace/.config/starship.toml
     environment:
       # Enable HTTPS with a self-signed certificate for local development
       SERVER_NAME: "localhost"

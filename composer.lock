@@ -499,7 +499,7 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "9c48c0e7a8b42115a72faef1274964ec8ff0b280"
+                "reference": "1b521f95248a586a07d5977c80a1be4ce349140f"
             },
             "require": {
                 "ext-yaml": "*",
@@ -581,7 +581,7 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "7cd3abfde813c3e782fd59398bf54ff4fd8d10ad"
+                "reference": "634385f85725e464e1e91e2c2db29d30815ae683"
             },
             "require": {
                 "php": "^8.5",
@@ -663,7 +663,7 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "2980c1099dbf1876f62e1941a4b865b6a06f3b0a"
+                "reference": "5120769e34609689fd59e5c14467e52364ef1352"
             },
             "require": {
                 "php": "^8.5",
@@ -751,7 +751,7 @@
             "dist": {
                 "type": "path",
                 "url": "../error-handler",
-                "reference": "12ff777f16ffc35beaaf5d9223aa1f602a7c8eb4"
+                "reference": "780245d9a227c66db3f1e2c217bd2df9f6d00cdf"
             },
             "require": {
                 "php": "^8.5",
@@ -835,7 +835,7 @@
             "dist": {
                 "type": "path",
                 "url": "../event-dispatcher",
-                "reference": "09b65ca6bf7f8d333b90e7c6b88bbbee5855f67d"
+                "reference": "4b4992ec5d4c1b5a76804d62ff2a0733d0ff62c4"
             },
             "require": {
                 "php": "^8.5",
@@ -917,7 +917,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "2d972962897c245e259dbd1552ef16cd0f6b59cc"
+                "reference": "ae21388f0cafc3bb86214197dd36a5f56111ce24"
             },
             "require": {
                 "php": "^8.5",
@@ -1000,7 +1000,7 @@
             "dist": {
                 "type": "path",
                 "url": "../log",
-                "reference": "0d1745ac5f66652ed4f4a0df75c46e9eb9165f0c"
+                "reference": "7ac521a4c4efee7762dde97223091a15f4718143"
             },
             "require": {
                 "php": "^8.5",
@@ -1082,7 +1082,7 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "9d8df7dee43d8ac89e5f37b9354f1beeb3867795"
+                "reference": "4178d416307c67b40accb2c874433017c9c679d5"
             },
             "require": {
                 "php": "^8.5",
@@ -1165,7 +1165,7 @@
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "e8a1bce15fc7f0da3ccb625b6a2a8b367890a0c3"
+                "reference": "8885e32b2d3baa1c27857fcb289c1560373af990"
             },
             "require": {
                 "php": "^8.5",
@@ -1248,7 +1248,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "17fc5691e8e12360e2a869a1a978f9fbd9e8825a"
+                "reference": "3f78969ee93433f014f635ff229a0cc69036256d"
             },
             "require": {
                 "php": "^8.5",
@@ -1332,7 +1332,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "49ebaecea30e2bbec543864cebfc666765c46b51"
+                "reference": "10425b65ae9242f3b853b117b15e62cffbb904c5"
             },
             "require": {
                 "php": "^8.5",
@@ -1417,7 +1417,7 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "2edde8a183a960a7ff402a43d4ded2813d9666e8"
+                "reference": "505e3fe228264205328f79600998d4ede9062f1c"
             },
             "require": {
                 "php": "^8.5",
@@ -1498,7 +1498,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "bf1d0426a51d543a68758f1e0ad8465a0cf97102"
+                "reference": "455fbf8630950b20c2cf25a92aae8c8543e89df1"
             },
             "require": {
                 "php": "^8.5",
@@ -1589,12 +1589,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/amp.git",
-                "reference": "8f0b0d7d1ac826dd7f009ed9c1e7aa1d30f5dcdc"
+                "reference": "560a11725fdb690ea842781f2ad8607ce62d8371"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/amp/zipball/8f0b0d7d1ac826dd7f009ed9c1e7aa1d30f5dcdc",
-                "reference": "8f0b0d7d1ac826dd7f009ed9c1e7aa1d30f5dcdc",
+                "url": "https://api.github.com/repos/amphp/amp/zipball/560a11725fdb690ea842781f2ad8607ce62d8371",
+                "reference": "560a11725fdb690ea842781f2ad8607ce62d8371",
                 "shasum": ""
             },
             "require": {
@@ -1604,7 +1604,7 @@
             "require-dev": {
                 "amphp/php-cs-fixer-config": "^2",
                 "phpunit/phpunit": "^9",
-                "psalm/phar": "6.15.1"
+                "psalm/phar": "6.16.1"
             },
             "default-branch": true,
             "type": "library",
@@ -1663,7 +1663,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-25T04:08:38+00:00"
+            "time": "2026-05-03T20:12:53+00:00"
         },
         {
             "name": "amphp/byte-stream",
@@ -1903,12 +1903,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/parallel.git",
-                "reference": "296b521137a54d3a02425b464e5aee4c93db2c60"
+                "reference": "3ad45d1cff1bfbfe832c79671e6a4a1017dd9921"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/parallel/zipball/296b521137a54d3a02425b464e5aee4c93db2c60",
-                "reference": "296b521137a54d3a02425b464e5aee4c93db2c60",
+                "url": "https://api.github.com/repos/amphp/parallel/zipball/3ad45d1cff1bfbfe832c79671e6a4a1017dd9921",
+                "reference": "3ad45d1cff1bfbfe832c79671e6a4a1017dd9921",
                 "shasum": ""
             },
             "require": {
@@ -1928,7 +1928,7 @@
                 "amphp/php-cs-fixer-config": "^2",
                 "amphp/phpunit-util": "^3",
                 "phpunit/phpunit": "^9",
-                "psalm/phar": "^5.18"
+                "psalm/phar": "6.16.1"
             },
             "default-branch": true,
             "type": "library",
@@ -1980,7 +1980,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-15T06:23:42+00:00"
+            "time": "2026-05-06T19:26:51+00:00"
         },
         {
             "name": "amphp/parser",
@@ -2051,12 +2051,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/pipeline.git",
-                "reference": "6ebb05d8b6878b0988391fe064fe61ac0f4e0e8f"
+                "reference": "a044733e080940d1483f56caff0c412ad6982776"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/pipeline/zipball/6ebb05d8b6878b0988391fe064fe61ac0f4e0e8f",
-                "reference": "6ebb05d8b6878b0988391fe064fe61ac0f4e0e8f",
+                "url": "https://api.github.com/repos/amphp/pipeline/zipball/a044733e080940d1483f56caff0c412ad6982776",
+                "reference": "a044733e080940d1483f56caff0c412ad6982776",
                 "shasum": ""
             },
             "require": {
@@ -2068,7 +2068,7 @@
                 "amphp/php-cs-fixer-config": "^2",
                 "amphp/phpunit-util": "^3",
                 "phpunit/phpunit": "^9",
-                "psalm/phar": "6.15.1"
+                "psalm/phar": "6.16.1"
             },
             "default-branch": true,
             "type": "library",
@@ -2111,7 +2111,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-28T19:35:26+00:00"
+            "time": "2026-05-06T05:37:57+00:00"
         },
         {
             "name": "amphp/process",
@@ -2413,16 +2413,16 @@
         },
         {
             "name": "carthage-software/mago",
-            "version": "1.25.1",
+            "version": "1.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/carthage-software/mago.git",
-                "reference": "b00c5dc1c73eaa9d7af7d24fcff68d3ca3c07806"
+                "reference": "9ae2f7ad58ffeeaa2ff890e736a8658f8e397cdf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/carthage-software/mago/zipball/b00c5dc1c73eaa9d7af7d24fcff68d3ca3c07806",
-                "reference": "b00c5dc1c73eaa9d7af7d24fcff68d3ca3c07806",
+                "url": "https://api.github.com/repos/carthage-software/mago/zipball/9ae2f7ad58ffeeaa2ff890e736a8658f8e397cdf",
+                "reference": "9ae2f7ad58ffeeaa2ff890e736a8658f8e397cdf",
                 "shasum": ""
             },
             "require": {
@@ -2457,7 +2457,7 @@
             ],
             "support": {
                 "issues": "https://github.com/carthage-software/mago/issues",
-                "source": "https://github.com/carthage-software/mago/tree/1.25.1"
+                "source": "https://github.com/carthage-software/mago/tree/1.26.0"
             },
             "funding": [
                 {
@@ -2465,7 +2465,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-30T21:09:36+00:00"
+            "time": "2026-05-06T21:44:02+00:00"
         },
         {
             "name": "composer/pcre",
@@ -2771,12 +2771,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-library.git",
-                "reference": "b0375a4278be30fa0a431d3f903ab5f1c82493ee"
+                "reference": "397cb1b9e4e9ba9bee5bdbac0b99712e0a21a68d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/b0375a4278be30fa0a431d3f903ab5f1c82493ee",
-                "reference": "b0375a4278be30fa0a431d3f903ab5f1c82493ee",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/397cb1b9e4e9ba9bee5bdbac0b99712e0a21a68d",
+                "reference": "397cb1b9e4e9ba9bee5bdbac0b99712e0a21a68d",
                 "shasum": ""
             },
             "require": {
@@ -2859,7 +2859,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-05-01T11:31:28+00:00"
+            "time": "2026-05-06T19:15:10+00:00"
         },
         {
             "name": "cyclonedx/cyclonedx-php-composer",
@@ -2867,12 +2867,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-composer.git",
-                "reference": "72a0eb0cd1ec9b84ccc16021da316b39ce05e48b"
+                "reference": "6fc6b6a534b6a63f03502e978b930c5a1c3111c8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/72a0eb0cd1ec9b84ccc16021da316b39ce05e48b",
-                "reference": "72a0eb0cd1ec9b84ccc16021da316b39ce05e48b",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/6fc6b6a534b6a63f03502e978b930c5a1c3111c8",
+                "reference": "6fc6b6a534b6a63f03502e978b930c5a1c3111c8",
                 "shasum": ""
             },
             "require": {
@@ -2938,7 +2938,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-05-01T11:30:02+00:00"
+            "time": "2026-05-06T19:14:57+00:00"
         },
         {
             "name": "danog/advanced-json-rpc",
@@ -4851,12 +4851,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "523f3b1f9df65e1e1cf96e9a2372b17876ae5af5"
+                "reference": "78693efa0e8777388b0badcaabcc54853046b214"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/523f3b1f9df65e1e1cf96e9a2372b17876ae5af5",
-                "reference": "523f3b1f9df65e1e1cf96e9a2372b17876ae5af5",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/78693efa0e8777388b0badcaabcc54853046b214",
+                "reference": "78693efa0e8777388b0badcaabcc54853046b214",
                 "shasum": ""
             },
             "require": {
@@ -4933,7 +4933,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-05-01T09:33:21+00:00"
+            "time": "2026-05-06T15:38:08+00:00"
         },
         {
             "name": "revolt/event-loop",
@@ -6104,12 +6104,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "7a7ad07175ceb2bb48954dfe1559804ad6ccd24b"
+                "reference": "d29223954adbe978d0c59f6f27cfcc1e43048d86"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/7a7ad07175ceb2bb48954dfe1559804ad6ccd24b",
-                "reference": "7a7ad07175ceb2bb48954dfe1559804ad6ccd24b",
+                "url": "https://api.github.com/repos/symfony/console/zipball/d29223954adbe978d0c59f6f27cfcc1e43048d86",
+                "reference": "d29223954adbe978d0c59f6f27cfcc1e43048d86",
                 "shasum": ""
             },
             "require": {
@@ -6196,7 +6196,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-30T13:24:58+00:00"
+            "time": "2026-05-05T15:33:14+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -6856,12 +6856,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "0d4a029a9aac902aef699d1b56b2a9af8307139c"
+                "reference": "760b9201f6aa768b1424a8870a016591c835d660"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/0d4a029a9aac902aef699d1b56b2a9af8307139c",
-                "reference": "0d4a029a9aac902aef699d1b56b2a9af8307139c",
+                "url": "https://api.github.com/repos/symfony/string/zipball/760b9201f6aa768b1424a8870a016591c835d660",
+                "reference": "760b9201f6aa768b1424a8870a016591c835d660",
                 "shasum": ""
             },
             "require": {
@@ -6939,7 +6939,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-18T13:52:23+00:00"
+            "time": "2026-05-05T15:33:14+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6997,12 +6997,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "3c67fc53dcdaab8107c214b8cf95c4c5e39489d2"
+                "reference": "6ff4aa2b472a5a4dd16a75c807da633d2c2e9368"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/3c67fc53dcdaab8107c214b8cf95c4c5e39489d2",
-                "reference": "3c67fc53dcdaab8107c214b8cf95c4c5e39489d2",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/6ff4aa2b472a5a4dd16a75c807da633d2c2e9368",
+                "reference": "6ff4aa2b472a5a4dd16a75c807da633d2c2e9368",
                 "shasum": ""
             },
             "require": {
@@ -7108,7 +7108,7 @@
                 "issues": "https://github.com/vimeo/psalm/issues",
                 "source": "https://github.com/vimeo/psalm"
             },
-            "time": "2026-04-15T14:40:23+00:00"
+            "time": "2026-05-07T08:31:35+00:00"
         },
         {
             "name": "webmozart/assert",

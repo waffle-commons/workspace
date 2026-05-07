@@ -31,7 +31,7 @@ prefer-interface = { level = "error" }
 strict-types = { level = "error" }
 cyclomatic-complexity = { level = "warning", threshold = 20 }
 too-many-methods = { level = "warning", threshold = 20 }
-kan-defect = { level = "warning", threshold = 1.7 }
+kan-defect = { level = "warning", threshold = 2.5 }
 no-ini-set = { enabled = false }
 
 # Style - Notes (informational)

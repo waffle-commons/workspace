@@ -1,0 +1,41 @@
+# waffle-commons/workspace/docker/terminal/starship.toml
+
+format = """
+$directory\
+$git_branch\
+${custom.git_tag}\
+${custom.git_clean}\
+$git_status\
+$all\
+$line_break\
+[@workspace: ](fg:#EADDFF bold)"""
+
+right_format = ""
+add_newline = true
+
+[directory]
+format = "[ $path ](bg:#A8E5C1 fg:#00210B)"
+truncation_length = 0
+truncate_to_repo = false
+truncation_symbol = "…/"
+
+[git_branch]
+format = "[ $symbol$branch ](bg:#F8D8D8 fg:#31111D)"
+symbol = "🧇 "
+
+[custom.git_tag]
+command = "git describe --tags --abbrev=0 2> /dev/null"
+when = "git rev-parse --is-inside-work-tree 2> /dev/null"
+format = "[ 🏷 $output ](bg:#E8DEF8 fg:#1D192B)"
+
+[custom.git_clean]
+require_repo = true
+when = "test -z \"$(git status --porcelain)\""
+command = "echo '✓'"
+format = "[ $output ](bg:#C4EED0 fg:#00210B)"
+
+[git_status]
+format = '([ +$staged_count ](bg:#FDE293 fg:#221B00))([ ~$modified_count ](bg:#FFB4AB fg:#410002))([ ?$untracked_count ](bg:#FF897D fg:#410001))([ ⇣$behind_count ](bg:#D3E3FD fg:#041E49))([ ⇡$ahead_count ](bg:#D3E3FD fg:#041E49)) '
+
+[character]
+disabled = true
