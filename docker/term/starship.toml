@@ -11,7 +11,7 @@ $git_status\
 ${custom.git_clean}\
 $all\
 $line_break\
-[@dev ](fg:#EADDFF bold)$character"""
+[@workspace ](fg:#EADDFF bold)$character"""
 
 # Désactiver le prompt de droite si existant
 right_format = ""
@@ -21,7 +21,7 @@ right_format = ""
 # ==============================================================================
 [directory]
 # Note : On retire la flèche de fin ici, elle sera gérée par les transitions dynamiques
-format = "[ 🗂️ $path ](bg:#A8E5C1 fg:#00210B)"
+format = "[ 🗂️  $path ](bg:#A8E5C1 fg:#00210B)"
 truncation_length = 0
 truncate_to_repo = false
 truncation_symbol = "…/"

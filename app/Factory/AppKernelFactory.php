@@ -22,9 +22,9 @@ use Waffle\Commons\Http\Factory\ResponseFactory;
 use Waffle\Commons\Log\Enum\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
-use Waffle\Commons\Pipeline\MiddlewareStack;
 use Waffle\Commons\Pipeline\Middleware\SecureHeadersMiddleware;
 use Waffle\Commons\Pipeline\Middleware\TrustedHostMiddleware;
+use Waffle\Commons\Pipeline\MiddlewareStack;
 use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
@@ -57,10 +57,7 @@ final class AppKernelFactory
         }
 
         // 2. Instantiate the concrete Config (from waffle-commons/config)
-        $config = new Config(
-            configDir: $rootConfig,
-            environment: $env,
-        );
+        $config = new Config(configDir: $rootConfig, environment: $env);
         // GlobalsFactory only constructs the PSR-7 ServerRequest; trusted-host enforcement
         // moved to TrustedHostMiddleware (Alpha 6 P0, RFC-003 §3.2).
         $trustedHosts = $config->getArray(key: 'waffle.trusted_hosts');
@@ -79,10 +76,7 @@ final class AppKernelFactory
         // It must be PREPENDED to catch errors from all subsequent middlewares (Routing, Security, Dispatcher).
         $errorRenderer = new JsonErrorRenderer($responseFactory, $debug);
         $errorLogger = new StreamLogger();
-        $errorHandler = new ErrorHandlerMiddleware(
-            renderer: $errorRenderer,
-            logger: $errorLogger,
-        );
+        $errorHandler = new ErrorHandlerMiddleware(renderer: $errorRenderer, logger: $errorLogger);
 
         $stack->prepend(middleware: $errorHandler);
 
@@ -106,8 +100,8 @@ final class AppKernelFactory
         $kernel->setEventDispatcher($eventDispatcher);
 
         // 7. Instantiate the PSR-16 cache (RFC-013) and register it for downstream consumers.
-        $cache = self::buildCache($root, $config);
-        $container->set(CacheInterface::class, $cache);
+        //$cache = self::buildCache($root, $config);
+        //$container->set(CacheInterface::class, $cache);
 
         // 8. Instantiate and Boot Router
         $controllersPath = $config->getString('waffle.paths.controllers');
@@ -121,10 +115,7 @@ final class AppKernelFactory
             $routingMiddleware = new CoreRoutingMiddleware($router);
             // This connects the SecureMiddleware to the Pipeline
             $secureLogger = new StreamLogger(channel: LogChannel::SECURITY);
-            $secureMiddleware = new SecurityMiddleware(
-                secureContainer: $secureContainer,
-                logger: $secureLogger,
-            );
+            $secureMiddleware = new SecurityMiddleware(secureContainer: $secureContainer, logger: $secureLogger);
             $stack->add(middleware: $routingMiddleware);
             $stack->add(middleware: $secureMiddleware);
 
@@ -181,9 +172,10 @@ final class AppKernelFactory
             return;
         }
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $directory,
+            \RecursiveDirectoryIterator::SKIP_DOTS,
+        ));
 
         foreach ($iterator as $file) {
             if (!$file->isFile() || $file->getExtension() !== 'php') {

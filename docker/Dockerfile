@@ -57,6 +57,7 @@ RUN \
 	chown -R ${USER}:${USER} /data/caddy; chown -R ${USER}:${USER} /config/caddy; \
     mkdir -p /home/${USER}/.cache; chown -R ${USER}:${USER} /home/${USER}/.cache; \
     mkdir -p /home/${USER}/.config; chown -R ${USER}:${USER} /home/${USER}/.config; \
+    touch /home/${USER}/.bash_history; chown -R ${USER}:${USER} /home/${USER}/.bash_history; \
     touch /home/${USER}/.bashrc; chown -R ${USER}:${USER} /home/${USER}/.bashrc; \
     chown -R ${USER}:${USER} /waffle-commons;
 

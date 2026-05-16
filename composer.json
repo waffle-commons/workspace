@@ -2,7 +2,7 @@
     "name": "waffle-commons/workspace",
     "description": "Local development and integration testing environment for Waffle framework and components.",
     "type": "project",
-    "version": "0.1.0-alpha5",
+    "version": "0.1.0-beta0",
     "require": {
         "php": "^8.5",
         "ext-yaml": "*",
@@ -27,7 +27,9 @@
             "canonical": false,
             "url": "../cache",
             "options": {
-                "versions": { "waffle-commons/cache": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/cache": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -36,7 +38,9 @@
             "canonical": false,
             "url": "../config",
             "options": {
-                "versions": { "waffle-commons/config": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/config": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -45,7 +49,9 @@
             "canonical": false,
             "url": "../container",
             "options": {
-                "versions": { "waffle-commons/container": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/container": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -54,7 +60,9 @@
             "canonical": false,
             "url": "../contracts",
             "options": {
-                "versions": { "waffle-commons/contracts": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/contracts": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -63,7 +71,9 @@
             "canonical": false,
             "url": "../error-handler",
             "options": {
-                "versions": { "waffle-commons/error-handler": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/error-handler": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -72,7 +82,9 @@
             "canonical": false,
             "url": "../event-dispatcher",
             "options": {
-                "versions": { "waffle-commons/event-dispatcher": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/event-dispatcher": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -81,7 +93,9 @@
             "canonical": false,
             "url": "../http",
             "options": {
-                "versions": { "waffle-commons/http": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/http": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -90,7 +104,9 @@
             "canonical": false,
             "url": "../log",
             "options": {
-                "versions": { "waffle-commons/log": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/log": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -99,7 +115,9 @@
             "canonical": false,
             "url": "../pipeline",
             "options": {
-                "versions": { "waffle-commons/pipeline": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/pipeline": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -108,7 +126,9 @@
             "canonical": false,
             "url": "../routing",
             "options": {
-                "versions": { "waffle-commons/routing": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/routing": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -117,7 +137,9 @@
             "canonical": false,
             "url": "../runtime",
             "options": {
-                "versions": { "waffle-commons/runtime": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/runtime": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -126,7 +148,9 @@
             "canonical": false,
             "url": "../security",
             "options": {
-                "versions": { "waffle-commons/security": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/security": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -135,7 +159,9 @@
             "canonical": false,
             "url": "../utils",
             "options": {
-                "versions": { "waffle-commons/utils": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/utils": "1.0.0-dev"
+                },
                 "symlink": true
             }
         },
@@ -144,7 +170,9 @@
             "canonical": false,
             "url": "../waffle",
             "options": {
-                "versions": { "waffle-commons/waffle": "1.0.0-dev" },
+                "versions": {
+                    "waffle-commons/waffle": "1.0.0-dev"
+                },
                 "symlink": true
             }
         }
