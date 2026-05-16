@@ -35,13 +35,9 @@ final class HomeController extends BaseController
      * This tests the router's ability to handle parameters.
      * @throws RenderingException
      */
-    #[Route(
-        path: 'hello/{name}',
-        name: 'hello',
-        arguments: [
-            new Argument(classType: 'string', paramName: 'name', required: false),
-        ],
-    )]
+    #[Route(path: 'hello/{name}', name: 'hello', arguments: [
+        new Argument(classType: 'string', paramName: 'name', required: false),
+    ])]
     public function hello(HomeService $service, string $name): ResponseInterface
     {
         return $this->jsonResponse(data: $service->sayHello(to: $name));
@@ -53,7 +49,7 @@ final class HomeController extends BaseController
     #[Route(path: 'crash', name: 'crash')]
     public function crash(): ResponseInterface
     {
-        throw new \RuntimeException("Something wrong appending!");
+        throw new \RuntimeException('Something wrong appending!');
     }
 
     /**

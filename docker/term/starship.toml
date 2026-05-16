@@ -1,0 +1,74 @@
+# ==============================================================================
+# 🚀 FORMAT GLOBAL "POWERLINE RIBBON" (Flux continu)
+# ==============================================================================
+format = """
+$directory\
+${custom.transition_git}\
+${custom.transition_no_git}\
+$git_branch\
+${custom.transition_git_end}\
+$git_status\
+${custom.git_clean}\
+$all\
+$line_break\
+[@workspace ](fg:#EADDFF bold)$character"""
+
+# Désactiver le prompt de droite si existant
+right_format = ""
+
+# ==============================================================================
+# 📂 BLOC 1 : DOSSIER (Fond Vert Menthe)
+# ==============================================================================
+[directory]
+# Note : On retire la flèche de fin ici, elle sera gérée par les transitions dynamiques
+format = "[ 🗂️  $path ](bg:#A8E5C1 fg:#00210B)"
+truncation_length = 0
+truncate_to_repo = false
+truncation_symbol = "…/"
+
+# ==============================================================================
+# 🔄 TRANSITIONS DYNAMIQUES (Le secret du style p10k)
+# ==============================================================================
+# 1. Si on EST dans un repo Git : Flèche Vert Menthe sur fond Rose Pastel
+[custom.transition_git]
+command = "echo ''"
+when = "git rev-parse --is-inside-work-tree > /dev/null 2>&1"
+format = "[$output](bg:#F8D8D8 fg:#A8E5C1)"
+
+# 2. Si on N'EST PAS dans un repo Git : Flèche Vert Menthe vers le fond noir du terminal
+[custom.transition_no_git]
+command = "echo ''"
+when = "if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then exit 1; else exit 0; fi"
+format = "[$output](fg:#A8E5C1) "
+
+# 3. La flèche de fin du bloc Git vers le fond noir
+[custom.transition_git_end]
+command = "echo ''"
+when = "git rev-parse --is-inside-work-tree > /dev/null 2>&1"
+format = "[$output](fg:#F8D8D8) "
+
+# ==============================================================================
+# 🌸 BLOC 2 : GIT (Tous les éléments partagent le même fond Rose Pastel)
+# ==============================================================================
+[git_branch]
+format = "[ $symbol$branch ](bg:#F8D8D8 fg:#31111D)"
+symbol = " "
+
+[git_status]
+# L'astuce ici : Le fond reste Rose pour la continuité du ruban,
+# mais on utilise des couleurs de texte saturées (Moutarde, Rouille, Rouge foncé, Bleu Nuit) pour garder l'esprit coloré MD3 !
+format = '([ 📦 $staged_count ](bg:#F8D8D8 fg:#8B6A00))([ 📝 $modified_count ](bg:#F8D8D8 fg:#9C2A1C))([ 🔍 $untracked_count ](bg:#F8D8D8 fg:#A62A1B))([ 📥 $behind_count ](bg:#F8D8D8 fg:#041E49))([ 🚀 $ahead_count ](bg:#F8D8D8 fg:#041E49))'
+
+[custom.git_clean]
+require_repo = true
+when = "test -z \"$(git status --porcelain)\""
+command = "echo '✨'"
+format = "[ $output ](fg:#00210B)"
+
+# ==============================================================================
+# ❯ LIGNE DE COMMANDE
+# ==============================================================================
+[character]
+disabled = false
+success_symbol = "[❯](bold #A8E5C1)" # Vert menthe si tout va bien
+error_symbol = "[❯](bold #FF897D)"   # Rouge vif si la commande précédente a échoué

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Workspace\Factory;
 
 use Psr\Http\Message\ResponseFactoryInterface;
+use Waffle\Commons\Cache\Factory\CacheFactory;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Container\Container;
+use Waffle\Commons\Contracts\Cache\CacheInterface;
+use Waffle\Commons\Contracts\Cache\Constant as CacheConstant;
 use Waffle\Commons\Contracts\Constant\Constant;
 use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\EventDispatcher\EventListenerInterface;
@@ -16,11 +19,12 @@ use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
 use Waffle\Commons\Http\Factory\ResponseFactory;
-use Waffle\Commons\Log\Enum\LogChannel;
+use Waffle\Commons\Log\Channel\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
-use Waffle\Commons\Pipeline\MiddlewareStack;
 use Waffle\Commons\Pipeline\Middleware\SecureHeadersMiddleware;
+use Waffle\Commons\Pipeline\Middleware\TrustedHostMiddleware;
+use Waffle\Commons\Pipeline\MiddlewareStack;
 use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
@@ -53,13 +57,11 @@ final class AppKernelFactory
         }
 
         // 2. Instantiate the concrete Config (from waffle-commons/config)
-        $config = new Config(
-            configDir: $rootConfig,
-            environment: $env,
-        );
-        // Prepare GlobalsFactory for trusted_hosts configuration
+        $config = new Config(configDir: $rootConfig, environment: $env);
+        // GlobalsFactory only constructs the PSR-7 ServerRequest; trusted-host enforcement
+        // moved to TrustedHostMiddleware (Alpha 6 P0, RFC-003 §3.2).
         $trustedHosts = $config->getArray(key: 'waffle.trusted_hosts');
-        self::$globalsFactory = new GlobalsFactory(trustedHosts: $trustedHosts);
+        self::$globalsFactory = new GlobalsFactory();
 
         // 3. Instantiate Security (from waffle-commons/security)
         $security = new Security($config);
@@ -74,12 +76,13 @@ final class AppKernelFactory
         // It must be PREPENDED to catch errors from all subsequent middlewares (Routing, Security, Dispatcher).
         $errorRenderer = new JsonErrorRenderer($responseFactory, $debug);
         $errorLogger = new StreamLogger();
-        $errorHandler = new ErrorHandlerMiddleware(
-            renderer: $errorRenderer,
-            logger: $errorLogger,
-        );
+        $errorHandler = new ErrorHandlerMiddleware(renderer: $errorRenderer, logger: $errorLogger);
 
         $stack->prepend(middleware: $errorHandler);
+
+        // 5a. Host header allowlist — fail-fast before routing/security/dispatch.
+        // Canonical order (RFC-003): ErrorHandler → TrustedHost → Routing → Security → SecureHeaders → Dispatcher.
+        $stack->add(middleware: new TrustedHostMiddleware($trustedHosts));
 
         // 5b. Event Dispatcher setup
         $listenerProvider = new ListenerProvider();
@@ -96,11 +99,15 @@ final class AppKernelFactory
         $kernel = new Kernel(logger: $kernelLogger);
         $kernel->setEventDispatcher($eventDispatcher);
 
-        // 7. Instantiate and Boot Router
-        $controllersPath = $config->getString('waffle.paths.controllers');
+        // 7. Instantiate the PSR-16 cache (RFC-013) and register it for downstream consumers.
+        $cache = self::buildCache($root, $config);
+        $container->set(CacheInterface::class, $cache);
+
+        // 8. Instantiate and Boot Router
+        $controllersPath = $config->getString(key: 'waffle.paths.controllers');
         if (is_string($controllersPath)) {
-            // Instantiate Router
-            $router = new Router($root . DIRECTORY_SEPARATOR . $controllersPath);
+            // Instantiate Router with the shared PSR-16 cache
+            $router = new Router($root . DIRECTORY_SEPARATOR . $controllersPath, $cache);
             $router->boot(container: $secureContainer);
 
             // Create the Bridge Middleware and add it to the Stack
@@ -108,10 +115,7 @@ final class AppKernelFactory
             $routingMiddleware = new CoreRoutingMiddleware($router);
             // This connects the SecureMiddleware to the Pipeline
             $secureLogger = new StreamLogger(channel: LogChannel::SECURITY);
-            $secureMiddleware = new SecurityMiddleware(
-                secureContainer: $secureContainer,
-                logger: $secureLogger,
-            );
+            $secureMiddleware = new SecurityMiddleware(secureContainer: $secureContainer, logger: $secureLogger);
             $stack->add(middleware: $routingMiddleware);
             $stack->add(middleware: $secureMiddleware);
 
@@ -119,7 +123,7 @@ final class AppKernelFactory
             $stack->add(middleware: new SecureHeadersMiddleware());
         }
 
-        // 8. Inject Dependencies
+        // 9. Inject Dependencies
         if (method_exists($kernel, 'setConfiguration')) {
             $kernel->setConfiguration($config);
         }
@@ -140,6 +144,25 @@ final class AppKernelFactory
     }
 
     /**
+     * Builds the PSR-16 cache adapter chosen by `waffle.cache.adapter`.
+     *
+     * Falls back to the in-memory ArrayCache when no adapter is configured.
+     */
+    public static function buildCache(string $root, Config $config): CacheInterface
+    {
+        $adapter = $config->getString('waffle.cache.adapter') ?? CacheConstant::BACKEND_ARRAY;
+        $directory = $config->getString('waffle.cache.directory') ?? 'var/cache/psr16';
+        $options = [
+            'directory' => $root . DIRECTORY_SEPARATOR . $directory,
+            'dsn' => $config->getString('waffle.cache.redis_dsn'),
+            'default_ttl' => $config->getInt('waffle.cache.default_ttl'),
+            'prefix' => $config->getString('waffle.cache.prefix'),
+        ];
+
+        return new CacheFactory()->create($adapter, $options);
+    }
+
+    /**
      * Auto-discovers and registers event listeners from a directory.
      * Scans for classes implementing EventListenerInterface with #[AsEventListener] attributes.
      */
@@ -149,9 +172,10 @@ final class AppKernelFactory
             return;
         }
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $directory,
+            \RecursiveDirectoryIterator::SKIP_DOTS,
+        ));
 
         foreach ($iterator as $file) {
             if (!$file->isFile() || $file->getExtension() !== 'php') {

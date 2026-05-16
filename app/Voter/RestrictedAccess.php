@@ -8,7 +8,6 @@ use Waffle\Commons\Contracts\Security\VoterInterface;
 
 class RestrictedAccess implements VoterInterface
 {
-
     public function decide(): bool
     {
         return false;

@@ -25,10 +25,13 @@ RUN install-php-extensions \
 	intl \
 	zip \
 	opcache; \
-    apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip unzip; \
+    apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip git curl unzip; \
     pecl install xdebug yaml && \
     docker-php-ext-enable xdebug yaml; \
     rm -rf /var/lib/apt/lists/*
+
+# Install Starship silently
+RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
 
 # Copy PHP configurations
 RUN cp $PHP_INI_DIR/php.ini-${APP_ENV} $PHP_INI_DIR/php.ini;
@@ -53,10 +56,19 @@ RUN \
 	useradd ${USER}; \
 	chown -R ${USER}:${USER} /data/caddy; chown -R ${USER}:${USER} /config/caddy; \
     mkdir -p /home/${USER}/.cache; chown -R ${USER}:${USER} /home/${USER}/.cache; \
+    mkdir -p /home/${USER}/.config; chown -R ${USER}:${USER} /home/${USER}/.config; \
+    touch /home/${USER}/.bash_history; chown -R ${USER}:${USER} /home/${USER}/.bash_history; \
+    touch /home/${USER}/.bashrc; chown -R ${USER}:${USER} /home/${USER}/.bashrc; \
     chown -R ${USER}:${USER} /waffle-commons;
 
 # Switch to non-root user
 USER ${USER}
+
+# Copy Starship configuration file
+COPY ./docker/term/starship.toml /home/${USER}/.config/starship.toml
+
+# 5Activate Starship in Bash
+RUN echo 'eval "$(starship init bash)"' >> /home/${USER}/.bashrc
 
 # Configure Xdebug for remote debugging.
 # These settings are environment variables so they can be easily overridden.
