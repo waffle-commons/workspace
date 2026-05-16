@@ -6,6 +6,7 @@
     "require": {
         "php": "^8.5",
         "ext-yaml": "*",
+        "waffle-commons/cache": "1.0.0-dev",
         "waffle-commons/config": "1.0.0-dev",
         "waffle-commons/container": "1.0.0-dev",
         "waffle-commons/contracts": "1.0.0-dev",
@@ -21,6 +22,15 @@
         "waffle-commons/waffle": "1.0.0-dev"
     },
     "repositories": [
+        {
+            "type": "path",
+            "canonical": false,
+            "url": "../cache",
+            "options": {
+                "versions": { "waffle-commons/cache": "1.0.0-dev" },
+                "symlink": true
+            }
+        },
         {
             "type": "path",
             "canonical": false,
