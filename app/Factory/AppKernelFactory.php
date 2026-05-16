@@ -19,7 +19,7 @@ use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use Waffle\Commons\Http\Factory\GlobalsFactory;
 use Waffle\Commons\Http\Factory\ResponseFactory;
-use Waffle\Commons\Log\Enum\LogChannel;
+use Waffle\Commons\Log\Channel\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
 use Waffle\Commons\Pipeline\Middleware\SecureHeadersMiddleware;
