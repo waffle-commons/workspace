@@ -100,11 +100,11 @@ final class AppKernelFactory
         $kernel->setEventDispatcher($eventDispatcher);
 
         // 7. Instantiate the PSR-16 cache (RFC-013) and register it for downstream consumers.
-        //$cache = self::buildCache($root, $config);
-        //$container->set(CacheInterface::class, $cache);
+        $cache = self::buildCache($root, $config);
+        $container->set(CacheInterface::class, $cache);
 
         // 8. Instantiate and Boot Router
-        $controllersPath = $config->getString('waffle.paths.controllers');
+        $controllersPath = $config->getString(key: 'waffle.paths.controllers');
         if (is_string($controllersPath)) {
             // Instantiate Router with the shared PSR-16 cache
             $router = new Router($root . DIRECTORY_SEPARATOR . $controllersPath, $cache);
@@ -148,7 +148,7 @@ final class AppKernelFactory
      *
      * Falls back to the in-memory ArrayCache when no adapter is configured.
      */
-    private static function buildCache(string $root, Config $config): CacheInterface
+    public static function buildCache(string $root, Config $config): CacheInterface
     {
         $adapter = $config->getString('waffle.cache.adapter') ?? CacheConstant::BACKEND_ARRAY;
         $directory = $config->getString('waffle.cache.directory') ?? 'var/cache/psr16';
