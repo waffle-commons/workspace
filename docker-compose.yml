@@ -37,6 +37,7 @@ services:
       XDEBUG_MODE: "debug,coverage"
       APP_ENV: "dev"
       APP_DEBUG: "true"
+      PHP_IDE_CONFIG: "serverName=waffle-dev"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s
