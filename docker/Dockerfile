@@ -51,6 +51,21 @@ FROM frankenphp_builder AS waffle_dev_base
 # Copy Composer binary if needed for production CLI commands
 COPY --from=composer_dependencies /usr/bin/composer /usr/bin/composer
 
+# --- 3. Dependency Installation & Verification ---
+# NOTE: Dependency installation is handled by the entrypoint script at runtime.
+# This allows live-mounting of the monorepo to work correctly with symlinks.
+# The entrypoint will run 'composer install' on first container start and refresh
+# if composer.lock changes.
+# For build-time verification, we copy and validate composer.lock syntax here.
+
+WORKDIR /waffle-commons/workspace
+
+# Copy only composer.lock for validation
+COPY ./composer.lock ./
+
+# Validate composer.lock is valid JSON
+RUN php -r "json_decode(file_get_contents('composer.lock'), true) or exit(1); echo 'composer.lock is valid JSON';"
+
 # Non-root user configuration (DevSecOps best practice)
 RUN \
 	useradd ${USER}; \
