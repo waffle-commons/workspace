@@ -74,6 +74,7 @@ RUN \
     mkdir -p /home/${USER}/.config; chown -R ${USER}:${USER} /home/${USER}/.config; \
     touch /home/${USER}/.bash_history; chown -R ${USER}:${USER} /home/${USER}/.bash_history; \
     touch /home/${USER}/.bashrc; chown -R ${USER}:${USER} /home/${USER}/.bashrc; \
+    chmod 777 /tmp/xdebug.log; \
     chown -R ${USER}:${USER} /waffle-commons;
 
 # Switch to non-root user

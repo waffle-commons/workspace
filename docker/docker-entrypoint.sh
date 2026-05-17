@@ -166,7 +166,15 @@ required_extensions=(gd intl zip opcache yaml xdebug)
 missing_extensions=()
 
 for ext in "${required_extensions[@]}"; do
-  if php -m | grep -qi "^$ext\$"; then
+  # Special case: OPcache shows as "Zend OPcache" in php -m output
+  if [ "$ext" = "opcache" ]; then
+    if php -m | grep -qi "opcache"; then
+      log_info "  ✓ Extension: $ext"
+    else
+      log_error "  ✗ Extension MISSING: $ext"
+      missing_extensions+=("$ext")
+    fi
+  elif php -m | grep -qi "^$ext\$"; then
     log_info "  ✓ Extension: $ext"
   else
     log_error "  ✗ Extension MISSING: $ext"
@@ -180,7 +188,8 @@ if [ ${#missing_extensions[@]} -gt 0 ]; then
 fi
 
 # Verify Opcache is enabled
-if php -r 'exit(extension_loaded("opcache") && ini_get("opcache.enable") ? 0 : 1);'; then
+# Note: Check ini_get() instead of extension_loaded() since OPcache is enabled via INI file
+if php -d display_errors=0 -r 'exit(ini_get("opcache.enable") ? 0 : 1);' 2>/dev/null; then
   log_info "  ✓ Opcache enabled"
 else
   log_warn "  ⚠ Opcache not enabled (performance impact in worker mode)"
@@ -212,6 +221,38 @@ log_info "  INI: $(php -r 'echo php_ini_loaded_file();')"
 log_info "  Timezone: $(php -r 'echo ini_get("date.timezone");')"
 log_info "  Memory Limit: $(php -r 'echo ini_get("memory_limit");')"
 log_info "  Max Upload: $(php -r 'echo ini_get("upload_max_filesize");')"
+
+log_info ""
+log_info "OPcache & JIT Configuration:"
+
+# OPcache Status (suppress JIT incompatibility warnings)
+# Note: Check ini_get() instead of extension_loaded() since OPcache is enabled via INI file
+opcache_enabled=$(php -d display_errors=0 2>/dev/null -r 'echo ini_get("opcache.enable") ? "Enabled" : "Disabled";')
+log_info "  OPcache: $opcache_enabled"
+
+if [ "$opcache_enabled" = "Enabled" ]; then
+  opcache_memory=$(php -d display_errors=0 2>/dev/null -r 'echo ini_get("opcache.memory_consumption") . "M";')
+  log_info "    Memory Heap: $opcache_memory"
+  
+  opcache_files=$(php -d display_errors=0 2>/dev/null -r 'echo ini_get("opcache.max_accelerated_files");')
+  log_info "    Max Files: $opcache_files"
+  
+  # JIT Status (PHP 8.5+)
+  jit_enabled=$(php -d display_errors=0 2>/dev/null -r 'echo ini_get("opcache.jit") ? "Enabled" : "Disabled";')
+  log_info "    JIT: $jit_enabled"
+  
+#  if [ "$jit_enabled" = "Enabled" ]; then
+#    jit_mode=$(php -d display_errors=0 2>/dev/null -r '
+#      $jit = ini_get("opcache.jit");
+#      $modes = ["disabled", "tracing", "function", "asm"];
+#      echo isset($modes[$jit]) ? $modes[$jit] : "unknown (" . $jit . ")";
+#    ')
+#    log_info "      Mode: $jit_mode"
+#
+#    jit_buffer=$(php -d display_errors=0 2>/dev/null -r 'echo ini_get("opcache.jit_buffer_size");')
+#    log_info "      Buffer Size: $jit_buffer"
+#  fi
+fi
 
 log_info ""
 log_info "FrankenPHP Worker Mode:"
