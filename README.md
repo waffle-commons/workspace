@@ -142,6 +142,12 @@ docker down
 4. Run Composer commands, tests, static analysis, etc., using `docker exec waffle-dev ...`. 
 5. Test the integrated behavior by accessing the web server or running specific integration scripts.
 
+## Environment variables
+
+The workspace `AppKernelFactory` follows the same wiring as the skeleton — `.env` is parsed by `DotEnv` and merged with the live process environment via `array_merge((new DotEnv($root))->load(), getenv())`. Because `array_merge` is rightmost-wins on string keys, **any variable exported by Docker / `docker-compose.yml` / your shell silently overrides the value in `.env`** (Twelve-Factor convention).
+
+When integration-testing changes to the `config` package or to `AppKernelFactory`, keep an eye on the OS-vs-`.env` precedence: a stale `APP_ENV=dev` in your shell will override `.env`'s value for every `docker exec` invocation. See [`documentation/how-to/configuration.md`](https://github.com/waffle-commons/documentation/blob/main/how-to/configuration.md) for the full merge semantics and the `APP_DEBUG`/`DEBUG` type-normalization caveat.
+
 ## Contribution
 
 This repository is intended for contributors to the Waffle ecosystem **ONLY**. Please refer to the `CONTRIBUTING.md` 
