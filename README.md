@@ -26,7 +26,7 @@ framework and its components.
  - Git 
  - Docker & Docker Compose 
  - Composer (for managing the workspace itself and potentially running commands locally)
- - PHP >= 8.4 (installed locally, mainly for Composer operations outside Docker if preferred)
+ - PHP >= 8.5 (installed locally, mainly for Composer operations outside Docker if preferred)
 
 ## Setup
 
