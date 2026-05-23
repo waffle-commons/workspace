@@ -30,6 +30,10 @@ services:
       - ./docker/term/starship.toml:/home/workspace/.config/starship.toml
       # Mount OPcache & JIT configuration (read-only, hot-editable)
       - ./docker/frankenphp/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini:ro
+      # Mount Active PHP Mode configuration (debug vs bench)
+      - ./docker/php/mode-active.ini:/usr/local/etc/php/conf.d/mode-active.ini:ro
+      # Disable the default Xdebug loading from the Dockerfile
+      - /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
     environment:
       # Enable HTTPS with a self-signed certificate for local development
       SERVER_NAME: "localhost"

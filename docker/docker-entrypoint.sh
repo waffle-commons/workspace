@@ -162,7 +162,11 @@ log_info "PHASE 5: PHP Runtime Validation"
 php_version=$(php -r 'echo phpversion();')
 log_info "PHP Version: $php_version"
 
-required_extensions=(gd intl zip opcache yaml xdebug)
+required_extensions=(gd intl zip opcache yaml)
+# Only validate xdebug if the active PHP profile config actually loads it
+if [ -f "/usr/local/etc/php/conf.d/mode-active.ini" ] && grep -q "zend_extension=xdebug.so" "/usr/local/etc/php/conf.d/mode-active.ini"; then
+  required_extensions+=(xdebug)
+fi
 missing_extensions=()
 
 for ext in "${required_extensions[@]}"; do
