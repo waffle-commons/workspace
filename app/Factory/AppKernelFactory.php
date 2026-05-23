@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workspace\Factory;
 
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use Waffle\Commons\Cache\Factory\CacheFactory;
 use Waffle\Commons\Config\Config;
@@ -15,8 +16,10 @@ use Waffle\Commons\Contracts\Cache\Constant as CacheConstant;
 use Waffle\Commons\Contracts\Constant\Constant;
 use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\EventDispatcher\EventListenerInterface;
+use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
+use Waffle\Commons\Contracts\Service\ReflectionServiceInterface;
 use Waffle\Commons\ErrorHandler\Middleware\ErrorHandlerMiddleware;
 use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
@@ -35,6 +38,9 @@ use Waffle\Commons\Security\Middleware\AnonymousSessionMiddleware;
 use Waffle\Commons\Security\Middleware\CsrfMiddleware;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
 use Waffle\Commons\Security\Security;
+use Waffle\Handler\ControllerArgumentResolver;
+use Waffle\Handler\ControllerDispatcher;
+use Waffle\Service\ReflectionService;
 use Workspace\Kernel;
 
 /**
@@ -120,6 +126,20 @@ final class AppKernelFactory
         $kernelLogger = new StreamLogger(channel: LogChannel::CORE);
         $kernel = new Kernel(logger: $kernelLogger);
         $kernel->setEventDispatcher($eventDispatcher);
+
+        // 6a. Leftover-purge §3: bootstrap-side wiring of the terminal-handler trio.
+        // The kernel no longer instantiates these inline; the factory owns the
+        // composition and the kernel just resolves from the container.
+        $reflectionService = new ReflectionService();
+        $argumentResolver = new ControllerArgumentResolver($container, $reflectionService);
+        $controllerDispatcher = new ControllerDispatcher(
+            container: $container,
+            dispatcher: $eventDispatcher,
+            argumentResolver: $argumentResolver,
+        );
+        $container->set(ReflectionServiceInterface::class, $reflectionService);
+        $container->set(ArgumentResolverInterface::class, $argumentResolver);
+        $container->set(RequestHandlerInterface::class, $controllerDispatcher);
 
         // 7. Instantiate the PSR-16 cache (RFC-013) and register it for downstream consumers.
         $cache = self::buildCache($root, $config);
