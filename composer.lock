@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb3d213d503e5a6731afc47e638f6ed1",
+    "content-hash": "3cffc5845a7dacc65cc97a84a72ca7e6",
     "packages": [
         {
             "name": "predis/predis",
@@ -227,6 +227,59 @@
                 "source": "https://github.com/php-fig/event-dispatcher"
             },
             "time": "2024-03-17T21:29:03+00:00"
+        },
+        {
+            "name": "psr/http-client",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-client.git",
+                "reference": "bb5906edc1c324c9a05aa0873d40117941e5fa90"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-client/zipball/bb5906edc1c324c9a05aa0873d40117941e5fa90",
+                "reference": "bb5906edc1c324c9a05aa0873d40117941e5fa90",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0 || ^8.0",
+                "psr/http-message": "^1.0 || ^2.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Client\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP clients",
+            "homepage": "https://github.com/php-fig/http-client",
+            "keywords": [
+                "http",
+                "http-client",
+                "psr",
+                "psr-18"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-client"
+            },
+            "time": "2023-09-23T14:17:50+00:00"
         },
         {
             "name": "psr/http-factory",
@@ -561,7 +614,7 @@
             "dist": {
                 "type": "path",
                 "url": "../cache",
-                "reference": "8c81098522b58d5b9ab9d04de341732bf6b0ba68"
+                "reference": "0296fb68904b1970adb38d4577ef9aad9f897aed"
             },
             "require": {
                 "php": "^8.5",
@@ -647,7 +700,7 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "593f8ca94b7ceba01127da5ef5946d6143dd1fd9"
+                "reference": "22214e87514722eb05a45befa77b6f6c88b59670"
             },
             "require": {
                 "ext-yaml": "*",
@@ -733,7 +786,7 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "4d917560b64f36e1bac6854e21e7df718d820154"
+                "reference": "0fd8c4c070cf0c7b7642afe09504311b0d7bee50"
             },
             "require": {
                 "php": "^8.5",
@@ -818,7 +871,7 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "3f5f4a2a9f4950c9fbca97e872c2422c70078a4b"
+                "reference": "5f9ca2b2b638272ee4214105bcc131b883fb73fd"
             },
             "require": {
                 "php": "^8.5",
@@ -904,13 +957,14 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "a65b94daa4ad189edf3bac0d1dafea50f470c39e"
+                "reference": "8d8a94c64bf791498d74c80bd397afed8eeecd82"
             },
             "require": {
                 "php": "^8.5",
                 "psr/cache": "^3.0",
                 "psr/container": "^2.0",
                 "psr/event-dispatcher": "^1.0",
+                "psr/http-client": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -996,7 +1050,7 @@
             "dist": {
                 "type": "path",
                 "url": "../error-handler",
-                "reference": "2219b2088388861cd2ac8b945d65391957c1adfc"
+                "reference": "7400038b27f7ff6c15d9bb88d0abb889da269aea"
             },
             "require": {
                 "php": "^8.5",
@@ -1084,7 +1138,7 @@
             "dist": {
                 "type": "path",
                 "url": "../event-dispatcher",
-                "reference": "bda6671d90eb0f6ff232667eda0d84d67eab3be2"
+                "reference": "6289b12a02e9471d4f7c4e7e10a166b10f20f60d"
             },
             "require": {
                 "php": "^8.5",
@@ -1170,7 +1224,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "4239fd074bc24dcac20d303c1a533224d64e0264"
+                "reference": "7ff01415da692edeb7e8418bdbba793e64b82b2e"
             },
             "require": {
                 "php": "^8.5",
@@ -1257,7 +1311,7 @@
             "dist": {
                 "type": "path",
                 "url": "../log",
-                "reference": "ad64ae44eefee6294b8177fe39a73f398bca589f"
+                "reference": "a84baac3b6edce3a0da051f0fa31500bbc9a62b7"
             },
             "require": {
                 "php": "^8.5",
@@ -1343,7 +1397,7 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "7082dbcd1bec43996e0060e3d7bbb32f8cddd4bf"
+                "reference": "f594b146f6133c210e50ec2f47b141fafba401f3"
             },
             "require": {
                 "php": "^8.5",
@@ -1430,7 +1484,7 @@
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "d586faf254431b476e3456bc07eb77ed3e63967e"
+                "reference": "3a6e11d13969d0f8f2a336c5ba86daf3a0ccf63d"
             },
             "require": {
                 "php": "^8.5",
@@ -1517,7 +1571,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "1d95c8b8f1c625f4764151282235d3cfa91ca70b"
+                "reference": "844b21aa3b13417cfcfe4f50724bd9817588a47f"
             },
             "require": {
                 "php": "^8.5",
@@ -1605,7 +1659,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "799f9e2a48ab14fac528000acd81cdcb70ce561d"
+                "reference": "498f274bc27a133bfe5a632dbe79a421b4e88bdb"
             },
             "require": {
                 "php": "^8.5",
@@ -1694,7 +1748,7 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "1e8c3d5f7f92d9c291bce7f2b75f150342f87a8c"
+                "reference": "b4855fff667bb8380281a9e19418e7473b2175c2"
             },
             "require": {
                 "php": "^8.5",
@@ -1779,7 +1833,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "fcd8406054574e0878041a5f1ea05efab29f7760"
+                "reference": "ae0b91206d40b276fa5b92dd20eca7c2ead56bcf"
             },
             "require": {
                 "php": "^8.5",
@@ -2698,16 +2752,16 @@
         },
         {
             "name": "carthage-software/mago",
-            "version": "1.28.0",
+            "version": "1.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/carthage-software/mago.git",
-                "reference": "c3daa7199f83bd06c0077b997358c46e80a0bb06"
+                "reference": "8aab53f6d004f9a6e85128c365d3d28737fdb272"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/carthage-software/mago/zipball/c3daa7199f83bd06c0077b997358c46e80a0bb06",
-                "reference": "c3daa7199f83bd06c0077b997358c46e80a0bb06",
+                "url": "https://api.github.com/repos/carthage-software/mago/zipball/8aab53f6d004f9a6e85128c365d3d28737fdb272",
+                "reference": "8aab53f6d004f9a6e85128c365d3d28737fdb272",
                 "shasum": ""
             },
             "require": {
@@ -2745,7 +2799,7 @@
             ],
             "support": {
                 "issues": "https://github.com/carthage-software/mago/issues",
-                "source": "https://github.com/carthage-software/mago/tree/1.28.0"
+                "source": "https://github.com/carthage-software/mago/tree/1.29.0"
             },
             "funding": [
                 {
@@ -2753,7 +2807,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-19T07:03:29+00:00"
+            "time": "2026-05-23T18:53:33+00:00"
         },
         {
             "name": "composer/pcre",
@@ -5463,12 +5517,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/complexity.git",
-                "reference": "0e0512b41d9f9ea5386bfda2945d0b5d19256ee3"
+                "reference": "9144f9053413318b460956c0b84ad2946f381893"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/complexity/zipball/0e0512b41d9f9ea5386bfda2945d0b5d19256ee3",
-                "reference": "0e0512b41d9f9ea5386bfda2945d0b5d19256ee3",
+                "url": "https://api.github.com/repos/sebastianbergmann/complexity/zipball/9144f9053413318b460956c0b84ad2946f381893",
+                "reference": "9144f9053413318b460956c0b84ad2946f381893",
                 "shasum": ""
             },
             "require": {
@@ -5525,7 +5579,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-21T17:57:31+00:00"
+            "time": "2026-05-22T12:04:54+00:00"
         },
         {
             "name": "sebastian/diff",
@@ -5992,19 +6046,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/object-reflector.git",
-                "reference": "0d13ecb9380a835b0dea0d69f4de3cca711f9f5f"
+                "reference": "3a04bf87221b9439d99e5f4d9e88717fb9abd4d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/object-reflector/zipball/0d13ecb9380a835b0dea0d69f4de3cca711f9f5f",
-                "reference": "0d13ecb9380a835b0dea0d69f4de3cca711f9f5f",
+                "url": "https://api.github.com/repos/sebastianbergmann/object-reflector/zipball/3a04bf87221b9439d99e5f4d9e88717fb9abd4d2",
+                "reference": "3a04bf87221b9439d99e5f4d9e88717fb9abd4d2",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.3"
             },
             "require-dev": {
-                "phpunit/phpunit": "^12.5.25"
+                "phpunit/phpunit": "^12.5.26"
             },
             "type": "library",
             "extra": {
@@ -6052,7 +6106,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-20T04:57:28+00:00"
+            "time": "2026-05-22T11:47:07+00:00"
         },
         {
             "name": "sebastian/recursion-context",
@@ -6392,12 +6446,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "442a15a13e71bb01f2f6f9d8e6b653bd7b11da07"
+                "reference": "093515b82dcc1a937ad18482fcf400464a7ef0cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/442a15a13e71bb01f2f6f9d8e6b653bd7b11da07",
-                "reference": "442a15a13e71bb01f2f6f9d8e6b653bd7b11da07",
+                "url": "https://api.github.com/repos/symfony/console/zipball/093515b82dcc1a937ad18482fcf400464a7ef0cc",
+                "reference": "093515b82dcc1a937ad18482fcf400464a7ef0cc",
                 "shasum": ""
             },
             "require": {
@@ -6485,7 +6539,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-19T20:20:07+00:00"
+            "time": "2026-05-24T08:59:22+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -7226,12 +7280,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "f5cb4d68918786d3b24a0a6a55eb969e9c9e5f3f"
+                "reference": "9c24be84f660c78e85cfa7828e9c8962924d78a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/f5cb4d68918786d3b24a0a6a55eb969e9c9e5f3f",
-                "reference": "f5cb4d68918786d3b24a0a6a55eb969e9c9e5f3f",
+                "url": "https://api.github.com/repos/symfony/string/zipball/9c24be84f660c78e85cfa7828e9c8962924d78a0",
+                "reference": "9c24be84f660c78e85cfa7828e9c8962924d78a0",
                 "shasum": ""
             },
             "require": {
@@ -7309,7 +7363,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-13T12:23:03+00:00"
+            "time": "2026-05-23T18:18:22+00:00"
         },
         {
             "name": "theseer/tokenizer",

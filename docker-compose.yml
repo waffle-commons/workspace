@@ -50,6 +50,35 @@ services:
       start_period: 10s
     networks:
       - waffle-network
+    depends_on:
+      legacy-backend:
+        condition: service_healthy
+
+  # Mock "Legacy Monolith" — a deliberately slow, memory-heavy backend that the
+  # EcoShield Gateway sits in front of and transparently proxies. It runs on the
+  # plain PHP built-in server (NOT FrankenPHP worker mode) to emulate a classic
+  # blocking PHP-FPM/Nginx app, so the contrast with EcoShield's non-blocking,
+  # memory-bounded PSR-18 proxying is visible end to end.
+  legacy-backend:
+    image: php:8.5-cli
+    container_name: legacy-backend
+    working_dir: /app
+    # Single-file router served by the built-in server; every request is routed
+    # through router.php (see docker/legacy/public/router.php).
+    command: ["php", "-S", "0.0.0.0:80", "/app/router.php"]
+    volumes:
+      - ./docker/legacy/public:/app:ro
+    ports:
+      # Optional host access for manual probing: curl http://localhost:8090/api/legacy-heavy
+      - "8090:80"
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/health') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - waffle-network
 
 networks:
   waffle-network:

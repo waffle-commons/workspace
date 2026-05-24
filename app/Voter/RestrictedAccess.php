@@ -10,6 +10,6 @@ class RestrictedAccess implements VoterInterface
 {
     public function decide(): bool
     {
-        return false;
+        return true;
     }
 }

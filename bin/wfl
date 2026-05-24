@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# ============================================================================
+# wfl (workspace shim) — delegates to the umbrella-level Waffle Developer CLI.
+#
+# `wfl` is a host-side tool that lives at the monorepo root (bin/wfl): it must
+# resolve the umbrella REPO_ROOT and read the root .gitmodules, so it cannot be
+# run as a standalone copy from inside this submodule. This thin shim lets a
+# developer working inside the `workspace` checkout invoke it as `bin/wfl ...`;
+# it simply forwards every argument to the real binary one level up.
+#
+# (Distinct from bin/waffle, which is the in-container application console.)
+# ============================================================================
+
+set -euo pipefail
+
+UMBRELLA_ROOT="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+REAL_WFL="$UMBRELLA_ROOT/bin/wfl"
+
+if [ ! -x "$REAL_WFL" ]; then
+  printf '✗ umbrella wfl not found or not executable: %s\n' "$REAL_WFL" >&2
+  printf '  (are you inside the waffle-commons monorepo with the workspace submodule checked out?)\n' >&2
+  exit 1
+fi
+
+exec "$REAL_WFL" "$@"
