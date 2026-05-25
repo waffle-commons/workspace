@@ -10,7 +10,6 @@
 # Keeps the script in memory. Adjust 'num_threads' based on CPU cores.
     frankenphp {
         worker /waffle-commons/workspace/public/index.php 4
-        watch
     }
 
     order php_server before file_server
@@ -23,7 +22,5 @@ localhost {
 # Enable compression
     encode zstd gzip
 # Forward all requests to the PHP-FPM entrypoint
-    php_server {
-        hot_reload
-    }
+    php_server
 }

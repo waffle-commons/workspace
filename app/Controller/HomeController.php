@@ -68,6 +68,7 @@ final class HomeController extends BaseController
      * @throws RenderingException
      */
     #[Route(path: 'greet', name: 'greet')]
+    #[Voter(name: RestrictedAccess::class)]
     public function greet(HomeService $service, HelloInput $input): ResponseInterface
     {
         return $this->jsonResponse(data: $service->sayHello(to: $input->name));
@@ -78,6 +79,7 @@ final class HomeController extends BaseController
      * intercepted and rendered as a structured JSON error by the middleware.
      */
     #[Route(path: 'crash', name: 'crash')]
+    #[PublicAccess]
     public function crash(): ResponseInterface
     {
         throw new RuntimeException('Something went wrong while greeting!');
@@ -92,6 +94,7 @@ final class HomeController extends BaseController
      * @throws RenderingException
      */
     #[Route(path: '{path:.*}', name: 'catch_all', priority: -1000)]
+    #[PublicAccess]
     public function catchAll(string $path): ResponseInterface
     {
         return $this->jsonResponse(data: [
