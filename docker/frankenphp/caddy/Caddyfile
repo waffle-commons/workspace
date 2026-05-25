@@ -6,10 +6,18 @@
 # Enable debug mode for more logs during development
     debug
 
-# Worker Mode Configuration
-# Keeps the script in memory. Adjust 'num_threads' based on CPU cores.
+# Configuration du Mode Worker et de la surveillance à chaud (Hot Reload)
+# Conserve l'application en mémoire et redémarre les threads lors de modifications.
     frankenphp {
-        worker /waffle-commons/workspace/public/index.php 4
+        worker {
+            file /waffle-commons/workspace/public/index.php
+            num 4
+            # Surveillance à chaud uniquement sur les répertoires de développement (évite les boucles infinies)
+            watch /waffle-commons/*/src/**/*.php
+            watch /waffle-commons/*/src/**/*.yaml
+            watch /waffle-commons/workspace/app/**/*.php
+            watch /waffle-commons/workspace/config/**/*.yaml
+        }
     }
 
     order php_server before file_server
