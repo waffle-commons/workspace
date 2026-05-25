@@ -14,6 +14,7 @@ services:
         FRANKEN_VERSION: 1.12.2
         PHP_VERSION: 8
         OS: trixie
+    entrypoint: bash /waffle-commons/workspace/docker/docker-entrypoint.sh
     container_name: waffle-dev
     ports:
       # Expose port 8080 on your host and 80 in the container
@@ -24,12 +25,81 @@ services:
       # Mount the entire waffle-commons directory into the container for live-reloading
       - ..:/waffle-commons
       # Mount our Caddyfile for server configuration
-      - ./docker/frankenphp/Caddyfile:/etc/caddy/Caddyfile
+      - ./docker/frankenphp/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       # Mount our Starship for bash configuration
       - ./docker/term/starship.toml:/home/workspace/.config/starship.toml
+      # Mount OPcache & JIT configuration (read-only, hot-editable)
+      - ./docker/frankenphp/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini:ro
+      # Mount Active PHP Mode configuration (debug vs bench)
+      - ./docker/php/mode-active.ini:/usr/local/etc/php/conf.d/mode-active.ini:ro
+      # Disable the default Xdebug loading from the Dockerfile
+      - /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
     environment:
       # Enable HTTPS with a self-signed certificate for local development
       SERVER_NAME: "localhost"
       CADDY_GLOBAL_OPTIONS: "debug"
       XDEBUG_MODE: "debug,coverage"
+      APP_ENV: "dev"
+      APP_DEBUG: "true"
+      PHP_IDE_CONFIG: "serverName=waffle-dev"
+      # DSN de connexion à l'instance de cache Redis interne
+      REDIS_DSN: "redis://waffle-redis:6379"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
+    networks:
+      - waffle-network
+    depends_on:
+      legacy-backend:
+        condition: service_healthy
+      waffle-redis:
+        # Attendre que l'instance Redis soit saine avant de démarrer
+        condition: service_healthy
+
+  # Mock "Legacy Monolith" — a deliberately slow, memory-heavy backend that the
+  # EcoShield Gateway sits in front of and transparently proxies. It runs on the
+  # plain PHP built-in server (NOT FrankenPHP worker mode) to emulate a classic
+  # blocking PHP-FPM/Nginx app, so the contrast with EcoShield's non-blocking,
+  # memory-bounded PSR-18 proxying is visible end to end.
+  legacy-backend:
+    image: php:8.5-cli
+    container_name: legacy-backend
+    working_dir: /app
+    # Single-file router served by the built-in server; every request is routed
+    # through router.php (see docker/legacy/public/router.php).
+    command: ["php", "-S", "0.0.0.0:80", "/app/router.php"]
+    volumes:
+      - ./docker/legacy/public:/app:ro
+    ports:
+      # Optional host access for manual probing: curl http://localhost:8090/api/legacy-heavy
+      - "8090:80"
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/health') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - waffle-network
+
+  # Instance Redis interne et performante pour le cache et les tokens de sécurité
+  waffle-redis:
+    image: redis:7-alpine
+    container_name: waffle-redis
+    healthcheck:
+      # Ping de diagnostic pour valider l'état du serveur Redis
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - waffle-network
+
+networks:
+  waffle-network:
+    driver: bridge
 

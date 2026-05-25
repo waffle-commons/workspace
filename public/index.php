@@ -12,9 +12,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 define('APP_ROOT', realpath(path: dirname(path: __DIR__)));
 const APP_CONFIG = 'config';
 
-new DotEnv(path: APP_ROOT)->load();
-$env = $_ENV[Constant::APP_ENV] ?? Constant::ENV_PROD;
-$debug = filter_var($_ENV[Constant::APP_DEBUG] ?? false, FILTER_VALIDATE_BOOL);
+$dotenv = (new DotEnv(path: APP_ROOT))->load();
+$processEnv = getenv();
+$envRegistry = array_merge($dotenv, $_ENV, $processEnv);
+
+$env = $envRegistry[Constant::APP_ENV] ?? Constant::ENV_PROD;
+$debug = filter_var($envRegistry[Constant::APP_DEBUG] ?? false, FILTER_VALIDATE_BOOL);
 
 // 1. Context & Glue
 // We use the Factory to create the concrete implementations
@@ -22,8 +25,9 @@ $kernel = AppKernelFactory::create(env: $env, debug: $debug);
 
 // 2. Runtime (Agnostic)
 // The runtime now just orchestrates: FrankenPHP Loop [Kernel + Request -> Emitter]
+// STAB-01: WaffleRuntime owns the per-process GlobalsFactory; no static-state hand-off.
 $maxRequests = (int)($_SERVER['MAX_REQUESTS'] ?? 500);
-new WaffleRuntime(globalsFactory: AppKernelFactory::$globalsFactory)
+new WaffleRuntime()
     ->loop(
         kernel: $kernel,
         maxRequests: $maxRequests
