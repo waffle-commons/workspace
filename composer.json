@@ -13,6 +13,7 @@
         "waffle-commons/error-handler": "1.0.0-dev",
         "waffle-commons/event-dispatcher": "1.0.0-dev",
         "waffle-commons/http": "1.0.0-dev",
+        "waffle-commons/http-client": "1.0.0-dev",
         "waffle-commons/log": "1.0.0-dev",
         "waffle-commons/pipeline": "1.0.0-dev",
         "waffle-commons/routing": "1.0.0-dev",
