@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Waffle\Commons\Contracts\Security\Attribute\PublicAccess;
 use Waffle\Commons\Contracts\Security\Attribute\Voter;
+use Waffle\Commons\Contracts\Security\Csrf\Attribute\RequiresCsrfToken;
 use Waffle\Commons\Routing\Attribute\Argument;
 use Waffle\Commons\Routing\Attribute\Route;
 use Waffle\Core\BaseController;
@@ -71,6 +72,7 @@ final class HomeController extends BaseController
      */
     #[Route(path: 'greet', name: 'greet')]
     #[Voter(name: RestrictedAccess::class)]
+    #[RequiresCsrfToken]
     public function greet(HomeService $service, HelloInput $input): ResponseInterface
     {
         return $this->jsonResponse(data: $service->sayHello(to: $input->name));
