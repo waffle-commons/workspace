@@ -786,11 +786,12 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "c05c754823e7959970c5f7d514a505c0cefbcf94"
+                "reference": "27d9ec19c67633a92177bbe008e289c05d815b5a"
             },
             "require": {
                 "php": "^8.5",
-                "waffle-commons/contracts": "self.version"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.0.0-rc",
