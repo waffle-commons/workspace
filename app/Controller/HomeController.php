@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workspace\Controller;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Waffle\Commons\Contracts\Security\Attribute\PublicAccess;
 use Waffle\Commons\Contracts\Security\Attribute\Voter;
@@ -14,6 +15,7 @@ use Waffle\Core\BaseController;
 use Waffle\Exception\RenderingException;
 use Workspace\Dto\HelloInput;
 use Workspace\Service\HomeService;
+use Workspace\Service\ProxyService;
 use Workspace\Voter\RestrictedAccess;
 
 /**
@@ -90,17 +92,11 @@ final class HomeController extends BaseController
      * explicit route). In the EcoShield gateway this is where an unmatched
      * request would be transparently proxied to the legacy backend; the skeleton
      * returns a placeholder so the interception point is observable.
-     *
-     * @throws RenderingException
      */
     #[Route(path: '{path:.*}', name: 'catch_all', priority: -1000)]
     #[PublicAccess]
-    public function catchAll(string $path): ResponseInterface
+    public function catchAll(ServerRequestInterface $request, ProxyService $proxy): ResponseInterface
     {
-        return $this->jsonResponse(data: [
-            'gateway' => 'EcoShield',
-            'intercepted_path' => '/' . $path,
-            'note' => 'Unmatched route — in production this would be proxied to the legacy backend.',
-        ]);
+        return $proxy->passThrough(req: $request);
     }
 }

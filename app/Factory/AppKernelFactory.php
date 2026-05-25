@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Workspace\Factory;
 
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use Waffle\Commons\Cache\Factory\CacheFactory;
@@ -25,6 +27,8 @@ use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use Waffle\Commons\Http\Factory\ResponseFactory;
+use Waffle\Commons\Http\Factory\StreamFactory;
+use Waffle\Commons\HttpClient\Client;
 use Waffle\Commons\Log\Channel\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
@@ -65,6 +69,14 @@ final class AppKernelFactory
         if (class_exists(ResponseFactory::class)) {
             $container->set(ResponseFactoryInterface::class, $responseFactory);
         }
+
+        // Register PSR-17 Factory (Required for HTTP Client)
+        $streamFactory = new StreamFactory();
+        $container->set(StreamFactoryInterface::class, $streamFactory);
+
+        // Register PSR-18 HTTP Client (from waffle-commons/http-client)
+        $httpClient = new Client($responseFactory, $streamFactory);
+        $container->set(ClientInterface::class, $httpClient);
 
         // 2. Build the env registry from .env files + process env (Beta-1 hardening:
         //    DotEnv no longer mutates the global PHP environment, so we merge it
