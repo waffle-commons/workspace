@@ -114,6 +114,17 @@
         {
             "type": "path",
             "canonical": false,
+            "url": "../http-client",
+            "options": {
+                "versions": {
+                    "waffle-commons/http-client": "1.0.0-dev"
+                },
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "canonical": false,
             "url": "../log",
             "options": {
                 "versions": {

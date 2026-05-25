@@ -42,6 +42,8 @@ services:
       APP_ENV: "dev"
       APP_DEBUG: "true"
       PHP_IDE_CONFIG: "serverName=waffle-dev"
+      # DSN de connexion à l'instance de cache Redis interne
+      REDIS_DSN: "redis://waffle-redis:6379"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s
@@ -52,6 +54,9 @@ services:
       - waffle-network
     depends_on:
       legacy-backend:
+        condition: service_healthy
+      waffle-redis:
+        # Attendre que l'instance Redis soit saine avant de démarrer
         condition: service_healthy
 
   # Mock "Legacy Monolith" — a deliberately slow, memory-heavy backend that the
@@ -73,6 +78,20 @@ services:
       - "8090:80"
     healthcheck:
       test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/health') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - waffle-network
+
+  # Instance Redis interne et performante pour le cache et les tokens de sécurité
+  waffle-redis:
+    image: redis:7-alpine
+    container_name: waffle-redis
+    healthcheck:
+      # Ping de diagnostic pour valider l'état du serveur Redis
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 3
