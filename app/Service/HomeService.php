@@ -17,4 +17,16 @@ final class HomeService
             'message' => "Hello {$name}!",
         ];
     }
+
+    /**
+     * @return string[]
+     */
+    public function sayGreeting(?string $to = null): array
+    {
+        $name = $to ?? 'from Waffle-Commons';
+
+        return [
+            'message' => "Greetings {$name}!",
+        ];
+    }
 }

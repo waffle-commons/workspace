@@ -16,10 +16,7 @@ class ProxyService
 
     public function passThrough(RequestInterface $req): ResponseInterface
     {
-        $uri = $req->getUri()
-            ->withScheme('http')
-            ->withHost('legacy-backend')
-            ->withPort(80);
+        $uri = $req->getUri()->withScheme('http')->withHost('legacy-backend')->withPort(80);
 
         return $this->client->sendRequest(request: $req->withUri($uri));
     }

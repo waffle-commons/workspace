@@ -39,11 +39,11 @@ services:
       SERVER_NAME: "localhost"
       CADDY_GLOBAL_OPTIONS: "debug"
       XDEBUG_MODE: "debug,coverage"
-      APP_ENV: "dev"
-      APP_DEBUG: "true"
+      # APP_ENV: "dev"
+      # APP_DEBUG: "true"
       PHP_IDE_CONFIG: "serverName=waffle-dev"
-      # DSN de connexion à l'instance de cache Redis interne
-      REDIS_DSN: "redis://waffle-redis:6379"
+      # Connection DSN to the internal Redis cache instance
+      # REDIS_DSN: "redis://waffle-redis:6379"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s

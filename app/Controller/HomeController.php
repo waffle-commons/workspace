@@ -7,11 +7,12 @@ namespace Workspace\Controller;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
+use Waffle\Commons\Contracts\Routing\Attribute\Route;
+use Waffle\Commons\Contracts\Routing\Constant as Routing;
 use Waffle\Commons\Contracts\Security\Attribute\PublicAccess;
 use Waffle\Commons\Contracts\Security\Attribute\Voter;
 use Waffle\Commons\Contracts\Security\Csrf\Attribute\RequiresCsrfToken;
 use Waffle\Commons\Routing\Attribute\Argument;
-use Waffle\Commons\Routing\Attribute\Route;
 use Waffle\Core\BaseController;
 use Waffle\Exception\RenderingException;
 use Workspace\Dto\HelloInput;
@@ -37,7 +38,7 @@ final class HomeController extends BaseController
      *
      * @throws RenderingException
      */
-    #[Route(path: '', name: 'index')]
+    #[Route(path: '', methods: [Routing::METHOD_GET], name: 'index')]
     #[PublicAccess]
     public function index(HomeService $service): ResponseInterface
     {
@@ -50,7 +51,7 @@ final class HomeController extends BaseController
      *
      * @throws RenderingException
      */
-    #[Route(path: 'hello/{name}', name: 'hello', arguments: [
+    #[Route(path: 'hello/{name}', methods: [Routing::METHOD_GET], name: 'hello', arguments: [
         new Argument(classType: 'string', paramName: 'name', required: false),
     ])]
     #[Voter(name: RestrictedAccess::class)]
@@ -70,12 +71,22 @@ final class HomeController extends BaseController
      *
      * @throws RenderingException
      */
-    #[Route(path: 'greet', name: 'greet')]
+    #[Route(path: 'greet', methods: [Routing::METHOD_POST], name: 'greet')]
+    #[Voter(name: RestrictedAccess::class)]
+    public function postGreet(HomeService $service, HelloInput $input): ResponseInterface
+    {
+        return $this->jsonResponse(data: $service->sayGreeting(to: $input->name));
+    }
+
+    /**
+     * @throws RenderingException
+     */
+    #[Route(path: 'greet', methods: [Routing::METHOD_GET], name: 'greeting')]
     #[Voter(name: RestrictedAccess::class)]
     #[RequiresCsrfToken]
-    public function greet(HomeService $service, HelloInput $input): ResponseInterface
+    public function getGreet(HomeService $service): ResponseInterface
     {
-        return $this->jsonResponse(data: $service->sayHello(to: $input->name));
+        return $this->jsonResponse(data: $service->sayGreeting(to: 'waffle-commons'));
     }
 
     /**
@@ -95,9 +106,20 @@ final class HomeController extends BaseController
      * request would be transparently proxied to the legacy backend; the skeleton
      * returns a placeholder so the interception point is observable.
      */
-    #[Route(path: '{path:.*}', name: 'catch_all', priority: -1000)]
+    #[Route(
+        path: '{path:.*}',
+        methods: [
+            Routing::METHOD_GET,
+            Routing::METHOD_POST,
+            Routing::METHOD_PUT,
+            Routing::METHOD_PATCH,
+            Routing::METHOD_DELETE,
+        ],
+        name: 'forward',
+        priority: -1000,
+    )]
     #[PublicAccess]
-    public function catchAll(ServerRequestInterface $request, ProxyService $proxy): ResponseInterface
+    public function forward(ServerRequestInterface $request, ProxyService $proxy): ResponseInterface
     {
         return $proxy->passThrough(req: $request);
     }
