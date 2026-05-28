@@ -1,4 +1,4 @@
-# Dev application configuration for the Waffle Workspace
+# Configuration applicative de dev pour le Workspace Waffle.
 waffle:
   tests:
     env: '%env(APP_ENV)%'

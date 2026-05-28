@@ -7,9 +7,10 @@ namespace WorkspaceTests\Smoke;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Workspace is the integration playground. Concrete integration tests will land
- * here as the Beta 0 surface is exercised end-to-end. This smoke test exists so
- * that `phpunit` reports a real outcome instead of "No tests executed".
+ * Le workspace est le playground d'intégration. Des tests d'intégration concrets
+ * atterriront ici à mesure que la surface Beta 0 sera exercée de bout en bout.
+ * Ce smoke test existe pour que `phpunit` rapporte un vrai résultat plutôt que
+ * « No tests executed ».
  */
 final class SmokeTest extends TestCase
 {

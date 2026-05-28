@@ -21,20 +21,21 @@ use Workspace\Service\ProxyService;
 use Workspace\Voter\RestrictedAccess;
 
 /**
- * This is a simple template controller to test the end-to-end
- * request/response lifecycle of the Waffle framework.
+ * Contrôleur de démonstration du playground : exerce le cycle requête/réponse
+ * complet du framework Waffle.
  *
- * Demonstrates the Beta-1 request lifecycle end to end:
- *   - scalar route parameters,
- *   - native `#[Dto]` hydration + Property-Hook validation,
- *   - exception interception by the ErrorHandlerMiddleware,
- *   - a low-priority catch-all that models the EcoShield gateway proxy hand-off.
+ * Met en scène, de bout en bout :
+ *   - des paramètres de route scalaires,
+ *   - l'hydratation native d'un `#[Dto]` + validation par Property Hook,
+ *   - l'interception d'exception par l'ErrorHandlerMiddleware,
+ *   - une route catch-all à priorité négative simulant le hand-off vers la
+ *     passerelle EcoShield (proxy vers le backend hérité).
  */
 #[Route(path: '/', name: 'home_')]
 final class HomeController extends BaseController
 {
     /**
-     * Root smoke endpoint: GET /.
+     * Endpoint racine : GET /.
      *
      * @throws RenderingException
      */
@@ -46,8 +47,8 @@ final class HomeController extends BaseController
     }
 
     /**
-     * Scalar path-parameter demonstration: GET /hello/{name}.
-     * The `{name}` segment is injected as a plain string by the argument resolver.
+     * Démonstration d'un paramètre de chemin scalaire : GET /hello/{name}.
+     * Le segment `{name}` est injecté tel quel par le resolver d'arguments.
      *
      * @throws RenderingException
      */
@@ -61,13 +62,13 @@ final class HomeController extends BaseController
     }
 
     /**
-     * Native DTO hydration demonstration: POST /greet with a JSON body
-     * `{"name": "Ada"}`.
+     * Démonstration d'hydratation native d'un DTO : POST /greet avec un corps
+     * JSON `{"name": "Ada"}`.
      *
-     * The ControllerArgumentResolver decodes the parsed body, hydrates
-     * {@see HelloInput}, and the DTO's Property Hook validates the value. An
-     * invalid `name` throws and is rendered as an RFC 7807 `422` by the
-     * ErrorHandlerMiddleware — without a single line of validation code here.
+     * Le ControllerArgumentResolver décode le corps parsé, hydrate
+     * {@see HelloInput} et le Property Hook valide la valeur. Un `name` invalide
+     * lève une `ValidationException` que l'ErrorHandlerMiddleware sérialise en
+     * RFC 7807 « 422 » — sans une seule ligne de validation dans le contrôleur.
      *
      * @throws RenderingException
      */
@@ -79,6 +80,8 @@ final class HomeController extends BaseController
     }
 
     /**
+     * Variante GET protégée par jeton CSRF, à des fins de démonstration.
+     *
      * @throws RenderingException
      */
     #[Route(path: 'greet', methods: [Routing::METHOD_GET], name: 'greeting')]
@@ -90,21 +93,23 @@ final class HomeController extends BaseController
     }
 
     /**
-     * Error-handling demonstration: GET /crash. Any thrown exception is
-     * intercepted and rendered as a structured JSON error by the middleware.
+     * Démonstration de l'interception d'erreurs : GET /crash. N'importe quelle
+     * exception levée est interceptée puis rendue en JSON structuré par le
+     * middleware d'erreur.
      */
     #[Route(path: 'crash', name: 'crash')]
     #[PublicAccess]
     public function crash(): ResponseInterface
     {
-        throw new RuntimeException('Something went wrong while greeting!');
+        throw new RuntimeException('Quelque chose s\'est mal passé pendant la salutation !');
     }
 
     /**
-     * Catch-all gateway hand-off (priority -1000 ⇒ evaluated last, after every
-     * explicit route). In the EcoShield gateway this is where an unmatched
-     * request would be transparently proxied to the legacy backend; the skeleton
-     * returns a placeholder so the interception point is observable.
+     * Hand-off catch-all vers la passerelle (priorité -1000 ⇒ évaluée en dernier,
+     * après toutes les routes explicites). Dans le playground, le forward est
+     * réel : il délègue à `ProxyService::passThrough()` qui retransmet la
+     * requête au backend hérité — preuve que la passerelle EcoShield est
+     * branchable sur un vrai upstream sans modifier le squelette du contrôleur.
      */
     #[Route(
         path: '{path:.*}',
