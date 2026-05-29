@@ -1,5 +1,5 @@
-# Mago Configuration - Waffle Commons Workspace (Beta 0)
-# For full documentation, see https://mago.carthage.software/tools/overview
+# Configuration Mago — Workspace Waffle Commons (Beta 0).
+# Documentation complète : https://mago.carthage.software/tools/overview
 php-version = "8.5.5"
 
 [source]
@@ -8,11 +8,11 @@ includes = ["vendor"]
 excludes = []
 
 # -----------------------------------------------------------------------------
-# Mago Guard — Beta 0 standardized architectural perimeter
+# Mago Guard — périmètre architectural standardisé Beta 0.
 # -----------------------------------------------------------------------------
-# Workspace is the integration / dev playground for the framework. Its
-# application code lives under `Workspace\` (app/) and may consume every
-# waffle-commons component plus the `Waffle\` framework facade.
+# Le workspace est le playground d'intégration / de dev du framework. Son code
+# applicatif vit sous `Workspace\` (app/) et peut consommer tous les composants
+# waffle-commons ainsi que la façade `Waffle\` du framework.
 [guard]
 mode = "default"
 excludes = ["tests/bootstrap.php"]
@@ -47,22 +47,23 @@ trailing-comma = true
 end-of-line = "lf"
 
 [linter]
-# Zero-Baseline policy (Beta 0): no `baseline = ...` is permitted.
+# Politique Zéro-Baseline (Beta 0) : aucun `baseline = ...` n'est autorisé.
 integrations = ["phpunit"]
 
 [linter.rules]
-# Security - Zero tolerance
+# Sécurité — tolérance zéro.
 no-insecure-comparison = { level = "error" }
 no-literal-password = { level = "error" }
 no-debug-symbols = { level = "error" }
 disallowed-functions = { level = "error", functions = ["eval", "exec", "system", "shell_exec", "passthru", "phpinfo"] }
 
-# Code quality - Strict
+# Qualité de code — stricte.
 prefer-interface = { level = "error" }
 strict-types = { level = "error" }
 no-ini-set = { enabled = false }
 
-# Beta 0: workspace is the integration playground — complexity warnings here are noise.
+# Beta 0 : le workspace est le playground d'intégration — les avertissements de
+# complexité y sont du bruit.
 cyclomatic-complexity = { enabled = false }
 too-many-methods = { enabled = false }
 kan-defect = { enabled = false }
@@ -73,7 +74,7 @@ prefer-arrow-function = { enabled = false }
 no-redundant-nullsafe = { enabled = false }
 
 [analyzer]
-# Zero-Baseline policy (Beta 0): no `baseline = ...` is permitted.
+# Politique Zéro-Baseline (Beta 0) : aucun `baseline = ...` n'est autorisé.
 find-unused-definitions = true
 find-unused-expressions = true
 analyze-dead-code = true
@@ -106,13 +107,14 @@ ignore = [
         "src/",
     ] },
 
-    # ----- Beta 0 documented Mago false-positive suppressions ------------------
-    # Mago 1.27 misses private members read via $this->member when the enclosing
-    # class implements an interface from path-resolved vendor.
+    # ----- Suppressions documentées de faux-positifs Mago Beta 0 ---------------
+    # Mago 1.27 manque les membres privés lus via $this->membre quand la classe
+    # englobante implémente une interface issue d'un vendor résolu par path.
     { code = "unused-property", in = ["src/"] },
     { code = "unused-method", in = ["src/"] },
-    # Mago can't fully resolve methods on `unknown-ref(...)` interface types
-    # served via path-resolved vendor symlinks. Runtime is correct.
+    # Mago ne sait pas résoudre complètement les méthodes sur les types
+    # d'interface `unknown-ref(...)` fournis via des symlinks de vendor path.
+    # Le runtime est correct.
     { code = "invalid-method-access", in = ["src/"] },
     { code = "mixed-method-access", in = ["src/"] },
     { code = "no-value", in = ["src/"] },
@@ -133,7 +135,7 @@ ignore = [
     { code = "invalid-property-assignment-value", in = ["src/"] },
     { code = "possibly-invalid-argument", in = ["src/"] },
     { code = "mixed-return-statement", in = ["src/"] },
-    # ----- PHPUnit MockObject intersection types confuse mago's analyzer ------
+    # ----- Les types intersection MockObject de PHPUnit perturbent l'analyzer Mago ----
     { code = "possibly-invalid-argument", in = ["tests/"] },
     { code = "invalid-property-assignment-value", in = ["tests/"] },
     { code = "mixed-method-access", in = ["tests/"] },
@@ -150,7 +152,7 @@ ignore = [
     { code = "redundant-logical-operation", in = ["tests/"] },
     { code = "undefined-variable", in = ["tests/"] },
 
-    # ----- Beta 0 round 2: codes surfaced by tighter cross-component analysis --
+    # ----- Beta 0 manche 2 : codes remontés par l'analyse cross-component resserrée ----
     { code = "invalid-property-access", in = ["src/", "tests/"] },
     { code = "impossible-type-comparison", in = ["src/", "tests/"] },
     { code = "null-argument", in = ["src/", "tests/"] },
@@ -189,7 +191,7 @@ ignore = [
     { code = "less-specific-argument", in = ["src/", "tests/"] },
     { code = "check-throws", in = ["src/"] },
 
-    # ----- Workspace uses app/ not src/ ---------------------------------------
+    # ----- Le workspace utilise app/ et non src/ ------------------------------
     { code = "unused-property", in = ["app/", "tests/"] },
     { code = "unused-method", in = ["app/", "tests/"] },
     { code = "invalid-method-access", in = ["app/", "tests/"] },
@@ -248,7 +250,7 @@ ignore = [
     { code = "less-specific-argument", in = ["app/", "tests/"] },
     { code = "check-throws", in = ["app/", "tests/"] },
 
-    # ----- Beta 0 round 4: pragmas + remaining tests/ codes -------------------
+    # ----- Beta 0 manche 4 : pragmas et codes tests/ restants -----------------
     { code = "unused-pragma", in = ["src/", "tests/"] },
     { code = "non-existent-catch-type", in = ["tests/"] },
     { code = "unevaluated-code", in = ["src/", "tests/"] },
