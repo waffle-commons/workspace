@@ -958,7 +958,7 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "9b090c295932b751f47d09e664f4a793547bb74e"
+                "reference": "fa1dbdeea04b199e9b4cc2dcd8dd046e9abf06b7"
             },
             "require": {
                 "php": "^8.5",
@@ -1662,7 +1662,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "844b21aa3b13417cfcfe4f50724bd9817588a47f"
+                "reference": "d0478c887ba558c3cfa210fc80f1b360c994f88b"
             },
             "require": {
                 "php": "^8.5",
@@ -1672,11 +1672,11 @@
                 "waffle-commons/http": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-rc",
-                "cyclonedx/cyclonedx-php-composer": "^6.1",
-                "php-mock/php-mock-phpunit": "^2.13",
-                "phpunit/phpunit": "^12.0",
-                "vimeo/psalm": "^6.13"
+                "carthage-software/mago": "^1.29",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.16"
             },
             "type": "library",
             "autoload": {
@@ -1750,7 +1750,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "e75fa705802ce989d049f7bd0f95b00dec72cd3e"
+                "reference": "d76b43e4a58aa7814d25e52b74a5e1ce05498aa7"
             },
             "require": {
                 "php": "^8.5",
@@ -1761,11 +1761,11 @@
                 "waffle-commons/utils": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-rc",
-                "cyclonedx/cyclonedx-php-composer": "^6.1",
-                "php-mock/php-mock-phpunit": "^2.13",
-                "phpunit/phpunit": "^12.0",
-                "vimeo/psalm": "^6.13"
+                "carthage-software/mago": "^1.29",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.16"
             },
             "type": "library",
             "autoload": {
@@ -1924,7 +1924,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "69fd6c7f5c24a7dd11c3525eda3c038f602ceffa"
+                "reference": "aa6c8183848a355f4286ca4c33bf2a91714a68f4"
             },
             "require": {
                 "php": "^8.5",
@@ -1939,11 +1939,11 @@
                 "waffle-commons/utils": "self.version"
             },
             "require-dev": {
-                "carthage-software/mago": "^1.0.0-rc",
-                "cyclonedx/cyclonedx-php-composer": "^6.1",
-                "php-mock/php-mock-phpunit": "^2.13",
-                "phpunit/phpunit": "^12.0",
-                "vimeo/psalm": "^6.13"
+                "carthage-software/mago": "^1.29",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.16"
             },
             "type": "library",
             "autoload": {
@@ -2549,12 +2549,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/process.git",
-                "reference": "4e02691fe511792caa3fcb1e7b46a7a0b38f5393"
+                "reference": "c117dde168ef27186dc5d0a2c989985b6cbef58c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/process/zipball/4e02691fe511792caa3fcb1e7b46a7a0b38f5393",
-                "reference": "4e02691fe511792caa3fcb1e7b46a7a0b38f5393",
+                "url": "https://api.github.com/repos/amphp/process/zipball/c117dde168ef27186dc5d0a2c989985b6cbef58c",
+                "reference": "c117dde168ef27186dc5d0a2c989985b6cbef58c",
                 "shasum": ""
             },
             "require": {
@@ -2610,7 +2610,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-09T09:41:49+00:00"
+            "time": "2026-05-30T16:22:01+00:00"
         },
         {
             "name": "amphp/serialization",
@@ -3061,12 +3061,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/spdx-licenses.git",
-                "reference": "5ecd0cb4177696f9fd48f1605dda81db3dee7889"
+                "reference": "2e1c2707d66dfc73ed959fb5189eb2f41052eef9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/5ecd0cb4177696f9fd48f1605dda81db3dee7889",
-                "reference": "5ecd0cb4177696f9fd48f1605dda81db3dee7889",
+                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/2e1c2707d66dfc73ed959fb5189eb2f41052eef9",
+                "reference": "2e1c2707d66dfc73ed959fb5189eb2f41052eef9",
                 "shasum": ""
             },
             "require": {
@@ -3130,7 +3130,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-08T20:18:39+00:00"
+            "time": "2026-05-29T15:07:25+00:00"
         },
         {
             "name": "composer/xdebug-handler",
