@@ -153,6 +153,13 @@ When integration-testing changes to the `config` package or to `AppKernelFactory
 This repository is intended for contributors to the Waffle ecosystem **ONLY**. Please refer to the `CONTRIBUTING.md` 
 file in the specific repository (`waffle-commons/waffle`, `waffle-commons/*`) you wish to contribute to.
 
+***
+
+> [![Discord](https://img.shields.io/discord/755288001592033391?color=7289da&label=discord&logo=discord&style=for-the-badge)](https://discord.gg/eKgywnfXr2)<br />
+> *Join the core team and contributors on Discord to shape the future of cloud-native PHP.*
+
+***
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE.md](./LICENSE.md) file for details.
