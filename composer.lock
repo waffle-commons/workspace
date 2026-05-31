@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "58fc2b777e936d703c30c4b9935aa170",
+    "content-hash": "8ed6632486485989fba4a73c0130faf7",
     "packages": [
         {
             "name": "predis/predis",
@@ -1040,6 +1040,92 @@
                 }
             ],
             "description": "Contracts component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "waffle-commons/data",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../data",
+                "reference": "c6ec01bc21162e09e242eccb8cdfaada5ebe9409"
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": "^8.5",
+                "waffle-commons/contracts": "self.version"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.29",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.16"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Data\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Data\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "guard": [
+                    "vendor/bin/mago guard"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer",
+                    "@guard"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Data component for Waffle framework.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -2549,12 +2635,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/process.git",
-                "reference": "c117dde168ef27186dc5d0a2c989985b6cbef58c"
+                "reference": "583959df17d00304ad7b0b32285373f985935643"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/process/zipball/c117dde168ef27186dc5d0a2c989985b6cbef58c",
-                "reference": "c117dde168ef27186dc5d0a2c989985b6cbef58c",
+                "url": "https://api.github.com/repos/amphp/process/zipball/583959df17d00304ad7b0b32285373f985935643",
+                "reference": "583959df17d00304ad7b0b32285373f985935643",
                 "shasum": ""
             },
             "require": {
@@ -2610,7 +2696,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-30T16:22:01+00:00"
+            "time": "2026-05-31T15:11:55+00:00"
         },
         {
             "name": "amphp/serialization",
@@ -7697,6 +7783,7 @@
         "waffle-commons/console": 20,
         "waffle-commons/container": 20,
         "waffle-commons/contracts": 20,
+        "waffle-commons/data": 20,
         "waffle-commons/error-handler": 20,
         "waffle-commons/event-dispatcher": 20,
         "waffle-commons/http": 20,
