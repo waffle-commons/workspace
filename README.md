@@ -1,146 +1,116 @@
 # Waffle Commons Workspace
 
-**Important:** This repository is **NOT** a library intended for end-users of the Waffle framework. 
-It is the central **development and integration environment** for contributors working on 
+**Important:** This repository is **NOT** a library intended for end-users of the Waffle framework.
+It is the central **development and integration environment** for contributors working on
 the Waffle framework (`waffle-commons/waffle`) and its related components (`waffle-commons/*`).
 
-If you want to create a new application using the Waffle framework, please use the official skeleton (when available):
+It is a **submodule of the [`waffle-commons/monorepo`](https://github.com/waffle-commons/monorepo) umbrella** and is normally obtained as part of it (see [Setup](#setup)) — it is not used standalone, because its Composer path repositories point at sibling components (`../cache`, `../config`, …).
+
+If you want to **build an application** with Waffle, use the official skeleton instead:
 
 ```shell
-composer create-project waffle-commons/skeleton my-waffle-app # Not available yet
+composer create-project waffle-commons/skeleton my-waffle-app
 ```
 
 ## Purpose
 
 This workspace serves several key functions for Waffle development:
 1. **Orchestration:** Manages the Docker development environment (FrankenPHP, PHP extensions, Xdebug, Composer).
-2. **Local Linking:** Uses Composer path repositories to link your local clones of `waffle-commons/waffle`
-and various `waffle-commons/*` packages together. This allows you to work on multiple packages simultaneously 
-and test their integration without needing to publish them. 
-3. **Integration Testing:** Provides a realistic application-like environment to run tests that span across the core 
-framework and its components. 
+2. **Local Linking:** Its `composer.json` declares Composer `path` repositories for every `waffle-commons/*` package (all pointing at `../<component>`), so the test app builds against your **local** checkouts without publishing anything.
+3. **Integration Testing:** Provides a realistic application-like environment to run tests that span the core framework and its components.
 4. **Consistency:** Ensures all contributors use the same base development environment.
 
 ## Prerequisites
 
- - Git 
- - Docker & Docker Compose 
- - Composer (for managing the workspace itself and potentially running commands locally)
- - PHP >= 8.5 (installed locally, mainly for Composer operations outside Docker if preferred)
+- Git
+- Docker & Docker Compose
+- PHP >= 8.5 + Composer (optional on the host — everything runs inside the container; handy for host-side Composer operations)
+
+> **Never run PHP on the host.** Every PHP / Composer / Mago / PHPUnit command runs **inside the `waffle-dev` container**. The `wfl` CLI (below) wraps this for you.
 
 ## Setup
 
-1. **Clone Repositories:** Clone this workspace repository and any Waffle repositories you intend to work on into 
-the same parent directory. The recommended structure is:
-    ```
-    ~/waffle-commons/
-    ├── workspace/     # <-- Clone this repository here
-    ├── waffle/        # <-- Clone waffle/waffle here
-    ├── http/          # <-- Clone waffle-commons/http here
-    ├── config/        # <-- Clone waffle-commons/config here
-    └── ...            # etc.
-    ```
-    ```shell
-    # Example cloning commands:
-    mkdir ~/waffle-commons
-    cd ~/waffle-commons
-    git clone git@github.com:waffle-commons/workspace.git
-    git clone git@github.com:waffle-commons/waffle.git
-    # Clone other components as needed, e.g.:
-    # git clone git@github.com:waffle-commons/http.git
-    ```
-2. **Configure Local Packages:** Edit the composer.json file within the ~/waffle-commons/workspace directory. 
-Uncomment or add entries in the repositories section for all the `waffle-commons/waffle` and `waffle-commons/*`
-packages you have cloned locally and want to link.
-```json
-{
-    "name": "waffle-commons/workspace",
-    // ...
-    "require": {
-        "php": "^8.4",
-        "waffle-commons/waffle": "1.0.0-dev",
-        "waffle-commons/config": "1.0.0-dev",
-        "waffle-commons/http": "1.0.0-dev"
-        // ... other components
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "canonical": false,
-            "url": "../waffle",
-            "options": {
-                "versions": { "waffle-commons/waffle": "1.0.0-dev" },
-                "symlink": true
-            }
-        },
-        // Add paths for your local clones following this pattern:
-        {
-            "type": "path",
-            "canonical": false,
-            "url": "../config",
-            "options": {
-                "versions": { "waffle-commons/config": "1.0.0-dev" },
-                "symlink": true
-            }
-        }
-    ],
-  // ...
-}
-```
-**Note:** The `"options": { "symlink": true }` is recommended for Composer 2.2+ for better performance. We also point
-to `"options": "versions": { "waffle-commons/waffle": "1.0.0-dev" }` to ensure composer doesn't try to download the
-latest unstable version from packagist (or another source) but the local version defined (and doesn't exists on packagist).
-3. **Build and Start Docker Environment:** Navigate to the workspace directory and use Docker Compose:
+The supported path is to clone the **umbrella monorepo** (which checks out `workspace` and every component as submodules) and let `wfl` bootstrap everything.
+
 ```shell
-cd ~/waffle-commons/workspace
-docker compose build # Only needed initially or after Dockerfile changes
-docker compose up -d
+# 1. Clone the monorepo with all submodules
+git clone --recurse-submodules git@github.com:waffle-commons/monorepo.git
+cd monorepo
+
+# 2. Bootstrap: init submodules, boot Docker, install git hooks, symlink `wfl` to ~/.local/bin
+./bin/wfl init
+
+# 3. Install the workspace's dependencies inside the container (creates the vendor/ symlinks)
+wfl run workspace composer install
 ```
-This will build the image based on `Dockerfile` and start the FrankenPHP container in the background. 
-Your entire `~/waffle-commons/` directory will typically be mounted inside the container at `/waffle-commons`.
-4. **Install Composer Dependencies (Inside Docker):** Run Composer within the running container to install 
-5. dependencies and create the symlinks to your local packages:
+
+Because `workspace/composer.json` **already declares a `path` repository for every component**, `composer install` symlinks `workspace/vendor/waffle-commons/*` straight to your local `../<component>` checkouts — there is nothing to hand-edit. Verify with:
+
 ```shell
-docker exec waffle-dev composer install
-# Or use 'composer update' if you need to update dependencies
-# docker-compose exec workspace composer update
+ls -l workspace/vendor/waffle-commons/    # entries should be symlinks → ../../<component>
 ```
-Check the `workspace/vendor/waffle-commons/` directory inside the container (or locally) – you should 
-see symlinks pointing to `../waffle`, `../config`, etc.
+
+> The whole monorepo directory is mounted into the container at `/waffle-commons`. The primary container is `waffle-dev`; Redis is `waffle-redis`.
+
+## The `wfl` developer CLI
+
+`wfl` (`bin/wfl` at the monorepo root) is the host-side wrapper around `docker compose` / `composer` / `mago` / PHPUnit. After `wfl init` symlinks it into `~/.local/bin`, it is available globally; from inside this submodule you can also invoke `bin/wfl` (a thin shim that forwards to the umbrella binary).
+
+| Command | Description |
+| :--- | :--- |
+| `wfl up` / `wfl down` | `docker compose up -d` / `down`. |
+| `wfl status` | Active PHP profile + container states. |
+| `wfl shell [component]` | Open a shell in the container (`cd`'d into the component). |
+| `wfl run <component> <cmd…>` | Run an arbitrary command in a component (e.g. `wfl run workspace composer install`). |
+| `wfl mago [component]` | `composer mago` (fmt + lint + analyze + guard) for a component. |
+| `wfl test [component]` | `composer tests` for a component. |
+| `wfl debug` / `wfl bench` | Switch the PHP profile (Xdebug-on vs JIT-on) and restart. |
+| `wfl link <consumer> <provider>` | Wire `<consumer>` to build against your local `<provider>` checkout. |
+| `wfl unlink <consumer> <provider>` | Undo a `link`. |
+| `wfl components` / `wfl help` | List components / print help. |
+
+See the [`wfl` reference](https://github.com/waffle-commons/documentation/blob/main/reference/wfl.md) for the full surface.
 
 ## Usage
- - **Accessing the Web Server:** Visit `https://localhost:8443` (or the port mapped in docker-compose.yml) 
-in your browser. This typically serves the public/ directory of the test application within the workspace.
- - **Running Commands (Composer Scripts, Tests):** Execute commands within the container using `docker-compose exec`:
-```shell
-# Run Waffle's Full test suite
-docker exec waffle-dev -w /waffle-commons/workspace composer tests-commons # Not yet implemented
-# Or run directly if the script is in waffle-commons/waffle/composer.json
-docker exec waffle-dev -w /waffle-commons/waffle composer tests
 
-# Run static analysis on Waffle
-docker exec waffle-dev -w /waffle-commons/waffle composer mago
+- **Web server:** the workspace test app is served at **`https://localhost:8443`** (HTTPS, self-signed) or **`http://localhost:8080`** — accept the self-signed certificate generated by Caddy.
+- **Run a component's checks** (preferred, `wfl` infers the component from your directory):
 
-# Update dependencies
-docker exec waffle-dev -w /waffle-commons/workspace composer update
-```
-_Tip:_ Add convenient scripts to `workspace/composer.json` to simplify running tests or analysis for different components.
- - **Accessing the Container Shell:**
-```shell
-docker exec -it -w /waffle-commons/workspace waffle-dev bash # Or sh
-```
- - **Stopping the Environment:**
-```shell
-docker down
-```
+  ```shell
+  wfl test waffle        # composer tests for waffle-commons/waffle
+  wfl mago routing       # fmt + lint + analyze + guard for waffle-commons/routing
+  wfl test workspace     # the cross-component integration suite
+  ```
 
-## Development Workflow
+- **The underlying form** (what `wfl` runs for you — the canonical invocation from `CLAUDE.md`):
 
-1. Start the Docker environment (`docker compose start`). 
-2. Make code changes in the respective local repositories (`~/waffle-commons/waffle`, `~/waffle-commons/http`, etc.). 
-3. Changes are automatically reflected inside the Docker container thanks to the volume mount. 
-4. Run Composer commands, tests, static analysis, etc., using `docker exec waffle-dev ...`. 
-5. Test the integrated behavior by accessing the web server or running specific integration scripts.
+  ```shell
+  docker exec -it -w /waffle-commons/waffle waffle-dev composer tests
+  docker exec -it -w /waffle-commons/workspace waffle-dev composer update
+  ```
+
+- **Open a shell:**
+
+  ```shell
+  wfl shell workspace          # or: docker exec -it -w /waffle-commons/workspace waffle-dev bash
+  ```
+
+- **Stop the environment:**
+
+  ```shell
+  wfl down                     # or: docker compose down
+  ```
+
+## Development workflow
+
+1. Start the environment: `wfl up`.
+2. Edit code in any component checkout (`cache/`, `routing/`, `data/`, …). Changes are reflected in the container instantly via the volume mount, and across components via the path-repo symlinks.
+3. Gate the components you touched: `wfl mago <component> && wfl test <component>`.
+4. Validate the integration: `wfl test workspace` (and/or hit the web server).
+
+### Linking local components
+
+The `workspace` is **Option 3** of the cross-component linking model: its path repos are committed on purpose, so the integration app always builds against your live local code. For a focused change to a single *component* repo (not the workspace), prefer `wfl link <consumer> <provider>` over hand-editing `composer.json`, and `wfl unlink` before you open the PR. See [How-To: Work on multiple components locally](https://github.com/waffle-commons/monorepo/blob/main/docs/how-to/work-on-multiple-components-locally.md).
 
 ## Environment variables
 
@@ -148,9 +118,11 @@ The workspace `AppKernelFactory` follows the same wiring as the skeleton — `.e
 
 When integration-testing changes to the `config` package or to `AppKernelFactory`, keep an eye on the OS-vs-`.env` precedence: a stale `APP_ENV=dev` in your shell will override `.env`'s value for every `docker exec` invocation. See [`documentation/how-to/configuration.md`](https://github.com/waffle-commons/documentation/blob/main/how-to/configuration.md) for the full merge semantics and the `APP_DEBUG`/`DEBUG` type-normalization caveat.
 
+> **Database & migrations.** The workspace ships the RFC-022 `waffle.database.*` config and a sample `migrations/` script. Apply them inside the container with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle db:migrate`. See [How to: Database Migrations](https://github.com/waffle-commons/documentation/blob/main/how-to/database-migrations.md).
+
 ## Contribution
 
-This repository is intended for contributors to the Waffle ecosystem **ONLY**. Please refer to the `CONTRIBUTING.md` 
+This repository is intended for contributors to the Waffle ecosystem **ONLY**. Please refer to the `CONTRIBUTING.md`
 file in the specific repository (`waffle-commons/waffle`, `waffle-commons/*`) you wish to contribute to.
 
 ***
