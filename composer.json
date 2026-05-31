@@ -10,6 +10,7 @@
         "waffle-commons/container": "1.0.0-dev",
         "waffle-commons/contracts": "1.0.0-dev",
         "waffle-commons/console": "1.0.0-dev",
+        "waffle-commons/data": "1.0.0-dev",
         "waffle-commons/error-handler": "1.0.0-dev",
         "waffle-commons/event-dispatcher": "1.0.0-dev",
         "waffle-commons/http": "1.0.0-dev",
@@ -74,6 +75,17 @@
             "options": {
                 "versions": {
                     "waffle-commons/console": "1.0.0-dev"
+                },
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "canonical": false,
+            "url": "../data",
+            "options": {
+                "versions": {
+                    "waffle-commons/data": "1.0.0-dev"
                 },
                 "symlink": true
             }
