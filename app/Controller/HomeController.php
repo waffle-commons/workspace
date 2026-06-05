@@ -74,6 +74,7 @@ final class HomeController extends BaseController
      */
     #[Route(path: 'greet', methods: [Routing::METHOD_POST], name: 'greet')]
     #[Voter(name: RestrictedAccess::class)]
+    #[RequiresCsrfToken]
     public function postGreet(HomeService $service, HelloInput $input): ResponseInterface
     {
         return $this->jsonResponse(data: $service->sayGreeting(to: $input->name));
@@ -86,7 +87,6 @@ final class HomeController extends BaseController
      */
     #[Route(path: 'greet', methods: [Routing::METHOD_GET], name: 'greeting')]
     #[Voter(name: RestrictedAccess::class)]
-    #[RequiresCsrfToken]
     public function getGreet(HomeService $service): ResponseInterface
     {
         return $this->jsonResponse(data: $service->sayGreeting(to: 'waffle-commons'));
