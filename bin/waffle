@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Console\Command\CacheClearCommand;
+use Waffle\Commons\Console\Command\MemoryAuditCommand;
 use Waffle\Commons\Console\Command\MigrateCommand;
 use Waffle\Commons\Console\Command\RouteListCommand;
 use Waffle\Commons\Console\Command\SecurityAuditCommand;
@@ -32,6 +33,7 @@ use Waffle\Commons\Container\Container;
 use Waffle\Commons\Contracts\Constant\Constant;
 use Waffle\Commons\Data\Migration\MigrationRunner;
 use Waffle\Commons\Routing\Router;
+use Waffle\Commons\Runtime\Audit\ProcessAuditRunner;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
 use Waffle\Commons\Security\Container\SecureContainer;
@@ -75,6 +77,15 @@ $app->add(command: new CacheClearCommand(cache: $cache));
 $app->add(command: new MigrateCommand(
     runner: $container->get(MigrationRunnerInterface::class),
     pool: $container->get(ConnectionPoolInterface::class),
+));
+
+// Igor memory-leak & state-mutation audit. igor.sh lives at the monorepo root, one
+// level above this workspace; inside the dev container it runs igor-php directly
+// instead of wrapping itself in another `docker exec`.
+$app->add(command: new MemoryAuditCommand(
+    runner: new ProcessAuditRunner(),
+    projectRoot: dirname($root),
+    localByDefault: is_file('/.dockerenv') || getenv(name: 'WAFFLE_IN_CONTAINER') === '1',
 ));
 $app->add(command: new MakeCommandCommand());
 $app->add(command: new MakeControllerCommand());
