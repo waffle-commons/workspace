@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Workspace\Controller;
+
+use Psr\Http\Message\ResponseInterface;
+use Waffle\Commons\Contracts\Routing\Attribute\Route;
+use Waffle\Commons\Contracts\Routing\Constant as Routing;
+use Waffle\Commons\Contracts\Security\Attribute\PublicAccess;
+use Waffle\Core\BaseController;
+use Waffle\Exception\RenderingException;
+use Workspace\Dto\RegistrationInput;
+
+/**
+ * Vitrine du système d'assertions `Assert` (`waffle-commons/utils`).
+ *
+ * L'endpoint hydrate un {@see RegistrationInput} dont chaque propriété valide ET
+ * nettoie sa valeur via un hook court (`set => Assert::…($value)`). La réponse
+ * renvoie les valeurs *après* nettoyage, ce qui rend le trim et la mise en
+ * minuscules observables ; une entrée invalide ne parvient jamais à l'action —
+ * le hook lève une `ValidationException` que l'ErrorHandlerMiddleware sérialise
+ * en RFC 7807 « 422 ».
+ *
+ * L'endpoint est marqué `#[PublicAccess]` : la démonstration cible la validation
+ * de données, pas la sécurité, on évite donc la friction d'un jeton CSRF. Dans
+ * une vraie application, protégez ce point d'entrée avec un `#[Voter]` et
+ * `#[RequiresCsrfToken]`, comme {@see HomeController::postGreet()}.
+ */
+#[Route(path: '/', name: 'registration_')]
+final class RegistrationController extends BaseController
+{
+    /**
+     * Inscription de démonstration : POST /register avec un corps JSON
+     * `{"email": "...", "username": "...", "age": 30, "signupIp": "..."}`.
+     *
+     * @throws RenderingException
+     */
+    #[Route(path: 'register', methods: [Routing::METHOD_POST], name: 'register')]
+    #[PublicAccess]
+    public function register(RegistrationInput $input): ResponseInterface
+    {
+        return $this->jsonResponse(data: [
+            'email' => $input->email,
+            'username' => $input->username,
+            'age' => $input->age,
+            'signup_ip' => $input->signupIp,
+        ]);
+    }
+}
