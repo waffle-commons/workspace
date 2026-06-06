@@ -19,12 +19,21 @@ ARG USER
 # Set working directory
 WORKDIR /waffle-commons
 
-# Install necessary PHP extensions and system packages
+# Install necessary PHP extensions and system packages.
+# Database drivers (RFC-022 sandbox): PostgreSQL (primary), MySQL/MariaDB, SQLite,
+# plus the NoSQL clients (MongoDB, Redis). The heavy proprietary drivers — Oracle
+# (oci8/pdo_oci, pulls Instant Client) and MSSQL (sqlsrv/pdo_sqlsrv, pulls MS ODBC)
+# — are opt-in: append them to the list below if your sandbox needs them.
 RUN install-php-extensions \
 	gd \
 	intl \
 	zip \
-	opcache; \
+	opcache \
+	pdo_pgsql \
+	pdo_mysql \
+	pdo_sqlite \
+	mongodb \
+	redis; \
     apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip git curl unzip; \
     pecl install xdebug yaml && \
     docker-php-ext-enable xdebug yaml; \

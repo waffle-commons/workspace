@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 use Waffle\Commons\Config\Config;
+use Waffle\Commons\Config\DotEnv;
 use Waffle\Commons\Console\Command\CacheClearCommand;
 use Waffle\Commons\Console\Command\MemoryAuditCommand;
 use Waffle\Commons\Console\Command\MigrateCommand;
@@ -46,9 +47,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $root = realpath(path: dirname(path: __DIR__));
 $rootConfig = $root . DIRECTORY_SEPARATOR . 'config';
 
-// Setting up the framework
+// Setting up the framework. The env registry merges .env with the live process
+// environment (process wins), so `%env(...)%` placeholders — e.g. the RFC-022
+// database credentials — resolve on the CLI path exactly as they do over HTTP.
 $container = new Container();
-$config = new Config(configDir: $rootConfig, environment: Constant::ENV_DEV);
+$envRegistry = array_merge(new DotEnv($root)->load(), getenv());
+$config = new Config(configDir: $rootConfig, environment: Constant::ENV_DEV, env: $envRegistry);
 $security = new Security($config);
 $secureContainer = new SecureContainer($container, $security);
 $cache = AppKernelFactory::buildCache($root, $config);

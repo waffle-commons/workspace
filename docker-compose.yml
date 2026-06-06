@@ -58,6 +58,9 @@ services:
       waffle-redis:
         # Attendre que l'instance Redis soit saine avant de démarrer.
         condition: service_healthy
+      waffle-postgres:
+        # Attendre que PostgreSQL soit prêt avant de démarrer l'application.
+        condition: service_healthy
 
   # « Monolithe hérité » factice — un backend délibérément lent et lourd en
   # mémoire que la passerelle EcoShield précède et proxifie de manière
@@ -100,6 +103,59 @@ services:
     networks:
       - waffle-network
 
+  # Base de données PostgreSQL — bac à sable de persistance (RFC-022).
+  # L'application s'y connecte via le nom de service (DB_HOST=waffle-postgres) ;
+  # le port 5432 est aussi exposé sur l'hôte pour les sondes manuelles (psql, IDE).
+  waffle-postgres:
+    image: postgres:17-alpine
+    container_name: waffle-postgres
+    environment:
+      # Identifiants de développement local (résolus depuis .env) —
+      # surchargés par l'orchestrateur en production.
+      POSTGRES_DB: "${DB_NAME:-waffle}"
+      POSTGRES_USER: "${DB_USER:-waffle}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-waffle}"
+    ports:
+      - "5432:5432"
+    volumes:
+      # Volume nommé : les données survivent aux redémarrages du conteneur.
+      - waffle-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready valide que le serveur accepte réellement les connexions.
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-waffle} -d ${DB_NAME:-waffle}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - waffle-network
+
+  # Base documentaire MongoDB — bac à sable NoSQL (RFC-022 §4.2).
+  # Service indépendant : l'application n'en dépend pas au démarrage ; les tests
+  # d'intégration du composant data s'y connectent via le nom de service
+  # (waffle-mongo:27017) sur le réseau interne — aucun port n'est exposé à l'hôte.
+  waffle-mongo:
+    image: mongo:7
+    container_name: waffle-mongo
+    volumes:
+      # Volume nommé : les documents survivent aux redémarrages du conteneur.
+      - waffle-mongo-data:/data/db
+    healthcheck:
+      # Ping mongosh pour valider que le serveur répond réellement.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - waffle-network
+
 networks:
   waffle-network:
     driver: bridge
+
+volumes:
+  # Données PostgreSQL persistées entre les redémarrages (bac à sable RFC-022).
+  waffle-postgres-data:
+  # Documents MongoDB persistés entre les redémarrages (bac à sable RFC-022).
+  waffle-mongo-data:

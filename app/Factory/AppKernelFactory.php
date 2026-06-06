@@ -297,20 +297,48 @@ final class AppKernelFactory
      */
     public static function buildConnectionPool(Config $config): PDOConnectionPool
     {
-        $driver = $config->getString('waffle.database.driver') ?? 'mysql';
+        $driver = $config->getString('waffle.database.driver') ?? 'pgsql';
         $host = $config->getString('waffle.database.host') ?? '127.0.0.1';
-        $port = $config->getString('waffle.database.port') ?? '3306';
+        $port = $config->getString('waffle.database.port') ?? '5432';
         $database = $config->getString('waffle.database.database') ?? '';
-        $username = $config->getString('waffle.database.username') ?? 'root';
+        $username = $config->getString('waffle.database.username') ?? 'waffle';
         $password = $config->getString('waffle.database.password') ?? '';
-        $charset = $config->getString('waffle.database.charset') ?? 'utf8mb4';
+        $charset = $config->getString('waffle.database.charset') ?? 'utf8';
 
-        $dsn = sprintf('%s:host=%s;port=%s;dbname=%s;charset=%s', $driver, $host, $port, $database, $charset);
+        $dsn = self::buildDsn($driver, $host, $port, $database, $charset);
+
+        // Oracle exige `FROM DUAL` pour un SELECT sans table : la sonde de vie
+        // (« ping-before-dispense ») du pool doit donc être adaptée au moteur.
+        $ping = $driver === 'oci' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
 
         // Fabrique sans état, rejouée à chaque création de connexion par le pool.
         return new PDOConnectionPool(factory: static fn(): PDO => new PDO($dsn, $username, $password, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]));
+        ]), pingQuery: $ping);
+    }
+
+    /**
+     * Construit le DSN PDO propre à chaque moteur (RFC-022).
+     *
+     * PostgreSQL ne reconnaît pas l'attribut DSN `charset` (l'encodage client est
+     * négocié avec le serveur — UTF8 par défaut) ; SQLite n'attend qu'un chemin de
+     * fichier ; SQL Server et Oracle ont leur propre grammaire de DSN. Le format
+     * MySQL/MariaDB reste le cas par défaut.
+     */
+    private static function buildDsn(
+        string $driver,
+        string $host,
+        string $port,
+        string $database,
+        string $charset,
+    ): string {
+        return match ($driver) {
+            'pgsql' => sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database),
+            'sqlite' => sprintf('sqlite:%s', $database),
+            'sqlsrv' => sprintf('sqlsrv:Server=%s,%s;Database=%s', $host, $port, $database),
+            'oci' => sprintf('oci:dbname=//%s:%s/%s;charset=%s', $host, $port, $database, $charset),
+            default => sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', $host, $port, $database, $charset),
+        };
     }
 
     /**

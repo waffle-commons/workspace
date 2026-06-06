@@ -33,16 +33,20 @@ waffle:
     default_ttl: 3600                  # en secondes, optionnel
     prefix: 'waffle:cache:'            # adaptateur redis uniquement, optionnel
   # Configuration de la base de données locale (RFC-022).
+  # Le bac à sable PostgreSQL est fourni par le service compose `waffle-postgres`
+  # (DB_HOST pointe sur ce nom de service). Moteurs supportés par la fabrique de
+  # DSN : pgsql (défaut), mysql/mariadb, sqlite, sqlsrv, oci.
   # Les identifiants sont résolus depuis l'environnement (.env / Docker / K8s).
   # `migrations_path` est relatif à la racine du projet : lancez `bin/waffle
   # db:migrate` depuis cette racine pour que les scripts SQL soient découverts.
   database:
-    driver: 'mysql'
+    driver: 'pgsql'
     host: '%env(DB_HOST)%'
     port: '%env(DB_PORT)%'
     database: '%env(DB_NAME)%'
     username: '%env(DB_USER)%'
     password: '%env(DB_PASSWORD)%'
-    charset: 'utf8mb4'
+    # Ignoré par pgsql (encodage client négocié, UTF8) ; utilisé par mysql/oci.
+    charset: 'utf8'
     migrations_path: 'migrations'
 

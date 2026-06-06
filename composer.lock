@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8ed6632486485989fba4a73c0130faf7",
+    "content-hash": "efe1a2ca283e180b1c9588d3d1ed24ac",
     "packages": [
         {
             "name": "predis/predis",
@@ -614,7 +614,7 @@
             "dist": {
                 "type": "path",
                 "url": "../cache",
-                "reference": "091abc505b53ebd011d4c0883041868f345951e8"
+                "reference": "d6b92464cfa72b4d9082bf9fe7094bfd9b5d99fb"
             },
             "require": {
                 "php": "^8.5",
@@ -624,6 +624,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -651,6 +652,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -872,7 +876,7 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "e3c5d2b8cefbecc877e4073c6db7d207abd6221d"
+                "reference": "02bffecfc28c365804f85f6e50422a5055a5e480"
             },
             "require": {
                 "php": "^8.5",
@@ -882,6 +886,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -909,6 +914,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -1051,19 +1059,27 @@
             "dist": {
                 "type": "path",
                 "url": "../data",
-                "reference": "c6ec01bc21162e09e242eccb8cdfaada5ebe9409"
+                "reference": "bbf0351ab5192212dbbd80e881fb158b8a83b4ac"
             },
             "require": {
                 "ext-pdo": "*",
                 "php": "^8.5",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
+            },
+            "suggest": {
+                "ext-mongodb": "To execute document queries live through the MongoDriverSession driver.",
+                "ext-redis": "To execute key-value lookups live through the RedisKeyValueClient driver."
             },
             "type": "library",
             "autoload": {
@@ -1088,6 +1104,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -1311,7 +1330,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "6535cec7a72789dcc2392d6ddf4dbf8d94e5094a"
+                "reference": "40bec6ef6f05c5245fb532cb3becda04c316352e"
             },
             "require": {
                 "php": "^8.5",
@@ -1322,6 +1341,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1349,6 +1369,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -1398,7 +1421,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http-client",
-                "reference": "d51a2a21a753dd2740fc0fc2fffc8079dfceeb7d"
+                "reference": "c9aa356cdabc6ff8d8d55e3bfa0ca5dbc76a8030"
             },
             "require": {
                 "ext-curl": "*",
@@ -1411,6 +1434,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
@@ -1439,6 +1463,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -1574,7 +1601,7 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "6cb998b991dca1111ebb8cc23d03c6984927bf75"
+                "reference": "d59ac6cdb6d49c95e64204a02b827834135c6cd1"
             },
             "require": {
                 "php": "^8.5",
@@ -1585,6 +1612,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1612,6 +1640,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -1748,7 +1779,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "d0478c887ba558c3cfa210fc80f1b360c994f88b"
+                "reference": "b1b227593ca8f54bdd2e9f6a762e2cbbc2c7368a"
             },
             "require": {
                 "php": "^8.5",
@@ -1760,6 +1791,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1787,6 +1819,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -1836,7 +1871,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "d76b43e4a58aa7814d25e52b74a5e1ce05498aa7"
+                "reference": "17981c0842f28f2a52d19f50eec231a7ad8fe40c"
             },
             "require": {
                 "php": "^8.5",
@@ -1849,6 +1884,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1876,6 +1912,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -2010,7 +2049,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "aa6c8183848a355f4286ca4c33bf2a91714a68f4"
+                "reference": "83f319fced1c4e0da2984b3ddaa219f29212b558"
             },
             "require": {
                 "php": "^8.5",
@@ -2027,6 +2066,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -2054,6 +2094,9 @@
                 ],
                 "guard": [
                     "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
                 ],
                 "phpunit": [
                     "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
@@ -3757,6 +3800,56 @@
                 }
             ],
             "time": "2025-08-14T07:29:31+00:00"
+        },
+        {
+            "name": "igor-php/igor-php",
+            "version": "v0.6.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/igor-php/igor-php.git",
+                "reference": "9aecff9843f27eb9adb674172abfae7b2d18d295"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/igor-php/igor-php/zipball/9aecff9843f27eb9adb674172abfae7b2d18d295",
+                "reference": "9aecff9843f27eb9adb674172abfae7b2d18d295",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "bin": [
+                "bin/igor-php"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "IgorPhp\\IgorBundle\\": "src/php/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin MARTINS",
+                    "email": "kevin.martins@me.com"
+                }
+            ],
+            "description": "The faithful assistant for your FrankenPHP Workers.",
+            "keywords": [
+                "frankenphp",
+                "linter",
+                "static-analysis",
+                "symfony",
+                "worker"
+            ],
+            "support": {
+                "issues": "https://github.com/igor-php/igor-php/issues",
+                "source": "https://github.com/igor-php/igor-php/tree/v0.6.3"
+            },
+            "time": "2026-05-26T20:17:14+00:00"
         },
         {
             "name": "kelunik/certificate",
