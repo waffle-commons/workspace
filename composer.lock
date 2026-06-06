@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "efe1a2ca283e180b1c9588d3d1ed24ac",
+    "content-hash": "dba3cf87a4d45c83154db200291e49ab",
     "packages": [
         {
             "name": "predis/predis",
@@ -607,6 +607,103 @@
                 "source": "https://github.com/php-fig/simple-cache/tree/master"
             },
             "time": "2022-04-08T16:41:45+00:00"
+        },
+        {
+            "name": "waffle-commons/auth",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../auth",
+                "reference": "14311000db5090c48c67fd47fecf57899f2c8ed0"
+            },
+            "require": {
+                "ext-openssl": "*",
+                "php": "^8.5",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0",
+                "psr/log": "^3.0",
+                "psr/simple-cache": "^3.0",
+                "waffle-commons/contracts": "self.version"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.29",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.6.3",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.16"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Auth\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Auth\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "guard": [
+                    "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "benchmark": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "vendor/bin/phpbench run --report=default_report --output=waffle_html --retry-threshold=10"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer",
+                    "@guard"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Auth component for Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "waffle-commons/cache",
@@ -7871,6 +7968,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "waffle-commons/auth": 20,
         "waffle-commons/cache": 20,
         "waffle-commons/config": 20,
         "waffle-commons/console": 20,

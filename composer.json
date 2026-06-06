@@ -5,6 +5,7 @@
     "require": {
         "php": "^8.5",
         "ext-yaml": "*",
+        "waffle-commons/auth": "1.0.0-dev",
         "waffle-commons/cache": "1.0.0-dev",
         "waffle-commons/config": "1.0.0-dev",
         "waffle-commons/container": "1.0.0-dev",
@@ -24,6 +25,17 @@
         "waffle-commons/waffle": "1.0.0-dev"
     },
     "repositories": [
+        {
+            "type": "path",
+            "canonical": false,
+            "url": "../auth",
+            "options": {
+                "versions": {
+                    "waffle-commons/auth": "1.0.0-dev"
+                },
+                "symlink": true
+            }
+        },
         {
             "type": "path",
             "canonical": false,

@@ -29,7 +29,7 @@ use Workspace\Voter\RestrictedAccess;
  *   - l'hydratation native d'un `#[Dto]` + validation par Property Hook,
  *   - l'interception d'exception par l'ErrorHandlerMiddleware,
  *   - une route catch-all à priorité négative simulant le hand-off vers la
- *     passerelle EcoShield (proxy vers le backend hérité).
+ *     passerelle Waffle (proxy vers le backend hérité).
  */
 #[Route(path: '/', name: 'home_')]
 final class HomeController extends BaseController
@@ -108,7 +108,7 @@ final class HomeController extends BaseController
      * Hand-off catch-all vers la passerelle (priorité -1000 ⇒ évaluée en dernier,
      * après toutes les routes explicites). Dans le playground, le forward est
      * réel : il délègue à `ProxyService::passThrough()` qui retransmet la
-     * requête au backend hérité — preuve que la passerelle EcoShield est
+     * requête au backend hérité — preuve que la passerelle Waffle est
      * branchable sur un vrai upstream sans modifier le squelette du contrôleur.
      */
     #[Route(

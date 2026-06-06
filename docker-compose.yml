@@ -63,11 +63,11 @@ services:
         condition: service_healthy
 
   # « Monolithe hérité » factice — un backend délibérément lent et lourd en
-  # mémoire que la passerelle EcoShield précède et proxifie de manière
+  # mémoire que la passerelle Waffle précède et proxifie de manière
   # transparente. Il tourne sur le serveur PHP intégré (PAS en mode worker
   # FrankenPHP) pour émuler une app PHP-FPM/Nginx classique et bloquante, afin
   # que le contraste avec le proxy PSR-18 non bloquant et borné en mémoire
-  # d'EcoShield reste visible de bout en bout.
+  # de la passerelle reste visible de bout en bout.
   legacy-backend:
     image: php:8.5-cli
     container_name: legacy-backend
@@ -75,6 +75,11 @@ services:
     # Routeur mono-fichier servi par le serveur intégré ; toute requête est
     # routée par router.php (cf. docker/legacy/public/router.php).
     command: ["php", "-S", "0.0.0.0:80", "/app/router.php"]
+    environment:
+      # Pont d'Authentification Universel (RFC-021 §4.3) : le monolithe reçoit
+      # la MÊME valeur de secret que la passerelle pour vérifier la signature
+      # HMAC des assertions X-Wfl-Assert-User (interpolée depuis ./.env).
+      WAFFLE_AUTH_SECRET: "${WAFFLE_AUTH_SECRET:-}"
     volumes:
       - ./docker/legacy/public:/app:ro
     ports:
