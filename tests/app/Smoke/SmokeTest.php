@@ -18,4 +18,10 @@ final class SmokeTest extends TestCase
     {
         static::assertTrue(class_exists(\Workspace\Factory\AppKernelFactory::class));
     }
+
+    public function testAssertDemoControllerIsRegistered(): void
+    {
+        // La vitrine d'assertions (POST /register) est découverte par scan d'attributs.
+        static::assertTrue(class_exists(\Workspace\Controller\RegistrationController::class));
+    }
 }

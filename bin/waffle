@@ -15,21 +15,36 @@ declare(strict_types=1);
  */
 
 use Waffle\Commons\Config\Config;
+use Waffle\Commons\Config\DotEnv;
 use Waffle\Commons\Console\Command\CacheClearCommand;
+use Waffle\Commons\Console\Command\DataWarmupCommand;
+use Waffle\Commons\Console\Command\MemoryAuditCommand;
+use Waffle\Commons\Console\Command\MigrateCommand;
 use Waffle\Commons\Console\Command\RouteListCommand;
 use Waffle\Commons\Console\Command\SecurityAuditCommand;
 use Waffle\Commons\Console\ConsoleApplication;
 use Waffle\Commons\Console\Maker\Command\MakeCommandCommand;
 use Waffle\Commons\Console\Maker\Command\MakeControllerCommand;
 use Waffle\Commons\Console\Maker\Command\MakeDtoCommand;
+use Waffle\Commons\Console\Maker\Command\MakeEntityCommand;
 use Waffle\Commons\Console\Maker\Command\MakeEventPairCommand;
 use Waffle\Commons\Console\Maker\Command\MakeHttpClientCommand;
 use Waffle\Commons\Console\Maker\Command\MakeMiddlewareCommand;
+use Waffle\Commons\Console\Maker\Command\MakeRepositoryCommand;
 use Waffle\Commons\Console\Maker\Command\MakeVoterCommand;
 use Waffle\Commons\Console\Output\StreamOutput;
 use Waffle\Commons\Container\Container;
 use Waffle\Commons\Contracts\Constant\Constant;
+use Waffle\Commons\Contracts\Data\Enum\Direction;
+use Waffle\Commons\Data\Compiler\SQLCompiler;
+use Waffle\Commons\Data\Compiler\SQLDialect;
+use Waffle\Commons\Data\Migration\MigrationRunner;
+use Waffle\Commons\Data\Query\Query;
+use Waffle\Commons\Data\Warmup\QueryWarmer;
 use Waffle\Commons\Routing\Router;
+use Waffle\Commons\Runtime\Audit\ProcessAuditRunner;
+use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
+use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Security;
 use Workspace\Factory\AppKernelFactory;
@@ -40,13 +55,24 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $root = realpath(path: dirname(path: __DIR__));
 $rootConfig = $root . DIRECTORY_SEPARATOR . 'config';
 
-// Setting up the framework
+// Setting up the framework. The env registry merges .env with the live process
+// environment (process wins), so `%env(...)%` placeholders — e.g. the RFC-022
+// database credentials — resolve on the CLI path exactly as they do over HTTP.
 $container = new Container();
-$config = new Config(configDir: $rootConfig, environment: Constant::ENV_DEV);
+$envRegistry = array_merge(new DotEnv($root)->load(), getenv());
+$config = new Config(configDir: $rootConfig, environment: Constant::ENV_DEV, env: $envRegistry);
 $security = new Security($config);
 $secureContainer = new SecureContainer($container, $security);
 $cache = AppKernelFactory::buildCache($root, $config);
 $router = new Router(directory: $config->getString(key: 'waffle.paths.controllers'));
+
+// PDO connection pool (RFC-022) + migration runner, built here on the explicit
+// CLI path so no migration scan ever happens during an HTTP request.
+$connectionPool = AppKernelFactory::buildConnectionPool($config);
+$migrationRunner = new MigrationRunner(pool: $connectionPool, config: $config);
+
+$container->set(ConnectionPoolInterface::class, $connectionPool);
+$container->set(MigrationRunnerInterface::class, $migrationRunner);
 
 // Console application
 $app = new ConsoleApplication(
@@ -60,12 +86,45 @@ $app = new ConsoleApplication(
 $app->add(command: new RouteListCommand(router: $router->boot(container: $secureContainer)));
 $app->add(command: new SecurityAuditCommand(router: $router->boot(container: $secureContainer)));
 $app->add(command: new CacheClearCommand(cache: $cache));
+$app->add(command: new MigrateCommand(
+    runner: $container->get(MigrationRunnerInterface::class),
+    pool: $container->get(ConnectionPoolInterface::class),
+));
+
+// Pre-compiled SQR warmup (`data:warmup`) — Roadmap Beta-3 "CLI Route & Cache
+// Warmup". The hot read queries below are compiled once to parameterised SQL,
+// serialised under var/cache/ and primed into OPcache shared memory, so the
+// first live request never pays the AST walk. Adapt the registry to your own
+// hot paths; warming never executes SQL against the database.
+$app->add(command: new DataWarmupCommand(warmers: [
+    new QueryWarmer(
+        queries: [
+            'users.recent' => Query::select('id')
+                ->from('users')
+                ->orderBy('id', Direction::Descending)
+                ->limit(20),
+        ],
+        compiler: new SQLCompiler(dialect: SQLDialect::PostgreSQL),
+        cacheFile: $root . '/var/cache/data-warmup.php',
+    ),
+]));
+
+// Igor memory-leak & state-mutation audit. igor.sh lives at the monorepo root, one
+// level above this workspace; inside the dev container it runs igor-php directly
+// instead of wrapping itself in another `docker exec`.
+$app->add(command: new MemoryAuditCommand(
+    runner: new ProcessAuditRunner(),
+    projectRoot: dirname($root),
+    localByDefault: is_file('/.dockerenv') || getenv(name: 'WAFFLE_IN_CONTAINER') === '1',
+));
 $app->add(command: new MakeCommandCommand());
 $app->add(command: new MakeControllerCommand());
 $app->add(command: new MakeDtoCommand());
+$app->add(command: new MakeEntityCommand());
 $app->add(command: new MakeEventPairCommand());
 $app->add(command: new MakeHttpClientCommand());
 $app->add(command: new MakeMiddlewareCommand());
+$app->add(command: new MakeRepositoryCommand());
 $app->add(command: new MakeVoterCommand());
 
 exit($app->run());

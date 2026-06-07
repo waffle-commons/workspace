@@ -4,25 +4,48 @@ declare(strict_types=1);
 
 namespace Workspace\Factory;
 
+use PDO;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use Waffle\Commons\Auth\AuthenticationBridge;
+use Waffle\Commons\Auth\Authenticator\ApiKeyAuthenticator;
+use Waffle\Commons\Auth\Authenticator\AssertionAuthenticator;
+use Waffle\Commons\Auth\Authenticator\JwtAuthenticator;
+use Waffle\Commons\Auth\Client\AuthenticatedClient;
+use Waffle\Commons\Auth\Credential\AssertionCredentialsProvider;
+use Waffle\Commons\Auth\Identity\UserIdentity;
+use Waffle\Commons\Auth\Jwt\JwtConfig;
+use Waffle\Commons\Auth\Jwt\JwtValidator;
+use Waffle\Commons\Auth\Jwt\Key\StaticKeyResolver;
+use Waffle\Commons\Auth\Middleware\AuthenticationMiddleware;
+use Waffle\Commons\Auth\SecurityContext;
+use Waffle\Commons\Auth\Uab\AuthBridgeSigner;
+use Waffle\Commons\Auth\Uab\AuthBridgeVerifier;
 use Waffle\Commons\Cache\Factory\CacheFactory;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Config\DotEnv;
 use Waffle\Commons\Container\Container;
+use Waffle\Commons\Contracts\Auth\AuthenticationBridgeInterface;
+use Waffle\Commons\Contracts\Auth\Constant as AuthConstant;
+use Waffle\Commons\Contracts\Auth\SecurityContextInterface;
 use Waffle\Commons\Contracts\Cache\CacheInterface;
 use Waffle\Commons\Contracts\Cache\Constant as CacheConstant;
+use Waffle\Commons\Contracts\Config\ConfigInterface;
 use Waffle\Commons\Contracts\Constant\Constant;
 use Waffle\Commons\Contracts\Container\ContainerInterface;
 use Waffle\Commons\Contracts\Core\KernelInterface;
+use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
+use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
 use Waffle\Commons\Contracts\EventDispatcher\EventListenerInterface;
 use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
 use Waffle\Commons\Contracts\Service\ReflectionServiceInterface;
+use Waffle\Commons\Data\Connection\PDOConnectionPool;
+use Waffle\Commons\Data\Migration\MigrationRunner;
 use Waffle\Commons\ErrorHandler\Middleware\ErrorHandlerMiddleware;
 use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
@@ -75,9 +98,13 @@ final class AppKernelFactory
         $streamFactory = new StreamFactory();
         $container->set(StreamFactoryInterface::class, $streamFactory);
 
-        // Enregistrement du client HTTP PSR-18 (paquet waffle-commons/http-client).
+        // Client HTTP PSR-18 brut (paquet waffle-commons/http-client). Il n'est
+        // PAS enregistré tel quel sous ClientInterface : il sert de transport
+        // interne au décorateur AuthenticatedClient du pont d'authentification,
+        // qui est enregistré comme ClientInterface plus bas (RFC-021 §4.7) —
+        // ainsi tout consommateur (ex. ProxyService) hérite de la propagation
+        // d'assertion sortante.
         $httpClient = new Client($responseFactory, $streamFactory);
-        $container->set(ClientInterface::class, $httpClient);
 
         // 2. Construction du registre d'environnement à partir des fichiers .env
         //    et de l'environnement processus (durcissement Beta-1 : DotEnv ne mute
@@ -89,6 +116,9 @@ final class AppKernelFactory
 
         // 3. Instanciation de la Config concrète (paquet waffle-commons/config).
         $config = new Config(configDir: $rootConfig, environment: $env, env: $envRegistry);
+        // Exposée dans le conteneur pour l'injection dans les contrôleurs
+        // (ex. AuthDemoController) via le résolveur d'arguments PSR-11.
+        $container->set(ConfigInterface::class, $config);
         // STAB-01 (Beta-1) : plus de GlobalsFactory statique — WaffleRuntime construit
         // sa propre instance par processus. L'enforcement des hôtes de confiance vit
         // dans TrustedHostMiddleware (RFC-003 §3.2).
@@ -100,6 +130,61 @@ final class AppKernelFactory
         // court ⇒ avortement du boot en production.
         $csrfTokenManager = new CsrfTokenManager(secret: self::resolveCsrfSecret($config, $env));
         $container->set(CsrfTokenManagerInterface::class, $csrfTokenManager);
+
+        // 3-bis. Pont d'Authentification Universel (RFC-021, paquet waffle-commons/auth).
+        // Secret partagé fail-closed : absent ou < 32 octets ⇒ avortement du boot
+        // en production (MissingAuthSecretException dans les constructeurs).
+        $authSecret = self::resolveAuthSecret($config, $env);
+
+        // Porteur d'identité à portée requête — SEUL service mutable du pont.
+        // Enregistré dans le conteneur : ResettableInterface ⇒ vidé à chaque
+        // boucle worker par AbstractKernel::reset() → Container::reset().
+        $securityContext = new SecurityContext();
+        $container->set(SecurityContextInterface::class, $securityContext);
+
+        // Signataire / vérificateur d'assertions (HMAC-SHA256, X-Wfl-Assert-User).
+        $assertionSigner = new AuthBridgeSigner($authSecret);
+        $assertionVerifier = new AuthBridgeVerifier($authSecret);
+
+        // Validateur JWT HS256 de la démo (allow-list stricte, iss/aud épinglés).
+        $jwtValidator = new JwtValidator(
+            config: new JwtConfig(
+                algorithms: ['HS256'],
+                issuer: $config->getString('waffle.auth.jwt.issuer') ?? 'https://waffle-dev.local',
+                audience: $config->getString('waffle.auth.jwt.audience') ?? 'waffle-workspace',
+            ),
+            keys: new StaticKeyResolver(['HS256' => $authSecret]),
+        );
+
+        // Schémas entrants, par ordre de priorité : assertion de passerelle,
+        // Bearer JWT, puis clé API de démonstration (si configurée).
+        $authenticators = [new AssertionAuthenticator($assertionVerifier), new JwtAuthenticator($jwtValidator)];
+        $demoApiKey = $config->getString('waffle.auth.demo_api_key');
+        if (is_string($demoApiKey) && $demoApiKey !== '') {
+            $authenticators[] = new ApiKeyAuthenticator([
+                $demoApiKey => new UserIdentity(
+                    subject: 'svc-demo',
+                    email: 'svc-demo@waffle.dev',
+                    roles: ['ROLE_SERVICE'],
+                ),
+            ]);
+        }
+
+        $authBridge = new AuthenticationBridge($securityContext, $authenticators);
+        $container->set(AuthenticationBridgeInterface::class, $authBridge);
+
+        // Propagation sortante (RFC-021 §4.7) : le client PSR-18 est décoré —
+        // toute requête vers le monolithe hérité (hôte sur liste blanche) porte
+        // automatiquement l'assertion signée quand une identité est active.
+        // Le ProxyService reçoit donc CE client via le conteneur.
+        $container->set(ClientInterface::class, new AuthenticatedClient($httpClient, [
+            new AssertionCredentialsProvider(
+                signer: $assertionSigner,
+                context: $securityContext,
+                allowedHosts: ['legacy-backend'],
+                tenant: $config->getString('waffle.auth.tenant'),
+            ),
+        ]));
 
         // 3. Instanciation de Security (paquet waffle-commons/security).
         $security = new Security($config);
@@ -130,6 +215,16 @@ final class AppKernelFactory
         // 5a-bis. SID anonyme par navigateur. Doit s'exécuter avant Csrf pour
         // que l'attribut SID soit déjà alimenté lors du binding HMAC (SEC-01 option C).
         $stack->add(middleware: new AnonymousSessionMiddleware());
+
+        // 5a-ter. Pont d'Authentification Universel (RFC-021 §3.2) : authentifie
+        // la requête entrante (assertion de passerelle / Bearer JWT / clé API),
+        // alimente le SecurityContext et publie l'identité vérifiée en attribut
+        // `_auth_identity`. Identifiants invalides ⇒ 401/403 fail-closed (rendus
+        // par l'ErrorHandler) ; identifiants absents ⇒ requête anonyme (l'ABAC
+        // du composant security garde la décision d'accès). Ordre canonique :
+        // ErrorHandler → TrustedHost → AnonymousSession → Authentication →
+        // Routing → Csrf → Security → SecureHeaders → Dispatcher.
+        $stack->add(middleware: new AuthenticationMiddleware($authBridge));
 
         // 5b. Mise en place du dispatcher d'événements.
         $listenerProvider = new ListenerProvider();
@@ -172,6 +267,16 @@ final class AppKernelFactory
         // 7. Instanciation du cache PSR-16 (RFC-013) et enregistrement pour les consommateurs en aval.
         $cache = self::buildCache($root, $config);
         $container->set(CacheInterface::class, $cache);
+
+        // 7a. Instanciation du pool de connexions (RFC-022) et enregistrement pour les consommateurs en aval.
+        $connectionPool = self::buildConnectionPool($config);
+        $container->set(ConnectionPoolInterface::class, $connectionPool);
+        $container->set(PDOConnectionPool::class, $connectionPool);
+
+        // 7b. Instanciation du migration runner (RFC-022) et enregistrement dans le conteneur.
+        $migrationRunner = new MigrationRunner(pool: $connectionPool, config: $config);
+        $container->set(MigrationRunnerInterface::class, $migrationRunner);
+        $container->set(MigrationRunner::class, $migrationRunner);
 
         // 8. Instanciation et démarrage du Router.
         $controllersPath = $config->getString(key: 'waffle.paths.controllers');
@@ -255,6 +360,43 @@ final class AppKernelFactory
     }
 
     /**
+     * Résout le secret partagé du Pont d'Authentification Universel (RFC-021
+     * §4.2) avec la même discipline que le secret CSRF : la config gagne
+     * (`waffle.auth.secret`, interpolée depuis WAFFLE_AUTH_SECRET) ; sinon
+     * lecture directe de l'environnement. En production, absent ou plus court
+     * que 32 octets ⇒ refus de démarrer (fail-closed — jamais de contournement
+     * non authentifié). Hors prod, un secret éphémère permet de démarrer, mais
+     * les assertions émises ne seront vérifiables que par CE processus.
+     */
+    private static function resolveAuthSecret(Config $config, string $env): string
+    {
+        $fromConfig = $config->getString('waffle.auth.secret');
+        $candidate = is_string($fromConfig) && $fromConfig !== '' ? $fromConfig : null;
+
+        if ($candidate === null) {
+            $fromEnv = getenv(AuthConstant::SECRET_ENV_KEY);
+            if (is_string($fromEnv) && $fromEnv !== '') {
+                $candidate = $fromEnv;
+            }
+        }
+
+        if ($candidate !== null && strlen($candidate) >= AuthConstant::MIN_SECRET_BYTES) {
+            return $candidate;
+        }
+
+        if ($env === Constant::ENV_PROD) {
+            throw new RuntimeException(sprintf(
+                'Secret du pont d\'authentification manquant ou plus court que %d octets en production. '
+                . 'Renseignez "waffle.auth.secret" ou la variable d\'environnement %s.',
+                AuthConstant::MIN_SECRET_BYTES,
+                AuthConstant::SECRET_ENV_KEY,
+            ));
+        }
+
+        return random_bytes(AuthConstant::MIN_SECRET_BYTES);
+    }
+
+    /**
      * Construit l'adaptateur de cache PSR-16 choisi par `waffle.cache.adapter`.
      *
      * Retombe sur le ArrayCache en mémoire si aucun adaptateur n'est configuré.
@@ -271,6 +413,59 @@ final class AppKernelFactory
         ];
 
         return new CacheFactory()->create($adapter, $options);
+    }
+
+    /**
+     * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`.
+     *
+     * La fabrique injectée n'ouvre une connexion que lorsque le pool en a besoin :
+     * en mode worker FrankenPHP, les sockets restent tièdes entre les requêtes,
+     * sont sondés (« ping-before-dispense ») puis reconnectés de façon transparente.
+     */
+    public static function buildConnectionPool(Config $config): PDOConnectionPool
+    {
+        $driver = $config->getString('waffle.database.driver') ?? 'pgsql';
+        $host = $config->getString('waffle.database.host') ?? '127.0.0.1';
+        $port = $config->getString('waffle.database.port') ?? '5432';
+        $database = $config->getString('waffle.database.database') ?? '';
+        $username = $config->getString('waffle.database.username') ?? 'waffle';
+        $password = $config->getString('waffle.database.password') ?? '';
+        $charset = $config->getString('waffle.database.charset') ?? 'utf8';
+
+        $dsn = self::buildDsn($driver, $host, $port, $database, $charset);
+
+        // Oracle exige `FROM DUAL` pour un SELECT sans table : la sonde de vie
+        // (« ping-before-dispense ») du pool doit donc être adaptée au moteur.
+        $ping = $driver === 'oci' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
+
+        // Fabrique sans état, rejouée à chaque création de connexion par le pool.
+        return new PDOConnectionPool(factory: static fn(): PDO => new PDO($dsn, $username, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]), pingQuery: $ping);
+    }
+
+    /**
+     * Construit le DSN PDO propre à chaque moteur (RFC-022).
+     *
+     * PostgreSQL ne reconnaît pas l'attribut DSN `charset` (l'encodage client est
+     * négocié avec le serveur — UTF8 par défaut) ; SQLite n'attend qu'un chemin de
+     * fichier ; SQL Server et Oracle ont leur propre grammaire de DSN. Le format
+     * MySQL/MariaDB reste le cas par défaut.
+     */
+    private static function buildDsn(
+        string $driver,
+        string $host,
+        string $port,
+        string $database,
+        string $charset,
+    ): string {
+        return match ($driver) {
+            'pgsql' => sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database),
+            'sqlite' => sprintf('sqlite:%s', $database),
+            'sqlsrv' => sprintf('sqlsrv:Server=%s,%s;Database=%s', $host, $port, $database),
+            'oci' => sprintf('oci:dbname=//%s:%s/%s;charset=%s', $host, $port, $database, $charset),
+            default => sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', $host, $port, $database, $charset),
+        };
     }
 
     /**

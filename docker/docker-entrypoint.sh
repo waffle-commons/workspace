@@ -38,6 +38,7 @@ COMPONENTS=(
   container
   contracts
   console
+  data
   error-handler
   event-dispatcher
   http

@@ -17,6 +17,23 @@ waffle:
       # court avorte le boot — renseignez-le dans votre manifeste de déploiement
       # avant la mise en ligne.
       secret: '%env(WAFFLE_CSRF_SECRET)%'
+  # Pont d'Authentification Universel (RFC-021, paquet waffle-commons/auth).
+  auth:
+    # Secret partagé du pont (HMAC-SHA256) : signe les assertions d'identité
+    # X-Wfl-Assert-User, le cookie de transaction OAuth et les JWT HS256 de la
+    # démo. 32 octets minimum — absent ou trop court ⇒ avortement du boot
+    # (principe fail-closed, RFC-021 §4.2). Le monolithe hérité reçoit la MÊME
+    # valeur via docker-compose pour vérifier les assertions de son côté.
+    secret: '%env(WAFFLE_AUTH_SECRET)%'
+    # Identifiant de tenant estampillé dans chaque assertion sortante (`ten`).
+    tenant: 'workspace'
+    jwt:
+      # Émetteur et audience attendus des jetons Bearer de la démo (HS256).
+      issuer: 'https://waffle-dev.local'
+      audience: 'waffle-workspace'
+    # Clé API de démonstration (schéma X-Api-Key) : authentifie le compte de
+    # service « svc-demo ». À retirer / remplacer dans une vraie application.
+    demo_api_key: '%env(WAFFLE_DEMO_API_KEY)%'
   paths:
     controllers: 'app/Controller'
     services: 'app/Service'
@@ -32,4 +49,21 @@ waffle:
     redis_dsn: '%env(REDIS_DSN)%'      # adaptateur redis uniquement
     default_ttl: 3600                  # en secondes, optionnel
     prefix: 'waffle:cache:'            # adaptateur redis uniquement, optionnel
+  # Configuration de la base de données locale (RFC-022).
+  # Le bac à sable PostgreSQL est fourni par le service compose `waffle-postgres`
+  # (DB_HOST pointe sur ce nom de service). Moteurs supportés par la fabrique de
+  # DSN : pgsql (défaut), mysql/mariadb, sqlite, sqlsrv, oci.
+  # Les identifiants sont résolus depuis l'environnement (.env / Docker / K8s).
+  # `migrations_path` est relatif à la racine du projet : lancez `bin/waffle
+  # db:migrate` depuis cette racine pour que les scripts SQL soient découverts.
+  database:
+    driver: 'pgsql'
+    host: '%env(DB_HOST)%'
+    port: '%env(DB_PORT)%'
+    database: '%env(DB_NAME)%'
+    username: '%env(DB_USER)%'
+    password: '%env(DB_PASSWORD)%'
+    # Ignoré par pgsql (encodage client négocié, UTF8) ; utilisé par mysql/oci.
+    charset: 'utf8'
+    migrations_path: 'migrations'
 
