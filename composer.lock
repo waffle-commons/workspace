@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dba3cf87a4d45c83154db200291e49ab",
+    "content-hash": "5209194ffb8975cd75e134631e3a54fc",
     "packages": [
         {
             "name": "predis/predis",
@@ -614,7 +614,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "14311000db5090c48c67fd47fecf57899f2c8ed0"
+                "reference": "984bb8f47539b504212e6800f92d5502c2189da5"
             },
             "require": {
                 "ext-openssl": "*",
@@ -631,7 +631,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -711,7 +711,7 @@
             "dist": {
                 "type": "path",
                 "url": "../cache",
-                "reference": "d6b92464cfa72b4d9082bf9fe7094bfd9b5d99fb"
+                "reference": "b3c3b4f05372b36d000aea5ec890409ff16ae048"
             },
             "require": {
                 "php": "^8.5",
@@ -721,7 +721,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -973,7 +973,7 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "02bffecfc28c365804f85f6e50422a5055a5e480"
+                "reference": "110c8a08d34d69e731550cfa0dcb223d58f57c35"
             },
             "require": {
                 "php": "^8.5",
@@ -983,7 +983,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1156,7 +1156,7 @@
             "dist": {
                 "type": "path",
                 "url": "../data",
-                "reference": "bbf0351ab5192212dbbd80e881fb158b8a83b4ac"
+                "reference": "ca20aa1d7262f165aed12ab670451f620f327880"
             },
             "require": {
                 "ext-pdo": "*",
@@ -1169,7 +1169,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1341,7 +1341,7 @@
             "dist": {
                 "type": "path",
                 "url": "../event-dispatcher",
-                "reference": "cae05bc719c770396bf58d889022448fba25d6da"
+                "reference": "0ddabbcf9f139743f6fc335f6f9d5130693f750c"
             },
             "require": {
                 "php": "^8.5",
@@ -1351,7 +1351,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1431,18 +1431,19 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "40bec6ef6f05c5245fb532cb3becda04c316352e"
+                "reference": "ac5fe5e65f49a8b513bc6010e14a1ada637a409d"
             },
             "require": {
                 "php": "^8.5",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
-                "waffle-commons/contracts": "self.version"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1522,7 +1523,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http-client",
-                "reference": "c9aa356cdabc6ff8d8d55e3bfa0ca5dbc76a8030"
+                "reference": "1388d3a4fb48841399569c8772819c063ebf4f16"
             },
             "require": {
                 "ext-curl": "*",
@@ -1530,12 +1531,13 @@
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
-                "waffle-commons/contracts": "self.version"
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
@@ -1702,7 +1704,7 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "d59ac6cdb6d49c95e64204a02b827834135c6cd1"
+                "reference": "47f63ef623ca31d54d47a6c559216b4cf7254159"
             },
             "require": {
                 "php": "^8.5",
@@ -1713,7 +1715,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1880,7 +1882,7 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "b1b227593ca8f54bdd2e9f6a762e2cbbc2c7368a"
+                "reference": "6f5aa81c7e2325944a3530be4b4025cc2bc7ff17"
             },
             "require": {
                 "php": "^8.5",
@@ -1892,7 +1894,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -1972,11 +1974,12 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "17981c0842f28f2a52d19f50eec231a7ad8fe40c"
+                "reference": "73bf8c4b81541cd80b70058ca5734f4fdbb885ac"
             },
             "require": {
                 "php": "^8.5",
                 "psr/container": "^2.0",
+                "psr/http-factory": "^1.0",
                 "psr/http-server-middleware": "^1.0",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version",
@@ -1985,7 +1988,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -2065,7 +2068,7 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "03934f9ee9b68bee674ac6629fa6eebbb954873c"
+                "reference": "f2ceb3cac8f0f87d7173c7bce4dbae9f39a855e2"
             },
             "require": {
                 "php": "^8.5",
@@ -2074,7 +2077,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -2154,7 +2157,7 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "83f319fced1c4e0da2984b3ddaa219f29212b558"
+                "reference": "14b5dcdd1807dfe582202acbe184a66356a116e8"
             },
             "require": {
                 "php": "^8.5",
@@ -2171,7 +2174,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.29",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.6.3",
+                "igor-php/igor-php": "^0.7.0",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.16"
@@ -3908,16 +3911,16 @@
         },
         {
             "name": "igor-php/igor-php",
-            "version": "v0.6.3",
+            "version": "v0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/igor-php/igor-php.git",
-                "reference": "9aecff9843f27eb9adb674172abfae7b2d18d295"
+                "reference": "c22297f5916f47d9f35c20f14f9ea536d9315880"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/igor-php/igor-php/zipball/9aecff9843f27eb9adb674172abfae7b2d18d295",
-                "reference": "9aecff9843f27eb9adb674172abfae7b2d18d295",
+                "url": "https://api.github.com/repos/igor-php/igor-php/zipball/c22297f5916f47d9f35c20f14f9ea536d9315880",
+                "reference": "c22297f5916f47d9f35c20f14f9ea536d9315880",
                 "shasum": ""
             },
             "require": {
@@ -3952,9 +3955,9 @@
             ],
             "support": {
                 "issues": "https://github.com/igor-php/igor-php/issues",
-                "source": "https://github.com/igor-php/igor-php/tree/v0.6.3"
+                "source": "https://github.com/igor-php/igor-php/tree/v0.7.0"
             },
-            "time": "2026-05-26T20:17:14+00:00"
+            "time": "2026-06-08T12:30:49+00:00"
         },
         {
             "name": "kelunik/certificate",
