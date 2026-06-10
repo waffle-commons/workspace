@@ -39,7 +39,6 @@ use Waffle\Commons\Contracts\Container\ContainerInterface;
 use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
-use Waffle\Commons\Contracts\EventDispatcher\EventListenerInterface;
 use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
@@ -71,6 +70,7 @@ use Waffle\Commons\Security\Security;
 use Waffle\Handler\ControllerArgumentResolver;
 use Waffle\Handler\ControllerDispatcher;
 use Waffle\Service\ReflectionService;
+use Workspace\Discovery\EventListenerDiscovery;
 use Workspace\Kernel;
 
 /**
@@ -244,8 +244,8 @@ final class AppKernelFactory
 
         // Auto-découverte des listeners dans le dossier EventListener.
         $eventListenersPath = $config->getString('waffle.paths.event_listeners');
-        if (is_dir($eventListenersPath)) {
-            self::discoverAndRegisterListeners($listenerProvider, $eventListenersPath);
+        if (is_string($eventListenersPath)) {
+            EventListenerDiscovery::discover($listenerProvider, $eventListenersPath);
         }
 
         // 6. Instanciation du Kernel.
@@ -260,35 +260,10 @@ final class AppKernelFactory
         // Closure avec lui-même en argument, cf. container/src/Container.php).
         // Le dispatcher d'événements est capturé dans la closure pour rester
         // injecté sans dépendre d'un slot supplémentaire dans le conteneur.
-        $container->set(ReflectionServiceInterface::class, new ReflectionService());
-        $container->set(ArgumentResolverInterface::class, static function (ContainerInterface $c): ArgumentResolverInterface {
-            /** @var ReflectionServiceInterface $reflection */
-            $reflection = $c->get(ReflectionServiceInterface::class);
+        self::registerTerminalHandlers($container, $eventDispatcher);
 
-            return new ControllerArgumentResolver($c, $reflection);
-        });
-        $container->set(RequestHandlerInterface::class, static function (ContainerInterface $c) use (
-            $eventDispatcher,
-        ): RequestHandlerInterface {
-            /** @var ArgumentResolverInterface $resolver */
-            $resolver = $c->get(ArgumentResolverInterface::class);
-
-            return new ControllerDispatcher(container: $c, dispatcher: $eventDispatcher, argumentResolver: $resolver);
-        });
-
-        // 7. Instanciation du cache PSR-16 (RFC-013) et enregistrement pour les consommateurs en aval.
-        $cache = self::buildCache($root, $config);
-        $container->set(CacheInterface::class, $cache);
-
-        // 7a. Instanciation du pool de connexions (RFC-022) et enregistrement pour les consommateurs en aval.
-        $connectionPool = self::buildConnectionPool($config);
-        $container->set(ConnectionPoolInterface::class, $connectionPool);
-        $container->set(PDOConnectionPool::class, $connectionPool);
-
-        // 7b. Instanciation du migration runner (RFC-022) et enregistrement dans le conteneur.
-        $migrationRunner = new MigrationRunner(pool: $connectionPool, config: $config);
-        $container->set(MigrationRunnerInterface::class, $migrationRunner);
-        $container->set(MigrationRunner::class, $migrationRunner);
+        // 7. Cache PSR-16 (RFC-013), pool de connexions + migration runner (RFC-022).
+        $cache = self::registerDataServices($container, $root, $config);
 
         // 8. Instanciation et démarrage du Router.
         $controllersPath = $config->getString(key: 'waffle.paths.controllers');
@@ -313,24 +288,84 @@ final class AppKernelFactory
             $stack->add(middleware: new SecureHeadersMiddleware());
         }
 
-        // 9. Injection des dépendances.
+        // 9. Injection des dépendances câblées dans le kernel.
+        self::injectKernelDependencies($kernel, $config, $security, $secureContainer, $stack);
+
+        return $kernel;
+    }
+
+    /**
+     * Enregistre le trio terminal (ReflectionService + ArgumentResolver +
+     * RequestHandler) sous forme de définitions paresseuses résolues à la volée
+     * par le Container (PSR-11) ; le dispatcher d'événements est capturé dans la
+     * closure du handler.
+     */
+    private static function registerTerminalHandlers(
+        ContainerInterface $container,
+        EventDispatcher $eventDispatcher,
+    ): void {
+        $container->set(ReflectionServiceInterface::class, new ReflectionService());
+        $container->set(ArgumentResolverInterface::class, static function (ContainerInterface $c): ArgumentResolverInterface {
+            /** @var ReflectionServiceInterface $reflection */
+            $reflection = $c->get(ReflectionServiceInterface::class);
+
+            return new ControllerArgumentResolver($c, $reflection);
+        });
+        $container->set(RequestHandlerInterface::class, static function (ContainerInterface $c) use (
+            $eventDispatcher,
+        ): RequestHandlerInterface {
+            /** @var ArgumentResolverInterface $resolver */
+            $resolver = $c->get(ArgumentResolverInterface::class);
+
+            return new ControllerDispatcher(container: $c, dispatcher: $eventDispatcher, argumentResolver: $resolver);
+        });
+    }
+
+    /**
+     * Enregistre le cache PSR-16, le pool de connexions et le migration runner ;
+     * retourne le cache (réutilisé par le routeur).
+     */
+    private static function registerDataServices(
+        ContainerInterface $container,
+        string $root,
+        Config $config,
+    ): CacheInterface {
+        $cache = self::buildCache($root, $config);
+        $container->set(CacheInterface::class, $cache);
+
+        $connectionPool = self::buildConnectionPool($config);
+        $container->set(ConnectionPoolInterface::class, $connectionPool);
+        $container->set(PDOConnectionPool::class, $connectionPool);
+
+        $migrationRunner = new MigrationRunner(pool: $connectionPool, config: $config);
+        $container->set(MigrationRunnerInterface::class, $migrationRunner);
+        $container->set(MigrationRunner::class, $migrationRunner);
+
+        return $cache;
+    }
+
+    /**
+     * Injecte de façon défensive les dépendances câblées dans le kernel.
+     */
+    private static function injectKernelDependencies(
+        KernelInterface $kernel,
+        Config $config,
+        Security $security,
+        SecureContainer $secureContainer,
+        MiddlewareStack $stack,
+    ): void {
         if (method_exists($kernel, 'setConfiguration')) {
             $kernel->setConfiguration($config);
         }
-
         if (method_exists($kernel, 'setSecurity')) {
             $kernel->setSecurity($security);
         }
-
         if (method_exists($kernel, 'setContainerImplementation')) {
             $kernel->setContainerImplementation($secureContainer);
         }
-
         if (method_exists($kernel, 'setMiddlewareStack')) {
             $kernel->setMiddlewareStack($stack);
         }
-
-        return $kernel;
     }
 
     /**
@@ -478,102 +513,5 @@ final class AppKernelFactory
             'oci' => sprintf('oci:dbname=//%s:%s/%s;charset=%s', $host, $port, $database, $charset),
             default => sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', $host, $port, $database, $charset),
         };
-    }
-
-    /**
-     * Auto-découvre et enregistre les listeners d'événements depuis un dossier.
-     * Scanne les classes implémentant EventListenerInterface portant l'attribut
-     * #[AsEventListener].
-     */
-    private static function discoverAndRegisterListeners(ListenerProvider $provider, string $directory): void
-    {
-        if (!is_dir($directory)) {
-            return;
-        }
-
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
-            $directory,
-            \RecursiveDirectoryIterator::SKIP_DOTS,
-        ));
-
-        foreach ($iterator as $file) {
-            if (!$file->isFile() || $file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $content = file_get_contents($file->getPathname());
-            if ($content === false) {
-                continue;
-            }
-
-            // Vérification rapide : le fichier contient-il l'attribut AsEventListener ?
-            if (!str_contains($content, 'AsEventListener')) {
-                continue;
-            }
-
-            // Extraction du FQCN via token_get_all (même approche que ReflectionTrait).
-            $fqcn = self::extractClassName($file->getPathname());
-            if ($fqcn === '' || !class_exists($fqcn)) {
-                continue;
-            }
-
-            $instance = new $fqcn();
-
-            if ($instance instanceof EventListenerInterface) {
-                $provider->register($instance);
-            }
-        }
-    }
-
-    /**
-     * Extrait le nom de classe pleinement qualifié d'un fichier PHP via
-     * token_get_all.
-     */
-    private static function extractClassName(string $path): string
-    {
-        $contents = file_get_contents($path);
-        if ($contents === false) {
-            return '';
-        }
-
-        $tokens = token_get_all($contents);
-        $namespace = '';
-        $class = '';
-        $count = count($tokens);
-
-        for ($i = 0; $i < $count; $i++) {
-            $token = $tokens[$i];
-
-            if (is_array($token) && $token[0] === T_NAMESPACE) {
-                while (++$i < $count) {
-                    if ($tokens[$i] === ';' || $tokens[$i] === '{') {
-                        break;
-                    }
-                    if (is_array($tokens[$i])) {
-                        $namespace .= $tokens[$i][1];
-                    }
-                }
-                continue;
-            }
-
-            if (is_array($token) && in_array($token[0], [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true)) {
-                $j = $i;
-                while (++$j < $count) {
-                    if (is_array($tokens[$j]) && $tokens[$j][0] === T_STRING) {
-                        $class = $tokens[$j][1];
-                        break 2;
-                    }
-                    if ($tokens[$j] === '{') {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if ($class === '') {
-            return '';
-        }
-
-        return $namespace ? $namespace . '\\' . $class : $class;
     }
 }
