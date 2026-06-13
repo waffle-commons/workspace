@@ -9,6 +9,8 @@ $git_branch\
 ${custom.transition_git_end}\
 $git_status\
 ${custom.git_clean}\
+${custom.php_memory}\
+${custom.opcache}\
 $all\
 $line_break\
 [@workspace ](fg:#EADDFF bold)$character"""
@@ -64,6 +66,22 @@ require_repo = true
 when = "test -z \"$(git status --porcelain)\""
 command = "echo '✨'"
 format = "[ $output ](fg:#00210B)"
+
+# ==============================================================================
+# 🐘 BLOC 3 : PHP (Mémoire active + état de l'OPcache) — DX-03
+# ==============================================================================
+# Mémoire PHP utilisée / limite configurée, lue côté CLI dans le conteneur.
+# Les chaînes TOML en triple apostrophe évitent d'échapper les guillemets PHP.
+[custom.php_memory]
+command = '''php -r 'echo round(memory_get_usage(true)/1048576,1)."M/".ini_get("memory_limit");' 2>/dev/null'''
+when = "command -v php > /dev/null 2>&1"
+format = "[ 🐘 $output ](fg:#EADDFF)"
+
+# État de l'OPcache : ⚡ actif (avec son taux de réussite) ou inactif.
+[custom.opcache]
+command = '''php -r '$s=@opcache_get_status(false); echo (is_array($s) && ($s["opcache_enabled"] ?? false)) ? "⚡".round($s["opcache_statistics"]["opcache_hit_rate"] ?? 0)."%" : "opcache off";' 2>/dev/null'''
+when = "command -v php > /dev/null 2>&1"
+format = "[ $output ](fg:#FFD8E4)"
 
 # ==============================================================================
 # ❯ LIGNE DE COMMANDE
