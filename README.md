@@ -64,6 +64,11 @@ ls -l workspace/vendor/waffle-commons/    # entries should be symlinks → ../..
 | `wfl run <component> <cmd…>` | Run an arbitrary command in a component (e.g. `wfl run workspace composer install`). |
 | `wfl mago [component]` | `composer mago` (fmt + lint + analyze + guard) for a component. |
 | `wfl test [component]` | `composer tests` for a component. |
+| `wfl igor` | Monorepo-wide Igor worker-safety / memory-leak audit (0 KO required). |
+| `wfl compare-audit [comp…]` | SEC-03 gate: ban naive `===` / `!==` on secret/token/HMAC sites (must use `hash_equals()`). |
+| `wfl check:all [--with-tests]` | Parallel `composer mago` across every component (add `--with-tests` for PHPUnit). |
+| `wfl monorepo:sync [--fix]` | Report (or `--fix` align) `waffle-commons/*` version constraints across components. |
+| `wfl academy:test [--lab=…]` | Run the Waffle Academy labs PHPUnit suite (`academy/labs`). |
 | `wfl debug` / `wfl bench` | Switch the PHP profile (Xdebug-on vs JIT-on) and restart. |
 | `wfl link <consumer> <provider>` | Wire `<consumer>` to build against your local `<provider>` checkout. |
 | `wfl unlink <consumer> <provider>` | Undo a `link`. |
@@ -117,6 +122,8 @@ The `workspace` is **Option 3** of the cross-component linking model: its path r
 The workspace `AppKernelFactory` follows the same wiring as the skeleton — `.env` is parsed by `DotEnv` and merged with the live process environment via `array_merge((new DotEnv($root))->load(), getenv())`. Because `array_merge` is rightmost-wins on string keys, **any variable exported by Docker / `docker-compose.yml` / your shell silently overrides the value in `.env`** (Twelve-Factor convention).
 
 When integration-testing changes to the `config` package or to `AppKernelFactory`, keep an eye on the OS-vs-`.env` precedence: a stale `APP_ENV=dev` in your shell will override `.env`'s value for every `docker exec` invocation. See [`documentation/how-to/configuration.md`](https://github.com/waffle-commons/documentation/blob/main/how-to/configuration.md) for the full merge semantics and the `APP_DEBUG`/`DEBUG` type-normalization caveat.
+
+> **Auth secrets.** `workspace/.env.example` ships `WAFFLE_AUTH_SECRET` (the RFC-021 bridge HMAC secret — shared with the `legacy-backend` monolith via `docker-compose.yml` so it can verify assertions) and `WAFFLE_DEMO_API_KEY` (the demo `X-Api-Key` service account). Both are consumed by `waffle.auth.*` in `config/app.yaml`; the committed values are dev-only placeholders.
 
 > **Database & migrations.** The workspace ships the RFC-022 `waffle.database.*` config and a sample `migrations/` script. Apply them inside the container with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle db:migrate`. See [How to: Database Migrations](https://github.com/waffle-commons/documentation/blob/main/how-to/database-migrations.md).
 
