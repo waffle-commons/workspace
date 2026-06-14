@@ -64,6 +64,7 @@ format = '([ 📦 $staged_count ](bg:#F8D8D8 fg:#8B6A00))([ 📝 $modified_count
 [custom.git_clean]
 require_repo = true
 when = "test -z \"$(git status --porcelain)\""
+ignore_timeout = true
 command = "echo '✨'"
 format = "[ $output ](fg:#00210B)"
 
