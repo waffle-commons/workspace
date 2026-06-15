@@ -15,6 +15,7 @@ services:
         PHP_VERSION: 8
         OS: trixie
     entrypoint: bash /waffle-commons/workspace/docker/docker-entrypoint.sh
+    image: waffle-commons:workspace
     container_name: waffle-dev
     ports:
       # Expose le port 8080 sur l'hôte et 80 dans le conteneur.
