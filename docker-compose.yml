@@ -43,6 +43,10 @@ services:
       # APP_ENV: "dev"
       # APP_DEBUG: "true"
       PHP_IDE_CONFIG: "serverName=waffle-dev"
+      # Traçage distribué (AXE 5 / OBS-01) : ce service joue l'AMONT. Il exporte ses spans
+      # JSON sur stdout (docker logs) et son endpoint /trace-demo appelle waffle-downstream.
+      WAFFLE_TRACING: "otel"
+      WAFFLE_SERVICE_NAME: "waffle-upstream"
       # DSN de connexion à l'instance Redis interne.
       # REDIS_DSN: "redis://waffle-redis:6379"
     healthcheck:
@@ -61,6 +65,42 @@ services:
         condition: service_healthy
       waffle-postgres:
         # Attendre que PostgreSQL soit prêt avant de démarrer l'application.
+        condition: service_healthy
+
+  # Service Waffle AVAL de la démo de traçage distribué (AXE 5 / OBS-01). Même image et
+  # même code applicatif que `waffle`, mais joué comme service appelé : l'amont l'invoque
+  # via http-client (qui injecte le `traceparent` W3C), son TracingMiddleware l'extrait et
+  # POURSUIT la même trace. Les deux services exportent leurs spans sur stdout, donc
+  # `docker logs waffle-downstream` / `waffle-dev` sert de collecteur. Interne uniquement
+  # (aucun port publié vers l'hôte) ; sert en HTTP simple sur :80 du réseau Docker.
+  waffle-downstream:
+    image: waffle-commons:workspace
+    container_name: waffle-downstream
+    entrypoint: bash /waffle-commons/workspace/docker/docker-entrypoint.sh
+    volumes:
+      - ..:/waffle-commons
+      - ./docker/frankenphp/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docker/frankenphp/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini:ro
+      - ./docker/php/mode-active.ini:/usr/local/etc/php/conf.d/mode-active.ini:ro
+      - /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
+    environment:
+      # HTTP simple sur le réseau interne (pas d'auto-HTTPS pour un appel service-à-service).
+      SERVER_NAME: ":80"
+      XDEBUG_MODE: "off"
+      WAFFLE_TRACING: "otel"
+      WAFFLE_SERVICE_NAME: "waffle-downstream"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
+    networks:
+      - waffle-network
+    depends_on:
+      waffle-redis:
+        condition: service_healthy
+      waffle-postgres:
         condition: service_healthy
 
   # « Monolithe hérité » factice — un backend délibérément lent et lourd en

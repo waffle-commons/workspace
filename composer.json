@@ -22,9 +22,27 @@
         "waffle-commons/runtime": "1.0.0-dev",
         "waffle-commons/security": "1.0.0-dev",
         "waffle-commons/utils": "1.0.0-dev",
-        "waffle-commons/waffle": "1.0.0-dev"
+        "waffle-commons/waffle": "1.0.0-dev",
+        "waffle-commons/telemetry": "1.0.0-dev",
+        "waffle-commons/telemetry-otel": "1.0.0-dev"
     },
     "repositories": [
+        {
+            "type": "path",
+            "url": "../telemetry-otel",
+            "canonical": false,
+            "options": {
+                "symlink": false
+            }
+        },
+        {
+            "type": "path",
+            "url": "../telemetry",
+            "canonical": false,
+            "options": {
+                "symlink": false
+            }
+        },
         {
             "type": "path",
             "canonical": false,

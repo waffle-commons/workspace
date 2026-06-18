@@ -44,6 +44,12 @@ use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
 use Waffle\Commons\Contracts\Service\ReflectionServiceInterface;
+use Waffle\Commons\Contracts\Telemetry\Metrics\MetricsCollectorInterface;
+use Waffle\Commons\Contracts\Telemetry\Metrics\MetricsRegistryInterface;
+use Waffle\Commons\Contracts\Telemetry\Metrics\NullMetricsRegistry;
+use Waffle\Commons\Contracts\Telemetry\NullTextMapPropagator;
+use Waffle\Commons\Contracts\Telemetry\NullTracer;
+use Waffle\Commons\Contracts\Telemetry\TracerInterface;
 use Waffle\Commons\Contracts\Validation\ValidatorInterface;
 use Waffle\Commons\Data\Connection\PDOConnectionPool;
 use Waffle\Commons\Data\Migration\MigrationRunner;
@@ -71,6 +77,16 @@ use Waffle\Commons\Security\Middleware\CorsMiddleware;
 use Waffle\Commons\Security\Middleware\CsrfMiddleware;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
 use Waffle\Commons\Security\Security;
+use Waffle\Commons\Telemetry\Collector\GcCollector;
+use Waffle\Commons\Telemetry\Collector\MemoryCollector;
+use Waffle\Commons\Telemetry\Collector\PoolUtilizationCollector;
+use Waffle\Commons\Telemetry\Exporter\PrometheusExporter;
+use Waffle\Commons\Telemetry\Metric\ApcuMetricStore;
+use Waffle\Commons\Telemetry\Metric\MetricsRegistry;
+use Waffle\Commons\Telemetry\Middleware\MetricsMiddleware;
+use Waffle\Commons\Telemetry\Middleware\TracingMiddleware;
+use Waffle\Commons\TelemetryOtel\Factory\OtelTracerFactory;
+use Waffle\Commons\TelemetryOtel\Propagation\W3CTraceContextPropagator;
 use Waffle\Commons\Utils\Validation\AssertValidator;
 use Waffle\Event\Listener\OrphanedConnectionListener;
 use Waffle\Event\TerminateEvent;
@@ -121,6 +137,25 @@ final class AppKernelFactory
         $streamFactory = new StreamFactory($connectionTracker);
         $container->set(StreamFactoryInterface::class, $streamFactory);
 
+        // Traçage distribué (AXE 5 / OBS-01). Par défaut : NullTracer + propagateur no-op
+        // ⇒ surcoût ~0 et aucun en-tête de trace émis. Avec `WAFFLE_TRACING=otel`, on monte
+        // le pont OpenTelemetry (paquet telemetry-otel) qui exporte chaque span en JSON sur
+        // la sortie standard (la sortie du conteneur sert de collecteur : `docker logs`), et
+        // le propagateur W3C qui injecte/extrait `traceparent`. `WAFFLE_SERVICE_NAME` nomme
+        // le service dans la trace. Le traceur est enregistré comme service partagé pour être
+        // injecté dans les contrôleurs ET réutilisé par le client HTTP + le TracingMiddleware,
+        // garantissant une seule et même trace de bout en bout (amont → aval).
+        $tracer = new NullTracer();
+        $tracePropagator = new NullTextMapPropagator();
+        if (getenv('WAFFLE_TRACING') === 'otel') {
+            $otelService = getenv('WAFFLE_SERVICE_NAME');
+            $tracer = OtelTracerFactory::console(
+                is_string($otelService) && $otelService !== '' ? $otelService : 'waffle',
+            );
+            $tracePropagator = new W3CTraceContextPropagator();
+        }
+        $container->set(TracerInterface::class, $tracer);
+
         // 2. Construction du registre d'environnement à partir des fichiers .env
         //    et de l'environnement processus (durcissement Beta-1 : DotEnv ne mute
         //    plus l'environnement PHP global ; on le fusionne ici avec l'env vivant
@@ -158,7 +193,15 @@ final class AppKernelFactory
         // cible du ProxyService (noms exacts ou CIDR ; vide ⇒ posture stricte).
         /** @var list<string> $ssrfAllowedHosts */
         $ssrfAllowedHosts = $config->getArray(key: 'waffle.security.ssrf.allowed_hosts') ?? [];
-        $httpClient = new Client($responseFactory, $streamFactory, new SsrfGuard(allowedHosts: $ssrfAllowedHosts));
+        // Le traceur + le propagateur W3C sont passés au client : chaque requête sortante
+        // porte alors le `traceparent` de la trace active (SEC-02 SSRF reste en amont).
+        $httpClient = new Client(
+            $responseFactory,
+            $streamFactory,
+            new SsrfGuard(allowedHosts: $ssrfAllowedHosts),
+            $tracer,
+            $tracePropagator,
+        );
 
         // 3-bis. Pont d'Authentification Universel (RFC-021, paquet waffle-commons/auth).
         // Secret partagé fail-closed : absent ou < 32 octets ⇒ avortement du boot
@@ -234,6 +277,29 @@ final class AppKernelFactory
         $errorHandler = new ErrorHandlerMiddleware(renderer: $errorRenderer, logger: $errorLogger);
 
         $stack->prepend(middleware: $errorHandler);
+
+        // 5t. Télémétrie (AXE 5 OBS-02) — endpoint /waffle-metrics + métriques de requête.
+        //     Compteurs en mémoire partagée APCu (jamais sur le tas worker) ; repli no-op
+        //     sans APCu. Placé tôt : /waffle-metrics court-circuite avant le pipeline applicatif
+        //     et applique sa propre sécurité (fail-closed : localhost uniquement par défaut).
+        $metricsRegistry = apcu_enabled() ? new MetricsRegistry(new ApcuMetricStore()) : new NullMetricsRegistry();
+        $container->set(MetricsRegistryInterface::class, $metricsRegistry);
+
+        $collectors = [new MemoryCollector(), new GcCollector(), new PoolUtilizationCollector()];
+        if ($metricsRegistry instanceof MetricsCollectorInterface) {
+            $collectors[] = $metricsRegistry;
+        }
+
+        $stack->add(
+            middleware: new MetricsMiddleware(
+                new PrometheusExporter($collectors),
+                $responseFactory,
+                $streamFactory,
+                null,
+                ['127.0.0.1', '::1'],
+            ),
+        );
+        $stack->add(middleware: new TracingMiddleware($tracer, $metricsRegistry, $tracePropagator));
 
         // 5a. Allow-list des hôtes — première barrière exécutable du pipeline,
         // alimentée par `waffle.trusted_hosts` (app.yaml). L'ErrorHandler reste
