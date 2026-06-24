@@ -52,6 +52,15 @@ waffle:
     # Clé API de démonstration (schéma X-Api-Key) : authentifie le compte de
     # service « svc-demo ». À retirer / remplacer dans une vraie application.
     demo_api_key: '%env(WAFFLE_DEMO_API_KEY)%'
+    # WebAuthn / passkeys (AXE 6 / AUTH-01). `relying_party_id` est le domaine
+    # effectif (jamais le scheme ni le port) ; `allowed_origins` liste les
+    # origines client exactes acceptées par les cérémonies. La démo cible le
+    # bac à sable HTTPS local ; ajustez-les pour votre domaine de déploiement.
+    webauthn:
+      relying_party_id: 'localhost'
+      relying_party_name: 'Waffle Workspace'
+      allowed_origins:
+        - 'https://localhost:8443'
   paths:
     controllers: 'app/Controller'
     services: 'app/Service'

@@ -136,9 +136,13 @@ services:
       - waffle-network
 
   # Instance Redis interne et performante pour le cache et les tokens de sécurité.
+  # Le port 6379 est aussi exposé sur l'hôte pour les sondes manuelles (redis-cli)
+  # et les serveurs MCP exécutés sur l'hôte (cf. ../MCP.md).
   waffle-redis:
     image: redis:7-alpine
     container_name: waffle-redis
+    ports:
+      - "6379:6379"
     healthcheck:
       # Ping de diagnostic pour valider l'état du serveur Redis.
       test: ["CMD", "redis-cli", "ping"]
@@ -179,10 +183,14 @@ services:
   # Base documentaire MongoDB — bac à sable NoSQL (RFC-022 §4.2).
   # Service indépendant : l'application n'en dépend pas au démarrage ; les tests
   # d'intégration du composant data s'y connectent via le nom de service
-  # (waffle-mongo:27017) sur le réseau interne — aucun port n'est exposé à l'hôte.
+  # (waffle-mongo:27017) sur le réseau interne. Le port 27017 est aussi exposé sur
+  # l'hôte pour les sondes manuelles (mongosh) et les serveurs MCP exécutés sur
+  # l'hôte (cf. ../MCP.md).
   waffle-mongo:
     image: mongo:7
     container_name: waffle-mongo
+    ports:
+      - "27017:27017"
     volumes:
       # Volume nommé : les documents survivent aux redémarrages du conteneur.
       - waffle-mongo-data:/data/db

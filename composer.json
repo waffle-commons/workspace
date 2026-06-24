@@ -5,6 +5,7 @@
     "require": {
         "php": "^8.5",
         "ext-yaml": "*",
+        "waffle-commons/async": "1.0.0-dev",
         "waffle-commons/auth": "1.0.0-dev",
         "waffle-commons/cache": "1.0.0-dev",
         "waffle-commons/config": "1.0.0-dev",
@@ -24,7 +25,8 @@
         "waffle-commons/utils": "1.0.0-dev",
         "waffle-commons/waffle": "1.0.0-dev",
         "waffle-commons/telemetry": "1.0.0-dev",
-        "waffle-commons/telemetry-otel": "1.0.0-dev"
+        "waffle-commons/telemetry-otel": "1.0.0-dev",
+        "web-auth/webauthn-lib": "^5.3"
     },
     "repositories": [
         {
@@ -41,6 +43,17 @@
             "canonical": false,
             "options": {
                 "symlink": false
+            }
+        },
+        {
+            "type": "path",
+            "canonical": false,
+            "url": "../async",
+            "options": {
+                "versions": {
+                    "waffle-commons/async": "1.0.0-dev"
+                },
+                "symlink": true
             }
         },
         {

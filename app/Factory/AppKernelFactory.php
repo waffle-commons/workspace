@@ -10,6 +10,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use Waffle\Commons\Async\DeferredTaskRunner;
 use Waffle\Commons\Auth\AuthenticationBridge;
 use Waffle\Commons\Auth\Authenticator\ApiKeyAuthenticator;
 use Waffle\Commons\Auth\Authenticator\AssertionAuthenticator;
@@ -24,13 +25,19 @@ use Waffle\Commons\Auth\Middleware\AuthenticationMiddleware;
 use Waffle\Commons\Auth\SecurityContext;
 use Waffle\Commons\Auth\Uab\AuthBridgeSigner;
 use Waffle\Commons\Auth\Uab\AuthBridgeVerifier;
+use Waffle\Commons\Auth\WebAuthn\WebAuthnAuthenticator;
+use Waffle\Commons\Auth\WebAuthn\WebAuthnCeremony;
+use Waffle\Commons\Auth\WebAuthn\WebAuthnLibAdapter;
 use Waffle\Commons\Cache\Factory\CacheFactory;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Config\DotEnv;
 use Waffle\Commons\Container\Container;
+use Waffle\Commons\Contracts\Async\TaskRunnerInterface;
 use Waffle\Commons\Contracts\Auth\AuthenticationBridgeInterface;
 use Waffle\Commons\Contracts\Auth\Constant as AuthConstant;
 use Waffle\Commons\Contracts\Auth\SecurityContextInterface;
+use Waffle\Commons\Contracts\Auth\WebAuthn\CredentialRepositoryInterface;
+use Waffle\Commons\Contracts\Auth\WebAuthn\WebAuthnVerifierInterface;
 use Waffle\Commons\Contracts\Cache\CacheInterface;
 use Waffle\Commons\Contracts\Cache\Constant as CacheConstant;
 use Waffle\Commons\Contracts\Config\ConfigInterface;
@@ -39,8 +46,11 @@ use Waffle\Commons\Contracts\Container\ContainerInterface;
 use Waffle\Commons\Contracts\Core\KernelInterface;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionTrackerInterface;
+use Waffle\Commons\Contracts\Data\Connection\RelationalConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
 use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
+use Waffle\Commons\Contracts\HttpClient\ConcurrentClientInterface;
+use Waffle\Commons\Contracts\Reactive\BroadcastBufferInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
 use Waffle\Commons\Contracts\Service\ReflectionServiceInterface;
@@ -52,6 +62,7 @@ use Waffle\Commons\Contracts\Telemetry\NullTracer;
 use Waffle\Commons\Contracts\Telemetry\TracerInterface;
 use Waffle\Commons\Contracts\Validation\ValidatorInterface;
 use Waffle\Commons\Data\Connection\PDOConnectionPool;
+use Waffle\Commons\Data\Middleware\TransactionIsolationMiddleware;
 use Waffle\Commons\Data\Migration\MigrationRunner;
 use Waffle\Commons\ErrorHandler\Middleware\ErrorHandlerMiddleware;
 use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
@@ -88,13 +99,19 @@ use Waffle\Commons\Telemetry\Middleware\TracingMiddleware;
 use Waffle\Commons\TelemetryOtel\Factory\OtelTracerFactory;
 use Waffle\Commons\TelemetryOtel\Propagation\W3CTraceContextPropagator;
 use Waffle\Commons\Utils\Validation\AssertValidator;
+use Waffle\Event\Listener\BroadcastFlushListener;
+use Waffle\Event\Listener\DeferredTaskFlushListener;
 use Waffle\Event\Listener\OrphanedConnectionListener;
 use Waffle\Event\TerminateEvent;
 use Waffle\Handler\ControllerArgumentResolver;
 use Waffle\Handler\ControllerDispatcher;
+use Waffle\Reactive\RequestBroadcastBuffer;
+use Waffle\Reactive\Sse\SseBroadcastTransport;
 use Waffle\Service\ReflectionService;
 use Workspace\Discovery\EventListenerDiscovery;
 use Workspace\Kernel;
+use Workspace\WebAuthn\InMemoryChallengeStore;
+use Workspace\WebAuthn\InMemoryCredentialRepository;
 
 /**
  * Code d'assemblage : monte les composants de l'application.
@@ -202,6 +219,12 @@ final class AppKernelFactory
             $tracer,
             $tracePropagator,
         );
+        // AXE 2 (ASYNC-02) : le client PSR-18 brut implémente aussi
+        // ConcurrentClientInterface (sendRequests/promise). On l'expose sous CE
+        // contrat — distinct du ClientInterface décoré par le pont d'auth plus
+        // bas — pour les contrôleurs de fan-out concurrent. Stateless (readonly),
+        // donc aucun reset requis.
+        $container->set(ConcurrentClientInterface::class, $httpClient);
 
         // 3-bis. Pont d'Authentification Universel (RFC-021, paquet waffle-commons/auth).
         // Secret partagé fail-closed : absent ou < 32 octets ⇒ avortement du boot
@@ -241,6 +264,29 @@ final class AppKernelFactory
                 ),
             ]);
         }
+
+        // AXE 6 (AUTH-01) : schéma WebAuthn / passkeys. Le cœur cryptographique
+        // (web-auth/webauthn-lib) vit dans l'adaptateur ; les deux moitiés
+        // *stateful* (dépôt de credentials + store de défis) sont fournies par
+        // l'app et enregistrées comme services resettables (vidés à chaque boucle
+        // worker). L'authenticator entrant rejoint la liste du pont ; le bookend
+        // de cérémonie (WebAuthnCeremony) est exposé pour les contrôleurs de démo.
+        $rpId = $config->getString('waffle.auth.webauthn.relying_party_id') ?? 'localhost';
+        $rpName = $config->getString('waffle.auth.webauthn.relying_party_name') ?? 'Waffle Workspace';
+        /** @var list<string> $webAuthnOrigins */
+        $webAuthnOrigins = $config->getArray(key: 'waffle.auth.webauthn.allowed_origins') ?? ['https://localhost:8443'];
+        $webAuthnVerifier = new WebAuthnLibAdapter($rpId, $rpName, $webAuthnOrigins);
+        $container->set(WebAuthnVerifierInterface::class, $webAuthnVerifier);
+
+        $credentialRepository = new InMemoryCredentialRepository();
+        $container->set(CredentialRepositoryInterface::class, $credentialRepository);
+        $challengeStore = new InMemoryChallengeStore();
+        $container->set(InMemoryChallengeStore::class, $challengeStore);
+
+        $webAuthnCeremony = new WebAuthnCeremony($webAuthnVerifier, $credentialRepository);
+        $container->set(WebAuthnCeremony::class, $webAuthnCeremony);
+
+        $authenticators[] = new WebAuthnAuthenticator($webAuthnVerifier, $challengeStore, $credentialRepository);
 
         $authBridge = new AuthenticationBridge($securityContext, $authenticators);
         $container->set(AuthenticationBridgeInterface::class, $authBridge);
@@ -347,6 +393,43 @@ final class AppKernelFactory
         //    une fois tous ses collaborateurs prêts — injection par constructeur (ARCH-03).
         $kernelLogger = new StreamLogger(channel: LogChannel::CORE);
 
+        // 5c. AXE 3 (REACTIVE-01) : tampon de diffusion à portée requête + transport
+        //     SSE. Les write-hooks `#[Broadcast]` y enregistrent les mutations SANS
+        //     I/O ; le BroadcastFlushListener draine et pousse en fin de requête. Le
+        //     tampon est enregistré sous son contrat (resettable ⇒ vidé par
+        //     Container::reset() à chaque boucle worker) pour que les contrôleurs et
+        //     les DTO mutables l'injectent. Le sink SSE écrit sur stderr — la sortie
+        //     conteneur sert de collecteur de démo (`docker logs`).
+        $broadcastBuffer = new RequestBroadcastBuffer();
+        $container->set(BroadcastBufferInterface::class, $broadcastBuffer);
+        $broadcastLogger = new StreamLogger(channel: LogChannel::APP);
+        $broadcastTransport = new SseBroadcastTransport(sink: static function (string $frame) use (
+            $broadcastLogger,
+        ): void {
+            $broadcastLogger->info('Trame SSE diffusée : {frame}', ['frame' => $frame]);
+        });
+        $listenerProvider->addListener(
+            TerminateEvent::class,
+            new BroadcastFlushListener($broadcastBuffer, $broadcastTransport),
+        );
+
+        // 5d. AXE 2 (ASYNC-01) : runner de tâches différées (finish-request). Les
+        //     contrôleurs y diffèrent du travail court post-réponse sous un budget
+        //     borné ; le DeferredTaskFlushListener les draine sur TerminateEvent —
+        //     APRÈS le flush de diffusion (le temps réel est plus sensible à la
+        //     latence). Le runner porte l'unique état à portée requête (sa file) et
+        //     implémente ResettableInterface : il est enregistré sous son contrat et
+        //     vidé à chaque boucle worker.
+        $taskRunner = new DeferredTaskRunner(
+            budget: DeferredTaskRunner::DEFAULT_BUDGET,
+            logger: new StreamLogger(channel: LogChannel::APP),
+        );
+        $container->set(TaskRunnerInterface::class, $taskRunner);
+        $listenerProvider->addListener(
+            TerminateEvent::class,
+            new DeferredTaskFlushListener($taskRunner, $kernelLogger),
+        );
+
         // DIAG-03 (dev) : alerte de fin de requête sur les connexions non libérées.
         // Sur TerminateEvent (après émission de la réponse), le listener inspecte le
         // tracer : un handle PDO encore emprunté ⇒ warning (fuite probable en worker) ;
@@ -391,6 +474,17 @@ final class AppKernelFactory
 
             // Middleware d'en-têtes sécurisés.
             $stack->add(middleware: new SecureHeadersMiddleware());
+
+            // 8b. AXE 4 (DBAL-02) : transaction failsafe par requête d'écriture.
+            //     Placé APRÈS la sécurité et JUSTE avant le dispatcher terminal :
+            //     il ouvre une transaction sur une connexion épinglée
+            //     (beginRequestScope) pour chaque verbe non-sûr, *commit* au retour
+            //     2xx et *rollback* sur toute exception — un write à moitié
+            //     appliqué ne fuit jamais d'une itération worker à l'autre. Le pool
+            //     relationnel est déjà lié au conteneur par registerDataServices().
+            /** @var RelationalConnectionPoolInterface $relationalPool */
+            $relationalPool = $container->get(RelationalConnectionPoolInterface::class);
+            $stack->add(middleware: new TransactionIsolationMiddleware($relationalPool));
         }
 
         // 9. Construction du Kernel par injection de constructeur (ARCH-03) : tous les
@@ -454,6 +548,8 @@ final class AppKernelFactory
 
         $connectionPool = self::buildConnectionPool($config, $tracker);
         $container->set(ConnectionPoolInterface::class, $connectionPool);
+        // Contrat relationnel typé : les dépôts SQL s'injectent dessus pour un accès PDO typé.
+        $container->set(RelationalConnectionPoolInterface::class, $connectionPool);
         $container->set(PDOConnectionPool::class, $connectionPool);
 
         $migrationRunner = new MigrationRunner(pool: $connectionPool, config: $config);
