@@ -17,9 +17,11 @@ declare(strict_types=1);
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Config\DotEnv;
 use Waffle\Commons\Console\Command\CacheClearCommand;
+use Waffle\Commons\Console\Command\ContainerCompileCommand;
 use Waffle\Commons\Console\Command\DataWarmupCommand;
 use Waffle\Commons\Console\Command\MemoryAuditCommand;
 use Waffle\Commons\Console\Command\MigrateCommand;
+use Waffle\Commons\Console\Command\RouteCompileCommand;
 use Waffle\Commons\Console\Command\RouteListCommand;
 use Waffle\Commons\Console\Command\SecurityAuditCommand;
 use Waffle\Commons\Console\ConsoleApplication;
@@ -45,6 +47,7 @@ use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Runtime\Audit\ProcessAuditRunner;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
+use Waffle\Commons\Auth\SecurityContext;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Security;
 use Workspace\Factory\AppKernelFactory;
@@ -62,7 +65,9 @@ $container = new Container();
 $envRegistry = array_merge(new DotEnv($root)->load(), getenv());
 $config = new Config(configDir: $rootConfig, environment: Constant::ENV_DEV, env: $envRegistry);
 $security = new Security($config);
-$secureContainer = new SecureContainer($container, $security);
+// AUTHZ-01 : SecurityContext vierge pour la CLI (aucune requête HTTP, donc aucun
+// voter #[Voter] exécuté ; satisfait simplement le SecureContainer).
+$secureContainer = new SecureContainer($container, $security, new SecurityContext());
 $cache = AppKernelFactory::buildCache($root, $config);
 $router = new Router(directory: $config->getString(key: 'waffle.paths.controllers'));
 
@@ -126,5 +131,18 @@ $app->add(command: new MakeHttpClientCommand());
 $app->add(command: new MakeMiddlewareCommand());
 $app->add(command: new MakeRepositoryCommand());
 $app->add(command: new MakeVoterCommand());
+
+// Commandes de compilation AOT (AXE 1 / RFC-019). `container:compile` lit la carte
+// de définitions du conteneur *concret* (réflexion sur la propriété `definitions`)
+// et émet une classe CompiledContainer sans réflexion ; `route:compile` sérialise
+// la table de routage découverte. Au boot avec WAFFLE_AOT=1, le kernel charge ces
+// artefacts (chemins par défaut : var/cache/CompiledContainer.php et
+// var/cache/routes.trie.php) et court-circuite la découverte par réflexion sur le
+// chemin chaud. Le conteneur est verrouillé d'abord pour refléter l'état figé du
+// runtime ; on passe le conteneur concret (et non le SecureContainer décoré) car
+// le compilateur inspecte sa propriété `definitions`.
+$container->lock();
+$app->add(command: new ContainerCompileCommand(container: $container));
+$app->add(command: new RouteCompileCommand(router: $router->boot(container: $secureContainer)));
 
 exit($app->run());

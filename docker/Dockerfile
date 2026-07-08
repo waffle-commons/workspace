@@ -25,6 +25,7 @@ WORKDIR /waffle-commons
 # (oci8/pdo_oci, pulls Instant Client) and MSSQL (sqlsrv/pdo_sqlsrv, pulls MS ODBC)
 # — are opt-in: append them to the list below if your sandbox needs them.
 RUN install-php-extensions \
+	apcu \
 	gd \
 	intl \
 	zip \
@@ -37,6 +38,7 @@ RUN install-php-extensions \
     apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip git curl unzip; \
     pecl install xdebug yaml && \
     docker-php-ext-enable xdebug yaml; \
+    echo "apc.enable_cli=1" >> "$PHP_INI_DIR/conf.d/docker-php-ext-apcu.ini"; \
     rm -rf /var/lib/apt/lists/*
 
 # Install Starship silently

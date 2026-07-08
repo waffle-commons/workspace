@@ -24,8 +24,11 @@
     order php_server before file_server
 }
 
-# Define the server for our development environment
-localhost {
+# Define the server for our development environment. The site address is driven by the
+# SERVER_NAME env (default: localhost with auto-HTTPS). A service started with
+# SERVER_NAME=":80" (e.g. waffle-downstream in the distributed-trace demo) is then served
+# as plain HTTP on the internal network — no auto-HTTPS redirect for service-to-service calls.
+{$SERVER_NAME:localhost} {
 # Set the document root to our public directory
     root * /waffle-commons/workspace/public
 # Enable compression

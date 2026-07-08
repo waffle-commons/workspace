@@ -5,7 +5,12 @@ php-version = "8.5.5"
 [source]
 paths = ["app/", "tests/"]
 includes = ["vendor"]
-excludes = []
+# Le workspace lie les composants waffle-commons par symlink (vendor/waffle-commons/* -> ../../../*).
+# Mago suit ces symlinks ; sans exclusion il descendrait dans le `vendor/` privé de CHAQUE composant
+# et y trouverait des copies transitives redondantes des contrats (parfois périmées) — d'où des
+# définitions de symboles en double. Toutes les dépendances utiles sont déjà aplaties à la racine de
+# `vendor/`, donc on exclut uniquement ces vendors imbriqués.
+excludes = ["vendor/waffle-commons/*/vendor", "vendor/waffle-commons/*/vendor/**"]
 
 # -----------------------------------------------------------------------------
 # Mago Guard — périmètre architectural standardisé Beta 0.
@@ -64,7 +69,7 @@ no-ini-set = { enabled = false }
 
 # Beta 0 : le workspace est le playground d'intégration — les avertissements de
 # complexité y sont du bruit.
-cyclomatic-complexity = { enabled = false }
+cyclomatic-complexity = { enabled = true, threshold = 50 }
 too-many-methods = { enabled = false }
 kan-defect = { enabled = false }
 halstead = { enabled = false }
