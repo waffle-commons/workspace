@@ -34,7 +34,10 @@
             "url": "../telemetry-otel",
             "canonical": false,
             "options": {
-                "symlink": false
+                "versions": {
+                    "waffle-commons/telemetry-otel": "1.0.0-dev"
+                },
+                "symlink": true
             }
         },
         {
@@ -42,7 +45,10 @@
             "url": "../telemetry",
             "canonical": false,
             "options": {
-                "symlink": false
+                "versions": {
+                    "waffle-commons/telemetry": "1.0.0-dev"
+                },
+                "symlink": true
             }
         },
         {
@@ -307,7 +313,9 @@
     "config": {
         "allow-plugins": {
             "carthage-software/mago": true,
-            "cyclonedx/cyclonedx-php-composer": true
+            "cyclonedx/cyclonedx-php-composer": true,
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     }
 }
