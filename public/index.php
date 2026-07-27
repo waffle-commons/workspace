@@ -30,7 +30,10 @@ $kernel = AppKernelFactory::create(env: $env, debug: $debug);
 // STAB-01 : la GlobalsFactory et l'émetteur sont des instances par processus,
 // injectées explicitement dans le runtime (aucun état statique partagé).
 $maxRequests = (int)($_SERVER['MAX_REQUESTS'] ?? 500);
-new WaffleRuntime(new GlobalsFactory(), new ResponseEmitter())
+// SEC-03 (Beta6 audit) : racine de dépôt des uploads — permet à UploadedFile::
+// moveTo() de vérifier le confinement via Assert::within() plutôt que de se fier
+// uniquement à Assert::safePath() (qui ne rejette que les segments littéraux `..`).
+new WaffleRuntime(new GlobalsFactory(uploadBaseDir: APP_ROOT . '/var/uploads'), new ResponseEmitter())
     ->loop(
         kernel: $kernel,
         maxRequests: $maxRequests

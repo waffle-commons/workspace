@@ -12,20 +12,22 @@ use Waffle\Commons\Contracts\Security\Attribute\PublicAccess;
 use Waffle\Core\BaseController;
 use Waffle\Exception\RenderingException;
 
-use function bin2hex;
-use function random_bytes;
-use function sprintf;
-
 /**
  * Vitrine de la transaction failsafe par requête (AXE 4 / DBAL-02).
  *
  * Cette route est un *write* (POST) : le {@see \Waffle\Commons\Data\Middleware\TransactionIsolationMiddleware}
  * — placé après la sécurité, avant le dispatcher — a déjà ouvert UNE transaction
  * sur une connexion épinglée (`beginRequestScope`). Tout `acquire()` du pool
- * relationnel pendant la requête rend donc CETTE même connexion : l'INSERT
- * ci-dessous s'exécute dans la transaction du middleware. Au retour normal du
- * contrôleur, le middleware *commit* ; sur toute exception, il *rollback* — un
- * write à moitié appliqué ne peut jamais fuir d'une itération worker à l'autre.
+ * relationnel pendant la requête rend donc CETTE même connexion : l'instruction
+ * ci-dessous s'exécute dans la transaction du middleware, qui *commit* au
+ * retour normal et *rollback* sur toute exception.
+ *
+ * L'instruction est volontairement neutre vis-à-vis du schéma (`SELECT 1`) :
+ * en production, ce serait un INSERT / UPDATE via un dépôt authentifié. Ce qui
+ * est démontré ici, c'est la FRONTIÈRE transactionnelle, pas la requête elle-même
+ * — un endpoint `#[PublicAccess]` sans `#[RequiresCsrfToken]` ni limitation de
+ * débit ne doit jamais committer une écriture durable (audit sécurité Beta6
+ * AXE2 [FIX-01] #10 ; même correctif que `WriteDemoController` dans skeleton).
  *
  * La route est `#[PublicAccess]` pour rester atteignable sans jeton dans la démo
  * (une vraie application la protège par `#[Voter]` + `#[RequiresCsrfToken]`).
@@ -34,7 +36,7 @@ use function sprintf;
 final class TransactionDemoController extends BaseController
 {
     /**
-     * POST /data/users : insère un utilisateur dans la transaction de requête.
+     * POST /data/users : exécute une lecture no-op dans la transaction de requête.
      *
      * @throws RenderingException
      * @throws \PDOException Propagée ⇒ le middleware effectue le rollback (DBAL-02).
@@ -44,25 +46,16 @@ final class TransactionDemoController extends BaseController
     public function createUser(RelationalConnectionPoolInterface $pool): ResponseInterface
     {
         // Même bail épinglé que celui sur lequel le middleware a ouvert la
-        // transaction : l'INSERT participe donc à CETTE transaction.
+        // transaction : la lecture participe donc à CETTE transaction.
         $pdo = $pool->acquire()->pdo();
-
-        $id = bin2hex(random_bytes(16));
-        $email = sprintf('demo-%s@waffle.dev', $id);
-
-        $statement = $pdo->prepare('INSERT INTO users (id, email, password_hash) VALUES (:id, :email, :hash)');
-        $statement->execute([
-            ':id' => $id,
-            ':email' => $email,
-            // Démo : empreinte non secrète ; une vraie app utilise password_hash().
-            ':hash' => bin2hex(random_bytes(16)),
-        ]);
+        $statement = $pdo->query('SELECT 1');
+        $applied = $statement !== false;
 
         return $this->jsonResponse(data: [
-            'id' => $id,
-            'email' => $email,
+            'applied' => $applied,
+            'in_transaction' => $pdo->inTransaction(),
             'committed_by' => 'transaction-isolation-middleware',
-            'note' => 'INSERT exécuté dans la transaction ouverte par le middleware ; commit au retour 2xx.',
-        ], status: 201);
+            'note' => 'SELECT 1 exécuté dans la transaction ouverte par le middleware ; aucune écriture durable (démo publique sans CSRF).',
+        ]);
     }
 }

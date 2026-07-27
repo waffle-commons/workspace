@@ -31,6 +31,7 @@ use Waffle\Commons\Auth\WebAuthn\WebAuthnLibAdapter;
 use Waffle\Commons\Cache\Factory\CacheFactory;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Config\DotEnv;
+use Waffle\Commons\Config\Exception\InvalidConfigurationException;
 use Waffle\Commons\Container\Container;
 use Waffle\Commons\Contracts\Async\TaskRunnerInterface;
 use Waffle\Commons\Contracts\Auth\AuthenticationBridgeInterface;
@@ -48,6 +49,7 @@ use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionTrackerInterface;
 use Waffle\Commons\Contracts\Data\Connection\RelationalConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
+use Waffle\Commons\Contracts\Enum\Failsafe;
 use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
 use Waffle\Commons\Contracts\HttpClient\ConcurrentClientInterface;
 use Waffle\Commons\Contracts\Reactive\BroadcastBufferInterface;
@@ -124,6 +126,19 @@ final class AppKernelFactory
      */
     public static function create(string $env = Constant::ENV_PROD, bool $debug = false): KernelInterface
     {
+        // Fail-closed : `APP_DEBUG=true` en production exposerait des traces
+        // (JsonErrorRenderer verbeux) et désactiverait potentiellement des
+        // durcissements dev-only ⇒ on refuse de démarrer plutôt que de servir
+        // du trafic prod avec le mode debug actif (audit sécurité Beta6 AXE2
+        // [FIX-01] #11 ; même garde que le secret CSRF / le secret du pont
+        // d'authentification ci-dessous).
+        if ($env === Constant::ENV_PROD && $debug) {
+            throw new RuntimeException(
+                'Configuration invalide : APP_ENV=prod avec APP_DEBUG=true est refusé (fail-closed). '
+                . 'Désactivez le mode debug en production.',
+            );
+        }
+
         /** @var string $root */
         $root = APP_ROOT;
         $rootConfig = $root . DIRECTORY_SEPARATOR . APP_CONFIG;
@@ -183,14 +198,38 @@ final class AppKernelFactory
         $envRegistry = array_merge(new DotEnv($root)->load(), $processEnv);
 
         // 3. Instanciation de la Config concrète (paquet waffle-commons/config).
-        $config = new Config(configDir: $rootConfig, environment: $env, env: $envRegistry);
+        // FIX-01 (Beta6 audit) : une config malformée ne doit pas traverser le
+        // boot du kernel sans être rattrapée — l'ErrorHandlerMiddleware n'existe
+        // pas encore à ce stade du pipeline. On retente avec Failsafe::ENABLED
+        // (défauts minimaux sûrs) pour que le boot aboutisse et que l'app puisse
+        // au moins démarrer et journaliser le vrai problème, plutôt que le worker
+        // ne meure sur une exception non gérée.
+        try {
+            $config = new Config(configDir: $rootConfig, environment: $env, env: $envRegistry);
+        } catch (InvalidConfigurationException $e) {
+            new StreamLogger(channel: LogChannel::CORE)->critical('Configuration failed to load; falling back to Failsafe defaults.', [
+                'exception' => $e->getMessage(),
+            ]);
+            $config = new Config(
+                configDir: $rootConfig,
+                environment: $env,
+                failsafe: Failsafe::ENABLED,
+                env: $envRegistry,
+            );
+        }
         // Exposée dans le conteneur pour l'injection dans les contrôleurs
         // (ex. AuthDemoController) via le résolveur d'arguments PSR-11.
         $container->set(ConfigInterface::class, $config);
         // STAB-01 (Beta-1) : plus de GlobalsFactory statique — WaffleRuntime construit
         // sa propre instance par processus. L'enforcement des hôtes de confiance vit
         // dans TrustedHostMiddleware (RFC-003 §3.2).
-        $trustedHosts = $config->getArray(key: 'waffle.trusted_hosts');
+        // FIX-01 (audit Beta6) : le `?? []` manquait ici (présent côté skeleton) —
+        // sous Failsafe::ENABLED, `trusted_hosts` est absent de l'arbre de config
+        // minimal, TrustedHostMiddleware recevait alors `null` au lieu d'un array
+        // et le boot échouait quand même plus loin (TypeError), avec la même
+        // gravité que l'exception non rattrapée que ce correctif visait à éviter.
+        /** @var list<string> $trustedHosts */
+        $trustedHosts = $config->getArray(key: 'waffle.trusted_hosts') ?? [];
 
         // SEC-01 (Beta-1, option C) : gestionnaire CSRF sans état, basé sur un HMAC
         // lié à un SID anonyme par navigateur. Le secret vient de la config (avec
@@ -370,6 +409,12 @@ final class AppKernelFactory
         // (SEC-01 fixation de session) : un SID présenté avant login est régénéré.
         $stack->add(middleware: new AnonymousSessionMiddleware($securityContext));
 
+        // Journal du canal SECURITY, partagé par AuthenticationMiddleware,
+        // CsrfMiddleware et SecurityMiddleware — les trois échecs d'autorisation
+        // convergent vers la même piste d'audit (IP + raison), au lieu de finir
+        // en CRITICAL non différencié sur le canal générique app.
+        $secureLogger = new StreamLogger(channel: LogChannel::SECURITY);
+
         // 5a-ter. Pont d'Authentification Universel (RFC-021 §3.2) : authentifie
         // la requête entrante (assertion de passerelle / Bearer JWT / clé API),
         // alimente le SecurityContext et publie l'identité vérifiée en attribut
@@ -378,7 +423,7 @@ final class AppKernelFactory
         // du composant security garde la décision d'accès). Ordre canonique :
         // ErrorHandler → TrustedHost → AnonymousSession → Authentication →
         // Routing → Csrf → Security → SecureHeaders → Dispatcher.
-        $stack->add(middleware: new AuthenticationMiddleware($authBridge));
+        $stack->add(middleware: new AuthenticationMiddleware($authBridge, $secureLogger));
 
         // 5b. Mise en place du dispatcher d'événements.
         $listenerProvider = new ListenerProvider();
@@ -472,12 +517,11 @@ final class AppKernelFactory
             // Il relie le Router au pipeline.
             $routingMiddleware = new CoreRoutingMiddleware($router, $responseFactory);
             // Il relie le SecureMiddleware au pipeline.
-            $secureLogger = new StreamLogger(channel: LogChannel::SECURITY);
             $secureMiddleware = new SecurityMiddleware(secureContainer: $secureContainer, logger: $secureLogger);
             $stack->add(middleware: $routingMiddleware);
             // Le CsrfMiddleware doit s'exécuter après Routing (il lit `_classname`
             // et `_method` pour repérer #[RequiresCsrfToken]) et avant Security.
-            $stack->add(middleware: new CsrfMiddleware($csrfTokenManager));
+            $stack->add(middleware: new CsrfMiddleware($csrfTokenManager, $secureLogger));
             $stack->add(middleware: $secureMiddleware);
 
             // Middleware d'en-têtes sécurisés.
