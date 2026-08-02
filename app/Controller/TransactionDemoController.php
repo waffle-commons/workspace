@@ -27,7 +27,7 @@ use Waffle\Exception\RenderingException;
  * est démontré ici, c'est la FRONTIÈRE transactionnelle, pas la requête elle-même
  * — un endpoint `#[PublicAccess]` sans `#[RequiresCsrfToken]` ni limitation de
  * débit ne doit jamais committer une écriture durable (audit sécurité Beta6
- * AXE2 [FIX-01] #10 ; même correctif que `WriteDemoController` dans skeleton).
+ * AXE2 [FIX-01] #11 ; même correctif que `WriteDemoController` dans skeleton).
  *
  * La route est `#[PublicAccess]` pour rester atteignable sans jeton dans la démo
  * (une vraie application la protège par `#[Voter]` + `#[RequiresCsrfToken]`).

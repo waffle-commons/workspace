@@ -2,6 +2,7 @@
     "name": "waffle-commons/workspace",
     "description": "Local development and integration testing environment for Waffle framework and components.",
     "type": "project",
+    "license": "MIT",
     "require": {
         "php": "^8.5",
         "ext-yaml": "*",

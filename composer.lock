@@ -3534,7 +3534,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "384a3b22a0a69a47cfa983e41306208aca7371b3"
+                "reference": "9adec27c6386d0bff335d53e6539ccf4902fcfdc"
             },
             "require": {
                 "ext-openssl": "*",
