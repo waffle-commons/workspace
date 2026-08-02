@@ -113,6 +113,7 @@ use Waffle\Reactive\Sse\SseBroadcastTransport;
 use Waffle\Service\ReflectionService;
 use Workspace\Discovery\EventListenerDiscovery;
 use Workspace\Kernel;
+use Workspace\Security\DemoSubjectResolver;
 use Workspace\WebAuthn\InMemoryChallengeStore;
 use Workspace\WebAuthn\InMemoryCredentialRepository;
 
@@ -350,7 +351,20 @@ final class AppKernelFactory
         // 4. Décoration du container par le SecureContainer. Le SecurityContext
         // (alimenté par le pont d'authentification ci-dessus) est injecté pour que
         // les voters #[Voter] reçoivent l'identité authentifiée (AUTHZ-01).
-        $secureContainer = new SecureContainer($container, $security, $securityContext);
+        // SEC-05 : le résolveur de sujet de la démo est injecté ICI (et non dans
+        // la SecurityMiddleware) — la résolution est paresseuse et conditionnée
+        // aux voters : elle ne s'exécute que lorsque l'action dispatchée porte au
+        // moins un #[Voter]. Les routes #[PublicAccess] sans voter n'invoquent
+        // jamais le résolveur (aucun coût d'hydratation, aucun faux 403 sur un
+        // identifiant introuvable). Un échec du résolveur sur une route votée ⇒
+        // requête refusée (fail-closed, 403 journalisé), jamais un repli
+        // silencieux sur null.
+        $secureContainer = new SecureContainer(
+            $container,
+            $security,
+            $securityContext,
+            subjectResolver: new DemoSubjectResolver(),
+        );
 
         // 5. Instanciation des middlewares du pipeline.
         $stack = new MiddlewareStack();
@@ -516,7 +530,12 @@ final class AppKernelFactory
             // Création du middleware de pont et ajout dans le stack.
             // Il relie le Router au pipeline.
             $routingMiddleware = new CoreRoutingMiddleware($router, $responseFactory);
-            // Il relie le SecureMiddleware au pipeline.
+            // Il relie le SecureMiddleware au pipeline. SEC-05 : la résolution du
+            // sujet ({name} de GET /hello/{name} → ressource métier) vit
+            // désormais DANS le SecureContainer (injectée à sa construction,
+            // paresseuse et conditionnée aux voters) — la middleware se contente
+            // de déclencher l'analyse et de journaliser les refus, y compris un
+            // échec fail-closed du résolveur.
             $secureMiddleware = new SecurityMiddleware(secureContainer: $secureContainer, logger: $secureLogger);
             $stack->add(middleware: $routingMiddleware);
             // Le CsrfMiddleware doit s'exécuter après Routing (il lit `_classname`
