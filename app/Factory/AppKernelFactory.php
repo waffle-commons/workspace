@@ -382,7 +382,9 @@ final class AppKernelFactory
         //     Compteurs en mémoire partagée APCu (jamais sur le tas worker) ; repli no-op
         //     sans APCu. Placé tôt : /waffle-metrics court-circuite avant le pipeline applicatif
         //     et applique sa propre sécurité (fail-closed : localhost uniquement par défaut).
-        $metricsRegistry = apcu_enabled() ? new MetricsRegistry(new ApcuMetricStore()) : new NullMetricsRegistry();
+        $metricsRegistry = ApcuMetricStore::isAvailable()
+            ? new MetricsRegistry(new ApcuMetricStore())
+            : new NullMetricsRegistry();
         $container->set(MetricsRegistryInterface::class, $metricsRegistry);
 
         $collectors = [new MemoryCollector(), new GcCollector(), new PoolUtilizationCollector()];
