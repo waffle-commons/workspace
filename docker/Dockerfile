@@ -86,7 +86,18 @@ RUN \
     touch /home/${USER}/.bash_history; chown -R ${USER}:${USER} /home/${USER}/.bash_history; \
     touch /home/${USER}/.bashrc; chown -R ${USER}:${USER} /home/${USER}/.bashrc; \
     chmod 777 /tmp/xdebug.log; \
-    chown -R ${USER}:${USER} /waffle-commons;
+    chown -R ${USER}:${USER} /waffle-commons; \
+    chown ${USER}:${USER} /home/${USER};
+
+# The monorepo arrives as a bind mount, so its ownership is decided by the host,
+# not by this image (Docker Desktop/macOS virtiofs intermittently reports uid 0
+# instead of 1000). Git then refuses the repository with "detected dubious
+# ownership", Composer can no longer guess the root package version and prints a
+# warning that the zero-output mago gate (scripts/dod.sh) counts as a diagnostic.
+# The allowlist disables that check: this container is single-user and the only
+# repositories in it are the ones we mounted on purpose. Written to the system
+# config because /home/${USER} is not writable by ${USER}.
+RUN git config --system --add safe.directory '*'
 
 # Switch to non-root user
 USER ${USER}
