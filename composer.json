@@ -2,6 +2,7 @@
     "name": "waffle-commons/workspace",
     "description": "Local development and integration testing environment for Waffle framework and components.",
     "type": "project",
+    "license": "MIT",
     "require": {
         "php": "^8.5",
         "ext-yaml": "*",
@@ -271,8 +272,8 @@
             "WorkspaceTests\\": "tests/app/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": false,
+    "minimum-stability": "beta",
+    "prefer-stable": true,
     "require-dev": {
         "phpunit/phpunit": "^12.5",
         "carthage-software/mago": "^1.29",
