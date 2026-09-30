@@ -24,12 +24,15 @@ WORKDIR /waffle-commons
 # plus the NoSQL clients (MongoDB, Redis). The heavy proprietary drivers — Oracle
 # (oci8/pdo_oci, pulls Instant Client) and MSSQL (sqlsrv/pdo_sqlsrv, pulls MS ODBC)
 # — are opt-in: append them to the list below if your sandbox needs them.
+# pcntl : signaux POSIX (SIGTERM) pour les consommateurs CLI longue durée — l'arrêt
+# propre de `bin/waffle queue:work` (beta7 [QUEUE-02]) en dépend.
 RUN install-php-extensions \
 	apcu \
 	gd \
 	intl \
 	zip \
 	opcache \
+	pcntl \
 	pdo_pgsql \
 	pdo_mysql \
 	pdo_sqlite \
