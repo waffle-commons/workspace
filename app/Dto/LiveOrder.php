@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workspace\Dto;
 
+use IgorPhp\IgorBundle\Attribute\WorkerSafe;
 use Waffle\Commons\Contracts\Reactive\Attribute\Broadcast;
 use Waffle\Commons\Contracts\Reactive\BroadcastBufferInterface;
 use Waffle\Commons\Contracts\Reactive\MutationRecord;
@@ -53,6 +54,9 @@ final class LiveOrder
     /**
      * Fait avancer le statut de la commande, ce qui déclenche la diffusion.
      */
+    #[WorkerSafe(
+        reason: 'DTO de démonstration créé par requête ; la mutation passe par le write-hook #[Broadcast] de sa propre instance',
+    )]
     public function advanceTo(string $status): void
     {
         $this->status = $status;
