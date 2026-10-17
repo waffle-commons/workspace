@@ -110,7 +110,7 @@ services:
   # que le contraste avec le proxy PSR-18 non bloquant et borné en mémoire
   # de la passerelle reste visible de bout en bout.
   legacy-backend:
-    image: php:8.5-cli
+    image: php:8.5-cli@sha256:54d82ff9be6bd198145e90c917fc9b2e24230b42e52def8deb3554baf61c451a
     container_name: legacy-backend
     working_dir: /app
     # Routeur mono-fichier servi par le serveur intégré ; toute requête est
@@ -139,7 +139,7 @@ services:
   # Le port 6379 est aussi exposé sur l'hôte pour les sondes manuelles (redis-cli)
   # et les serveurs MCP exécutés sur l'hôte (cf. ../MCP.md).
   waffle-redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
     container_name: waffle-redis
     ports:
       - "6379:6379"
@@ -157,7 +157,7 @@ services:
   # L'application s'y connecte via le nom de service (DB_HOST=waffle-postgres) ;
   # le port 5432 est aussi exposé sur l'hôte pour les sondes manuelles (psql, IDE).
   waffle-postgres:
-    image: postgres:17-alpine
+    image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
     container_name: waffle-postgres
     environment:
       # Identifiants de développement local (résolus depuis .env) —
@@ -187,7 +187,7 @@ services:
   # l'hôte pour les sondes manuelles (mongosh) et les serveurs MCP exécutés sur
   # l'hôte (cf. ../MCP.md).
   waffle-mongo:
-    image: mongo:7
+    image: mongo:7@sha256:35a5926f71f8b6cb19206bee928c5a85f241a8be99f20c81abe35ae78a73415d
     container_name: waffle-mongo
     ports:
       - "27017:27017"
