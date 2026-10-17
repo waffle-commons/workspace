@@ -81,6 +81,7 @@ use Waffle\Commons\HttpClient\Security\SsrfGuard;
 use Waffle\Commons\Log\Channel\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
+use Waffle\Commons\Pipeline\Middleware\ProbeMiddleware;
 use Waffle\Commons\Pipeline\Middleware\SecureHeadersMiddleware;
 use Waffle\Commons\Pipeline\Middleware\TrustedHostMiddleware;
 use Waffle\Commons\Pipeline\MiddlewareStack;
@@ -398,6 +399,17 @@ final class AppKernelFactory
             : new NullMetricsRegistry();
         $container->set(MetricsRegistryInterface::class, $metricsRegistry);
 
+        // 5u. Cache PSR-16 (RFC-013), pool de connexions + migration runner (RFC-022).
+        //     Construits dès ici : les sondes de disponibilité (5w) en ont besoin.
+        $connectionPool = self::buildConnectionPool($config, $connectionTracker);
+        $rawCache = self::registerDataServices($container, $root, $config, $connectionPool, $connectionTracker);
+
+        // 5v. AXE 5 / OBS-02 : décorateur cache-hit-ratio (`waffle_cache_hits_total` /
+        //     `_misses_total`). Réenregistré dans le conteneur : Router et tout
+        //     consommateur reçoivent la version mesurée.
+        $cache = new MeteredCache($rawCache, $metricsRegistry);
+        $container->set(CacheInterface::class, $cache);
+
         $collectors = [new MemoryCollector(), new GcCollector(), new PoolUtilizationCollector()];
         if ($metricsRegistry instanceof MetricsCollectorInterface) {
             $collectors[] = $metricsRegistry;
@@ -406,6 +418,19 @@ final class AppKernelFactory
         $stack->add(
             middleware: new MetricsMiddleware(
                 new PrometheusExporter($collectors),
+                $responseFactory,
+                $streamFactory,
+                null,
+                ['127.0.0.1', '::1'],
+            ),
+        );
+
+        // 5w. Sondes d'orchestrateur (OPS-01, RFC-023) — /healthz et /readyz, avant le
+        //     traçage (pas de span ni de métrique de requête) et avant TrustedHost (la
+        //     sonde kubelet porte l'IP du pod en Host). Rapport détaillé : localhost.
+        $stack->add(
+            middleware: new ProbeMiddleware(
+                HealthFactory::readinessProbe($config, $connectionPool, $rawCache, $metricsRegistry),
                 $responseFactory,
                 $streamFactory,
                 null,
@@ -523,16 +548,6 @@ final class AppKernelFactory
         // injecté sans dépendre d'un slot supplémentaire dans le conteneur.
         self::registerTerminalHandlers($container, $eventDispatcher, $root, $kernelLogger);
 
-        // 7. Cache PSR-16 (RFC-013), pool de connexions + migration runner (RFC-022).
-        $cache = self::registerDataServices($container, $root, $config, $connectionTracker);
-
-        // 7b. AXE 5 / OBS-02 : décorateur cache-hit-ratio — enveloppe le cache partagé
-        //     pour alimenter `waffle_cache_hits_total` / `_misses_total` dans le registre
-        //     APCu (jamais sur le tas worker), exposés via /waffle-metrics. Réenregistré
-        //     dans le conteneur : Router et tout consommateur reçoivent la version mesurée.
-        $cache = new MeteredCache($cache, $metricsRegistry);
-        $container->set(CacheInterface::class, $cache);
-
         // 8. Instanciation et démarrage du Router.
         $controllersPath = $config->getString(key: 'waffle.paths.controllers');
         if (is_string($controllersPath)) {
@@ -641,12 +656,12 @@ final class AppKernelFactory
         ContainerInterface $container,
         string $root,
         Config $config,
+        PDOConnectionPool $connectionPool,
         ?ConnectionTrackerInterface $tracker = null,
     ): CacheInterface {
         $cache = self::buildCache($root, $config, $tracker);
         $container->set(CacheInterface::class, $cache);
 
-        $connectionPool = self::buildConnectionPool($config, $tracker);
         $container->set(ConnectionPoolInterface::class, $connectionPool);
         // Contrat relationnel typé : les dépôts SQL s'injectent dessus pour un accès PDO typé.
         $container->set(RelationalConnectionPoolInterface::class, $connectionPool);

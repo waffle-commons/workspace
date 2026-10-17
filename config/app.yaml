@@ -11,6 +11,12 @@ waffle:
     - localhost
     # Service aval de la démo de traçage distribué (AXE 5) : reçu avec Host: waffle-downstream.
     - waffle-downstream
+  # Sondes d'orchestrateur (OPS-01, RFC-023) : /healthz (vivacité) et /readyz
+  # (disponibilité). Une sonde listée ici est indispensable : absente ou en échec,
+  # l'instance répond 503 sur /readyz.
+  health:
+    required:
+      - db.pool
   security:
     level: 10
     csrf:
