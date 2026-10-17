@@ -22,6 +22,16 @@ waffle:
     # le reste du trafic. Ensuite SIGTERM, et le grace_period de Caddy draine l'en-cours.
     drain_marker: '/tmp/waffle-draining'
   security:
+    # Limitation de débit (NET-01, RFC-017 §3.1) : seau à jetons partagé dans Redis
+    # (flux de la file, même DSN). `capacity` requêtes par `period_seconds`, rafales
+    # comprises. `on_storage_failure` : open (laisse passer, journalisé) ou closed
+    # (503). `trusted_proxies` : adresses ou plages CIDR dont on lit X-Forwarded-For.
+    rate_limit:
+      enabled: true
+      capacity: 120
+      period_seconds: 60
+      on_storage_failure: 'open'
+      trusted_proxies: []
     level: 10
     csrf:
       # Secret de signature de 32 octets ou plus pour les jetons CSRF HMAC sans état (Beta-1 / SEC-01).

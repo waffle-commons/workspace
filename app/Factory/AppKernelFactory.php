@@ -477,6 +477,10 @@ final class AppKernelFactory
         // Routing → Csrf → Security → SecureHeaders → Dispatcher.
         $stack->add(middleware: new AuthenticationMiddleware($authBridge, $secureLogger));
 
+        // 5a-ratelimit. Limitation de débit (NET-01) : après l'authentification, pour
+        // compter par sujet quand il est connu, par IP cliente sinon. Désactivable.
+        RateLimitFactory::register($stack, $config, $securityContext, $responseFactory, $secureLogger);
+
         // 5b. Mise en place du dispatcher d'événements.
         $listenerProvider = new ListenerProvider();
         $eventDispatcher = new EventDispatcher($listenerProvider);
