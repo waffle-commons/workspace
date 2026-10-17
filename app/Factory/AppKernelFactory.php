@@ -7,8 +7,10 @@ namespace Workspace\Factory;
 use PDO;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Waffle\Commons\Async\DeferredTaskRunner;
 use Waffle\Commons\Auth\AuthenticationBridge;
@@ -55,6 +57,7 @@ use Waffle\Commons\Contracts\HttpClient\ConcurrentClientInterface;
 use Waffle\Commons\Contracts\Reactive\BroadcastBufferInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
+use Waffle\Commons\Contracts\Serializer\DtoSerializerInterface;
 use Waffle\Commons\Contracts\Service\ReflectionServiceInterface;
 use Waffle\Commons\Contracts\Telemetry\Metrics\MetricsCollectorInterface;
 use Waffle\Commons\Contracts\Telemetry\Metrics\MetricsRegistryInterface;
@@ -71,6 +74,7 @@ use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use Waffle\Commons\Http\Factory\ResponseFactory;
+use Waffle\Commons\Http\Factory\ServerRequestFactory;
 use Waffle\Commons\Http\Factory\StreamFactory;
 use Waffle\Commons\HttpClient\Client;
 use Waffle\Commons\HttpClient\Security\SsrfGuard;
@@ -90,6 +94,8 @@ use Waffle\Commons\Security\Middleware\CorsMiddleware;
 use Waffle\Commons\Security\Middleware\CsrfMiddleware;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
 use Waffle\Commons\Security\Security;
+use Waffle\Commons\Serializer\Normalizer\CompiledNormalizerLoader;
+use Waffle\Commons\Serializer\Serializer;
 use Waffle\Commons\Telemetry\Cache\MeteredCache;
 use Waffle\Commons\Telemetry\Collector\GcCollector;
 use Waffle\Commons\Telemetry\Collector\MemoryCollector;
@@ -170,6 +176,11 @@ final class AppKernelFactory
         // Enregistrement de la factory PSR-17 (requise par le client HTTP).
         $streamFactory = new StreamFactory($connectionTracker);
         $container->set(StreamFactoryInterface::class, $streamFactory);
+
+        // Enregistrement de la factory PSR-17 des requêtes serveur (CARRY-04) : le pont
+        // de test waffle-commons/testing construit ses requêtes avec elle et la factory
+        // de flux ci-dessus, sans importer le composant http.
+        $container->set(ServerRequestFactoryInterface::class, new ServerRequestFactory());
 
         // Traçage distribué (AXE 5 / OBS-01). Par défaut : NullTracer + propagateur no-op
         // ⇒ surcoût ~0 et aucun en-tête de trace émis. Avec `WAFFLE_TRACING=otel`, on monte
@@ -510,7 +521,7 @@ final class AppKernelFactory
         // Closure avec lui-même en argument, cf. container/src/Container.php).
         // Le dispatcher d'événements est capturé dans la closure pour rester
         // injecté sans dépendre d'un slot supplémentaire dans le conteneur.
-        self::registerTerminalHandlers($container, $eventDispatcher);
+        self::registerTerminalHandlers($container, $eventDispatcher, $root, $kernelLogger);
 
         // 7. Cache PSR-16 (RFC-013), pool de connexions + migration runner (RFC-022).
         $cache = self::registerDataServices($container, $root, $config, $connectionTracker);
@@ -586,23 +597,39 @@ final class AppKernelFactory
     private static function registerTerminalHandlers(
         ContainerInterface $container,
         EventDispatcher $eventDispatcher,
+        string $root,
+        LoggerInterface $logger,
     ): void {
         $container->set(ReflectionServiceInterface::class, new ReflectionService());
+        // Sérialiseur des DTO (API-02) : il hydrate les paramètres #[Dto] (PUT et PATCH
+        // compris) et écrit en JSON les DTO renvoyés par les contrôleurs. Avec
+        // WAFFLE_AOT=1, il sert les normaliseurs compilés par
+        // `bin/waffle serializer:compile --source=app` ; sinon il lit les DTO par réflexion.
+        $serializer = self::buildSerializer($root, $logger);
+        $container->set(DtoSerializerInterface::class, $serializer);
         // Validateur injectable et mockable (DX-05) : enveloppe la façade statique Assert.
         $container->set(ValidatorInterface::class, new AssertValidator());
-        $container->set(ArgumentResolverInterface::class, static function (ContainerInterface $c): ArgumentResolverInterface {
+        $container->set(ArgumentResolverInterface::class, static function (ContainerInterface $c) use (
+            $serializer,
+        ): ArgumentResolverInterface {
             /** @var ReflectionServiceInterface $reflection */
             $reflection = $c->get(ReflectionServiceInterface::class);
 
-            return new ControllerArgumentResolver($c, $reflection);
+            return new ControllerArgumentResolver($c, $reflection, $serializer);
         });
         $container->set(RequestHandlerInterface::class, static function (ContainerInterface $c) use (
             $eventDispatcher,
+            $serializer,
         ): RequestHandlerInterface {
             /** @var ArgumentResolverInterface $resolver */
             $resolver = $c->get(ArgumentResolverInterface::class);
 
-            return new ControllerDispatcher(container: $c, dispatcher: $eventDispatcher, argumentResolver: $resolver);
+            return new ControllerDispatcher(
+                container: $c,
+                dispatcher: $eventDispatcher,
+                argumentResolver: $resolver,
+                serializer: $serializer,
+            );
         });
     }
 
@@ -727,6 +754,21 @@ final class AppKernelFactory
         ];
 
         return new CacheFactory($tracker)->create($adapter, $options);
+    }
+
+    /**
+     * Construit le sérialiseur des DTO (API-02) : les normaliseurs compilés par
+     * `bin/waffle serializer:compile --source=app` avec WAFFLE_AOT=1, la lecture des
+     * DTO par réflexion sinon. Le kernel HTTP et le worker de la file le partagent.
+     */
+    public static function buildSerializer(string $root, LoggerInterface $logger): Serializer
+    {
+        return new Serializer(
+            new CompiledNormalizerLoader(
+                directory: $root . '/' . CompiledNormalizerLoader::DEFAULT_DIRECTORY,
+                logger: $logger,
+            )->load(),
+        );
     }
 
     /**

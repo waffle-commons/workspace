@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5c8cd56b729a1eb75107527be2dc3f0a",
+    "content-hash": "99b478a7756e37590155bb0be7e8eb2b",
     "packages": [
         {
             "name": "brick/math",
@@ -3531,7 +3531,7 @@
             "dist": {
                 "type": "path",
                 "url": "../async",
-                "reference": "939aca49bd458f4630b7c972ece96a5f02fcd31a"
+                "reference": "5d94834d7c9c5b8508f08f6323dd4b800ca84a1c"
             },
             "require": {
                 "php": "^8.5",
@@ -3617,7 +3617,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "7e10daa1efe057af7ab79708c63672ccfa07b47d"
+                "reference": "0b0a524dd8fed1eadbfaad520b943f7a1b053de8"
             },
             "require": {
                 "ext-openssl": "*",
@@ -3899,10 +3899,12 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "885b7062b0707f62a3ed811b94e33e1d36a2deb3"
+                "reference": "70414718bed7aa5c3c810bf557bedb99bf5d5cfb"
             },
             "require": {
                 "php": "^8.5",
+                "psr/clock": "^1.0",
+                "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
             },
@@ -3913,6 +3915,9 @@
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.19"
+            },
+            "suggest": {
+                "ext-pcntl": "So that queue:work finishes the message in flight on SIGTERM or SIGINT before it exits. Without it, a signal stops the worker at once and the message is delivered again once the queue reclaims it."
             },
             "type": "library",
             "autoload": {
@@ -4079,14 +4084,16 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "e851a5c9977303c598021c7fc4906fbf61074a4d"
+                "reference": "d8501f6d151e5e024c00ccc92ce3a52dcf72b9cc"
             },
             "require": {
                 "php": "^8.5",
                 "psr/cache": "^3.0",
+                "psr/clock": "^1.0",
                 "psr/container": "^2.0",
                 "psr/event-dispatcher": "^1.0",
                 "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.1",
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -4729,6 +4736,93 @@
             }
         },
         {
+            "name": "waffle-commons/openapi",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../openapi",
+                "reference": "91cf0bf483afe8c55d39d4c3ff1ca25c1bf4fd36"
+            },
+            "require": {
+                "php": "^8.5",
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.50",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.9.7",
+                "opis/json-schema": "^2.6",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.19"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\OpenApi\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\OpenApi\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "guard": [
+                    "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer",
+                    "@guard"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "OpenAPI 3.1 document generation for the Waffle framework, built from #[Route] attributes and typed DTOs.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "waffle-commons/pipeline",
             "version": "1.0.0-dev",
             "dist": {
@@ -4814,6 +4908,94 @@
                 }
             ],
             "description": "PSR-15 middleware pipeline for Waffle Commons: an ordered, boot-frozen stack with automatic OPTIONS answering and no per-request mutation.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "waffle-commons/queue",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../queue",
+                "reference": "18f1106b8a4a1af68421b4408e9e34eb7eb416d8"
+            },
+            "require": {
+                "ext-redis": "*",
+                "php": "^8.5",
+                "psr/clock": "^1.0",
+                "psr/log": "^3.0",
+                "waffle-commons/contracts": "self.version"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.50",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.9.7",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.19"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Queue\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Queue\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "guard": [
+                    "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer",
+                    "@guard"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Background job processing for the Waffle framework: a Redis Streams driver with bounded retries and a dead-letter store.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -5096,12 +5278,104 @@
             }
         },
         {
+            "name": "waffle-commons/serializer",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../serializer",
+                "reference": "75beeb289c9a71ca79b9273da0abfa516ef45f09"
+            },
+            "require": {
+                "php": "^8.5",
+                "psr/http-message": "^2.0",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0",
+                "psr/log": "^3.0",
+                "waffle-commons/contracts": "self.version",
+                "waffle-commons/utils": "self.version"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.50",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.9.7",
+                "nyholm/psr7": "^1.8",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "phpunit/phpunit": "^12.5",
+                "vimeo/psalm": "^6.19"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Serializer\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Serializer\\": "tests/src/",
+                    "WaffleTests\\Commons\\Serializer\\Compiled\\": "tests/compiled/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "guard": [
+                    "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer",
+                    "@guard"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Compiled, reflection-free DTO serialization and Accept-header content negotiation for the Waffle framework.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "waffle-commons/telemetry",
             "version": "1.0.0-dev",
             "dist": {
                 "type": "path",
                 "url": "../telemetry",
-                "reference": "18fb1fbdd4cd2abf687491946e4686ccb2b1925d"
+                "reference": "6d7c9b6f9c7cde6cb59222b8961ca6cd04fd260e"
             },
             "require": {
                 "php": "^8.5",
@@ -5194,7 +5468,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry-otel",
-                "reference": "492ea26695839d196d555f7fc3b88cd3f524b057"
+                "reference": "09985e8a0f60333b3ffbcf4d1973db68de6bed3b"
             },
             "require": {
                 "nyholm/psr7": "^1.8",
@@ -5287,10 +5561,11 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "f2deac8cf7e506337e2dc4e393002718b50b6004"
+                "reference": "fa669dfae177f8fe57fe28d8db3ba7c250445e16"
             },
             "require": {
                 "php": "^8.5",
+                "psr/clock": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
@@ -10303,6 +10578,96 @@
                 "source": "https://github.com/vimeo/psalm"
             },
             "time": "2026-09-29T09:38:04+00:00"
+        },
+        {
+            "name": "waffle-commons/testing",
+            "version": "1.0.0-dev",
+            "dist": {
+                "type": "path",
+                "url": "../testing",
+                "reference": "90bf65b61771cac1274a7993edb868f42bb0f921"
+            },
+            "require": {
+                "php": "^8.5",
+                "phpunit/phpunit": "^12.5",
+                "psr/clock": "^1.0",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^2.0",
+                "waffle-commons/contracts": "self.version"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.50",
+                "cyclonedx/cyclonedx-php-composer": "^6.2",
+                "igor-php/igor-php": "^0.9.7",
+                "nyholm/psr7": "^1.8",
+                "php-mock/php-mock-phpunit": "^2.15",
+                "vimeo/psalm": "^6.19"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Waffle\\Commons\\Testing\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "WaffleTests\\Commons\\Testing\\": "tests/src/"
+                }
+            },
+            "scripts": {
+                "formatter": [
+                    "vendor/bin/mago fmt"
+                ],
+                "linter": [
+                    "vendor/bin/mago lint"
+                ],
+                "analyzer": [
+                    "vendor/bin/mago analyze"
+                ],
+                "guard": [
+                    "vendor/bin/mago guard"
+                ],
+                "igor": [
+                    "vendor/bin/igor-php ."
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit --log-junit var/data/phpunit-coverage/junit.xml --coverage-html var/data/phpunit-coverage"
+                ],
+                "mago": [
+                    "@formatter",
+                    "@linter",
+                    "@analyzer",
+                    "@guard"
+                ],
+                "tests": [
+                    "@phpunit"
+                ],
+                "scan": [
+                    "@mago",
+                    "@tests"
+                ],
+                "ci": [
+                    "@mago",
+                    "@tests",
+                    "composer audit",
+                    "vendor/bin/psalm --taint-analysis"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leslie Petrimaux",
+                    "email": "contact@waffle-commons.cloud"
+                }
+            ],
+            "description": "Kernel testing bridge for the Waffle framework: in-process request dispatch through the real pipeline, plus time, queue, mailer and HTTP-client test doubles.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         }
     ],
     "aliases": [],
@@ -10321,12 +10686,16 @@
         "waffle-commons/http": 20,
         "waffle-commons/http-client": 20,
         "waffle-commons/log": 20,
+        "waffle-commons/openapi": 20,
         "waffle-commons/pipeline": 20,
+        "waffle-commons/queue": 20,
         "waffle-commons/routing": 20,
         "waffle-commons/runtime": 20,
         "waffle-commons/security": 20,
+        "waffle-commons/serializer": 20,
         "waffle-commons/telemetry": 20,
         "waffle-commons/telemetry-otel": 20,
+        "waffle-commons/testing": 20,
         "waffle-commons/utils": 20,
         "waffle-commons/waffle": 20
     },

@@ -76,6 +76,10 @@ waffle:
     redis_dsn: '%env(REDIS_DSN)%'      # adaptateur redis uniquement
     default_ttl: 3600                  # en secondes, optionnel
     prefix: 'waffle:cache:'            # adaptateur redis uniquement, optionnel
+  # File d'attente (QUEUE-02) : flux Redis lus par `bin/waffle queue:work`.
+  queue:
+    redis_dsn: '%env(REDIS_DSN)%'      # redis://[:mot-de-passe@]hôte[:port]
+    prefix: 'waffle:queue:'            # préfixe des flux, des messages différés et des messages en échec
   # Configuration de la base de données locale (RFC-022).
   # Le bac à sable PostgreSQL est fourni par le service compose `waffle-postgres`
   # (DB_HOST pointe sur ce nom de service). Moteurs supportés par la fabrique de

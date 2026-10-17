@@ -127,6 +127,8 @@ When integration-testing changes to the `config` package or to `AppKernelFactory
 
 > **Database & migrations.** The workspace ships the RFC-022 `waffle.database.*` config and a sample `migrations/` script. Apply them inside the container with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle db:migrate`. See [How to: Database Migrations](https://github.com/waffle-commons/documentation/blob/main/how-to/database-migrations.md).
 
+> **Queue worker.** `bin/waffle queue:work` handles the messages of the Redis Streams queue (`waffle.queue.*` in `config/app.yaml`, on the `waffle-redis` service). Its demo handler, `Workspace\Queue\EmailHandler`, takes each queued `Email` to `Workspace\Mailer\LogMailer`, which writes it to the log instead of sending it. Run it with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle queue:work -v`; Ctrl+C stops it once the message in flight is settled. Nothing in the HTTP app dispatches messages yet: code that starts background work takes `QueueDispatcherInterface`, which the Redis Streams driver implements.
+
 ## Contribution
 
 This repository is intended for contributors to the Waffle ecosystem **ONLY**. Please refer to the `CONTRIBUTING.md`
