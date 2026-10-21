@@ -16,7 +16,7 @@ use Waffle\Commons\Auth\AuthenticationBridge;
 use Waffle\Commons\Auth\Authenticator\ApiKeyAuthenticator;
 use Waffle\Commons\Auth\Authenticator\AssertionAuthenticator;
 use Waffle\Commons\Auth\Authenticator\JwtAuthenticator;
-use Waffle\Commons\Auth\Client\AuthenticatedClient;
+use Waffle\Commons\Auth\Client\AuthenticatedSettlingClient;
 use Waffle\Commons\Auth\Credential\AssertionCredentialsProvider;
 use Waffle\Commons\Auth\Identity\UserIdentity;
 use Waffle\Commons\Auth\Jwt\JwtConfig;
@@ -252,7 +252,7 @@ final class AppKernelFactory
 
         // Client HTTP PSR-18 brut (paquet waffle-commons/http-client). Il n'est
         // PAS enregistré tel quel sous ClientInterface : il sert de transport
-        // interne au décorateur AuthenticatedClient du pont d'authentification,
+        // interne au décorateur AuthenticatedSettlingClient du pont d'authentification,
         // qui est enregistré comme ClientInterface plus bas (RFC-021 §4.7) —
         // ainsi tout consommateur (ex. ProxyService) hérite de la propagation
         // d'assertion sortante. Durci SEC-02 : un SsrfGuard résout et épingle
@@ -349,8 +349,10 @@ final class AppKernelFactory
         // toute requête vers le monolithe hérité (hôte sur liste blanche) porte
         // automatiquement l'assertion signée quand une identité est active.
         // Le ProxyService reçoit CE client via le conteneur, enveloppé des
-        // décorateurs de résilience à l'étape 5b-bis.
-        $authenticatedClient = new AuthenticatedClient($httpClient, [
+        // décorateurs de résilience à l'étape 5b-bis. La variante « settling »
+        // garde un lot concurrent sous les décorateurs (RFC-024 §3.3) : chaque
+        // requête du lot reçoit ses identifiants, le lot part d'un bloc.
+        $authenticatedClient = new AuthenticatedSettlingClient($httpClient, [
             new AssertionCredentialsProvider(
                 signer: $assertionSigner,
                 context: $securityContext,

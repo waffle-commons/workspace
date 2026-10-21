@@ -6,6 +6,7 @@ namespace WorkspaceTests\Factory;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Waffle\Commons\Container\Container;
@@ -21,6 +22,7 @@ use Waffle\Commons\Http\Factory\StreamFactory;
 use Waffle\Commons\HttpClient\Client;
 use Waffle\Commons\HttpClient\Resilience\CircuitObservers;
 use Waffle\Commons\HttpClient\Resilience\RetryingClient;
+use Waffle\Commons\HttpClient\Security\SsrfGuard;
 use Workspace\Factory\HttpClientFactory;
 
 /**
@@ -122,6 +124,34 @@ final class HttpClientFactoryTest extends TestCase
         }
     }
 
+    public function testUnePanneDnsDUnHotePublicOuvreSonCircuit(): void
+    {
+        $config = self::config([
+            'waffle.queue.redis_dsn' => self::REDIS,
+            'waffle.http_client.resilience.max_attempts' => 1,
+            'waffle.http_client.breaker.minimum_calls' => 2,
+        ]);
+        // La garde SSRF stricte résout elle-même l'hôte : une panne DNS est un échec réseau, pas un refus.
+        $transport = new Client(new ResponseFactory(), new StreamFactory(), new SsrfGuard());
+        $client = HttpClientFactory::resilient(
+            $transport,
+            $config,
+            HttpClientFactory::circuitStorage($config),
+            new CircuitObservers(),
+        );
+        // `.invalid` ne se résout jamais (RFC 2606) ; une origine neuve à chaque exécution.
+        $request = new RequestFactory()->createRequest(
+            'GET',
+            'https://amont-' . bin2hex(random_bytes(6)) . '.invalid/',
+        );
+
+        self::assertPanneDns($client, $request);
+        self::assertPanneDns($client, $request);
+
+        $this->expectException(CircuitOpenExceptionInterface::class);
+        $client->sendRequest($request);
+    }
+
     public function testSansDisjoncteurLesReprisesSAppliquentSeules(): void
     {
         $transport = new class implements ClientInterface {
@@ -146,6 +176,16 @@ final class HttpClientFactoryTest extends TestCase
                 ->getStatusCode(),
         );
         static::assertSame(2, $transport->calls);
+    }
+
+    private static function assertPanneDns(ClientInterface $client, RequestInterface $request): void
+    {
+        try {
+            $client->sendRequest($request);
+            static::fail('Un hôte introuvable doit échouer.');
+        } catch (NetworkExceptionInterface $panne) {
+            static::assertSame(CURLE_COULDNT_RESOLVE_HOST, $panne->getCode());
+        }
     }
 
     /**
