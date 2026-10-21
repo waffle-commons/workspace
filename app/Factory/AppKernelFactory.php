@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Workspace\Factory;
 
 use PDO;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -53,7 +52,6 @@ use Waffle\Commons\Contracts\Data\Connection\RelationalConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
 use Waffle\Commons\Contracts\Enum\Failsafe;
 use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
-use Waffle\Commons\Contracts\HttpClient\ConcurrentClientInterface;
 use Waffle\Commons\Contracts\Reactive\BroadcastBufferInterface;
 use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
@@ -77,6 +75,7 @@ use Waffle\Commons\Http\Factory\ResponseFactory;
 use Waffle\Commons\Http\Factory\ServerRequestFactory;
 use Waffle\Commons\Http\Factory\StreamFactory;
 use Waffle\Commons\HttpClient\Client;
+use Waffle\Commons\HttpClient\Resilience\CircuitObservers;
 use Waffle\Commons\HttpClient\Security\SsrfGuard;
 use Waffle\Commons\Log\Channel\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
@@ -265,19 +264,21 @@ final class AppKernelFactory
         $ssrfAllowedHosts = $config->getArray(key: 'waffle.security.ssrf.allowed_hosts') ?? [];
         // Le traceur + le propagateur W3C sont passés au client : chaque requête sortante
         // porte alors le `traceparent` de la trace active (SEC-02 SSRF reste en amont).
+        // Les délais de transfert (NET-02) viennent de `waffle.http_client.resilience.*` :
+        // jamais infinis, bornés par le contrat TimeoutPolicy.
         $httpClient = new Client(
             $responseFactory,
             $streamFactory,
             new SsrfGuard(allowedHosts: $ssrfAllowedHosts),
             $tracer,
             $tracePropagator,
-        );
+        )->withTimeouts(HttpClientFactory::timeouts($config));
         // AXE 2 (ASYNC-02) : le client PSR-18 brut implémente aussi
-        // ConcurrentClientInterface (sendRequests/promise). On l'expose sous CE
+        // ConcurrentClientInterface (sendRequests/promise). Il est exposé sous CE
         // contrat — distinct du ClientInterface décoré par le pont d'auth plus
-        // bas — pour les contrôleurs de fan-out concurrent. Stateless (readonly),
-        // donc aucun reset requis.
-        $container->set(ConcurrentClientInterface::class, $httpClient);
+        // bas — pour les contrôleurs de fan-out concurrent, enveloppé des
+        // décorateurs de résilience à l'étape 5b-bis. Stateless (readonly), donc
+        // aucun reset requis.
 
         // 3-bis. Pont d'Authentification Universel (RFC-021, paquet waffle-commons/auth).
         // Secret partagé fail-closed : absent ou < 32 octets ⇒ avortement du boot
@@ -347,15 +348,16 @@ final class AppKernelFactory
         // Propagation sortante (RFC-021 §4.7) : le client PSR-18 est décoré —
         // toute requête vers le monolithe hérité (hôte sur liste blanche) porte
         // automatiquement l'assertion signée quand une identité est active.
-        // Le ProxyService reçoit donc CE client via le conteneur.
-        $container->set(ClientInterface::class, new AuthenticatedClient($httpClient, [
+        // Le ProxyService reçoit CE client via le conteneur, enveloppé des
+        // décorateurs de résilience à l'étape 5b-bis.
+        $authenticatedClient = new AuthenticatedClient($httpClient, [
             new AssertionCredentialsProvider(
                 signer: $assertionSigner,
                 context: $securityContext,
                 allowedHosts: ['legacy-backend'],
                 tenant: $config->getString('waffle.auth.tenant'),
             ),
-        ]));
+        ]);
 
         // 3. Instanciation de Security (paquet waffle-commons/security).
         $security = new Security($config);
@@ -494,6 +496,21 @@ final class AppKernelFactory
         // 6. Logger du kernel. Le kernel lui-même est construit plus bas (étape 9),
         //    une fois tous ses collaborateurs prêts — injection par constructeur (ARCH-03).
         $kernelLogger = new StreamLogger(channel: LogChannel::CORE);
+
+        // 5b-bis. Résilience sortante (NET-02/03, RFC-024 §3.3) : les clients sortants
+        //     enregistrés sont RetryingClient(CircuitBreakerClient(…)) — reprises bornées
+        //     des méthodes idempotentes, disjoncteur par origine dont l'état vit dans
+        //     Redis. Ses transitions partent en événements PSR-14 (CircuitStateChanged)
+        //     et en métriques (/waffle-metrics) : il lui faut le dispatcher et le
+        //     registre, d'où sa place ici. Les identifiants restent sous les reprises,
+        //     réappliqués à chaque tentative.
+        HttpClientFactory::register(
+            $container,
+            $config,
+            $httpClient,
+            $authenticatedClient,
+            new CircuitObservers($eventDispatcher, $metricsRegistry, $kernelLogger),
+        );
 
         // 5c. AXE 3 (REACTIVE-01) : tampon de diffusion à portée requête + transport
         //     SSE. Les write-hooks `#[Broadcast]` y enregistrent les mutations SANS

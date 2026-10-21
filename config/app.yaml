@@ -100,6 +100,36 @@ waffle:
   queue:
     redis_dsn: '%env(REDIS_DSN)%'      # redis://[:mot-de-passe@]hôte[:port]
     prefix: 'waffle:queue:'            # préfixe des flux, des messages différés et des messages en échec
+  # Client HTTP sortant (NET-02/03, RFC-024). Une clé absente prend la valeur par
+  # défaut du contrat.
+  http_client:
+    # Délais de chaque transfert, jamais infinis : 1 à 30000 ms pour la connexion,
+    # 1 à 120000 ms au total. Reprises des seules méthodes idempotentes (GET, HEAD,
+    # OPTIONS, PUT, DELETE, sauf `retry_non_idempotent`), sur échec réseau ou
+    # 429/502/503/504, avec un recul exponentiel à gigue complète plafonné à
+    # `max_delay_ms` ; un Retry-After peut dépasser ce plafond, et aucune attente
+    # ne démarre au-delà de `budget_ms`. `max_attempts: 1` coupe les reprises.
+    resilience:
+      connect_timeout_ms: 1000
+      total_timeout_ms: 10000
+      max_attempts: 3
+      base_delay_ms: 100
+      max_delay_ms: 2000
+      budget_ms: 15000
+      retry_non_idempotent: false
+    # Disjoncteur par origine (schéma, hôte, port), état partagé dans Redis (le DSN
+    # de la file) : il s'ouvre quand `failure_rate_percent` % des appels échouent
+    # (réseau ou 5xx) sur `window_seconds`, à partir de `minimum_calls` appels ;
+    # ouvert, il répond 503 sans connexion. Après `cool_down_seconds`, il laisse
+    # passer `half_open_trials` appel(s) d'essai : un succès le referme. Redis
+    # indisponible : il laisse passer, avec un avertissement et une métrique.
+    breaker:
+      enabled: true
+      failure_rate_percent: 50
+      minimum_calls: 10
+      window_seconds: 60
+      cool_down_seconds: 30
+      half_open_trials: 1
   # Configuration de la base de données locale (RFC-022).
   # Le bac à sable PostgreSQL est fourni par le service compose `waffle-postgres`
   # (DB_HOST pointe sur ce nom de service). Moteurs supportés par la fabrique de
