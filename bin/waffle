@@ -21,6 +21,8 @@ use Waffle\Commons\Console\Command\ContainerCompileCommand;
 use Waffle\Commons\Console\Command\DataWarmupCommand;
 use Waffle\Commons\Console\Command\MemoryAuditCommand;
 use Waffle\Commons\Console\Command\MigrateCommand;
+use Waffle\Commons\Console\Command\MigrationRollbackCommand;
+use Waffle\Commons\Console\Command\MigrationStatusCommand;
 use Waffle\Commons\Console\Command\QueueWorkCommand;
 use Waffle\Commons\Console\Command\RouteCompileCommand;
 use Waffle\Commons\Console\Command\RouteListCommand;
@@ -33,6 +35,7 @@ use Waffle\Commons\Console\Maker\Command\MakeEntityCommand;
 use Waffle\Commons\Console\Maker\Command\MakeEventPairCommand;
 use Waffle\Commons\Console\Maker\Command\MakeHttpClientCommand;
 use Waffle\Commons\Console\Maker\Command\MakeMiddlewareCommand;
+use Waffle\Commons\Console\Maker\Command\MakeMigrationCommand;
 use Waffle\Commons\Console\Maker\Command\MakeRepositoryCommand;
 use Waffle\Commons\Console\Maker\Command\MakeVoterCommand;
 use Waffle\Commons\Console\Output\StreamOutput;
@@ -109,6 +112,17 @@ $app->add(command: new MigrateCommand(
     runner: $container->get(MigrationRunnerInterface::class),
     pool: $container->get(ConnectionPoolInterface::class),
 ));
+// Cycle de vie des migrations (beta7, OPS-03) : `db:status` liste chaque version
+// (appliquée, en attente ou manquante) ; `db:rollback [--steps=N]` annule les N
+// dernières par leurs scripts `.down.sql`, après les avoir toutes vérifiées.
+$app->add(command: new MigrationStatusCommand(
+    runner: $container->get(MigrationRunnerInterface::class),
+    pool: $container->get(ConnectionPoolInterface::class),
+));
+$app->add(command: new MigrationRollbackCommand(
+    runner: $container->get(MigrationRunnerInterface::class),
+    pool: $container->get(ConnectionPoolInterface::class),
+));
 
 // Pre-compiled SQR warmup (`data:warmup`) — Roadmap Beta-3 "CLI Route & Cache
 // Warmup". The hot read queries below are compiled once to parameterised SQL,
@@ -145,6 +159,12 @@ $app->add(command: new MakeHttpClientCommand());
 $app->add(command: new MakeMiddlewareCommand());
 $app->add(command: new MakeRepositoryCommand());
 $app->add(command: new MakeVoterCommand());
+// `make:migration <Nom>` écrit `Version<AAAAMMJJNN>_<Nom>.sql` et son `.down.sql` dans
+// le répertoire que lit `db:migrate` (OPS-03).
+$app->add(command: new MakeMigrationCommand(
+    clock: new SystemClock(),
+    migrationsPath: $config->getString(key: 'waffle.database.migrations_path') ?? 'migrations',
+));
 
 // Commandes de compilation AOT (AXE 1 / RFC-019). `container:compile` lit la carte
 // de définitions du conteneur *concret* (réflexion sur la propriété `definitions`)

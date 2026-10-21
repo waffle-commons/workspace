@@ -204,6 +204,56 @@ services:
     networks:
       - waffle-network
 
+  # MySQL 8.4 LTS et MariaDB 11.4 LTS — matrice SQL des migrations (OPS-03, RFC-014).
+  # L'application n'en dépend pas ; les tests d'intégration du composant data y
+  # rejouent l'aller-retour db:migrate / db:rollback via le nom de service
+  # (waffle-mysql:3306, waffle-mariadb:3306) sur le réseau interne. Les ports 3306
+  # et 3307 sont aussi exposés sur l'hôte pour les sondes manuelles.
+  waffle-mysql:
+    image: mysql:8.4@sha256:0f51e63e537a1f176423fa03ef559aabe6fa4372a53160a44bc7e75da7d15364
+    container_name: waffle-mysql
+    environment:
+      # Identifiants de développement local uniquement.
+      MYSQL_DATABASE: "${DB_NAME:-waffle}"
+      MYSQL_USER: "${DB_USER:-waffle}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-waffle}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-waffle}"
+    ports:
+      - "3306:3306"
+    volumes:
+      - waffle-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks:
+      - waffle-network
+
+  waffle-mariadb:
+    image: mariadb:11.4@sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+    container_name: waffle-mariadb
+    environment:
+      # Identifiants de développement local uniquement.
+      MARIADB_DATABASE: "${DB_NAME:-waffle}"
+      MARIADB_USER: "${DB_USER:-waffle}"
+      MARIADB_PASSWORD: "${DB_PASSWORD:-waffle}"
+      MARIADB_ROOT_PASSWORD: "${DB_PASSWORD:-waffle}"
+    ports:
+      - "3307:3306"
+    volumes:
+      - waffle-mariadb-data:/var/lib/mysql
+    healthcheck:
+      # Script de santé fourni par l'image officielle.
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks:
+      - waffle-network
+
 networks:
   waffle-network:
     driver: bridge
@@ -213,3 +263,6 @@ volumes:
   waffle-postgres-data:
   # Documents MongoDB persistés entre les redémarrages (bac à sable RFC-022).
   waffle-mongo-data:
+  # Données MySQL et MariaDB persistées entre les redémarrages (matrice OPS-03).
+  waffle-mysql-data:
+  waffle-mariadb-data:
