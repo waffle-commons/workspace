@@ -6,7 +6,8 @@ ARG FRANKEN_VERSION='1.13.2'
 ARG PHP_VERSION='8'
 ARG OS='trixie'
 # Digest de l'image de base : une étiquette bouge, un digest non (build reproductible et hors ligne).
-# À mettre à jour avec FRANKEN_VERSION : scripts/images-pin.py --pull indique le nouveau digest.
+# À changer AVEC FRANKEN_VERSION : Docker résout `étiquette@digest` par le seul digest, donc un digest
+# oublié construit l'ancienne image. `wfl images:pin --verify --pull` le signale, `--write` le réécrit.
 ARG FRANKEN_DIGEST='@sha256:8a7a935deb33959200628497b8201423c8b777d513a62ac1b69a91c624afdb3d'
 ARG USER=workspace
 ARG APP_ENV='development'
