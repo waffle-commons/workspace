@@ -11,7 +11,7 @@ services:
       target: waffle_dev_base # Utilise le stage dev avec Xdebug.
       args:
         APP_ENV: development
-        FRANKEN_VERSION: 1.12.7
+        FRANKEN_VERSION: 1.13.2
         PHP_VERSION: 8
         OS: trixie
     entrypoint: bash /waffle-commons/workspace/docker/docker-entrypoint.sh
@@ -110,7 +110,7 @@ services:
   # que le contraste avec le proxy PSR-18 non bloquant et borné en mémoire
   # de la passerelle reste visible de bout en bout.
   legacy-backend:
-    image: php:8.5-cli@sha256:54d82ff9be6bd198145e90c917fc9b2e24230b42e52def8deb3554baf61c451a
+    image: php:8.5-cli@sha256:d5e3f03b94966fd65df52b9819c6dde463003b5a32d032698290a0b37b53bb37
     container_name: legacy-backend
     working_dir: /app
     # Routeur mono-fichier servi par le serveur intégré ; toute requête est
