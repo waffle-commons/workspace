@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Workspace\Factory;
+
+use PDO;
+use Waffle\Commons\Contracts\Config\ConfigInterface;
+use Waffle\Commons\Contracts\Data\Connection\ConnectionTrackerInterface;
+use Waffle\Commons\Data\Connection\PDOConnectionPool;
+
+/**
+ * Fabrique du pool de connexions PDO (RFC-022), sortie de l'AppKernelFactory pour
+ * tenir sa complexité sous le seuil de 50 : la grammaire des DSN par moteur et la
+ * fenêtre de fraîcheur du ping sont des préoccupations de persistance, pas
+ * d'assemblage du kernel.
+ */
+final class ConnectionPoolFactory
+{
+    /**
+     * [CARRY-01] : fenêtre de fraîcheur du ping par défaut, en millisecondes. Une
+     * connexion prouvée vivante (ouverte, ou ayant répondu au ping) il y a moins
+     * de 500 ms repart du pool sans nouveau `SELECT 1` — le seuil par défaut de
+     * HikariCP (`aliveBypassWindowMs`). Utilisée quand DB_PING_FRESHNESS_MS est
+     * absente ou invalide ; 0 rétablit le ping à chaque emprunt.
+     */
+    private const int DEFAULT_PING_FRESHNESS_MS = 500;
+
+    /**
+     * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`.
+     *
+     * La fabrique injectée n'ouvre une connexion que lorsque le pool en a besoin :
+     * en mode worker FrankenPHP, les sockets restent tièdes entre les requêtes,
+     * sont sondés (« ping-before-dispense », sauf dans la fenêtre de fraîcheur)
+     * puis reconnectés de façon transparente.
+     */
+    public static function create(
+        ConfigInterface $config,
+        ?ConnectionTrackerInterface $tracker = null,
+    ): PDOConnectionPool {
+        $driver = $config->getString('waffle.database.driver') ?? 'pgsql';
+        $host = $config->getString('waffle.database.host') ?? '127.0.0.1';
+        $port = $config->getString('waffle.database.port') ?? '5432';
+        $database = $config->getString('waffle.database.database') ?? '';
+        $username = $config->getString('waffle.database.username') ?? 'waffle';
+        $password = $config->getString('waffle.database.password') ?? '';
+        $charset = $config->getString('waffle.database.charset') ?? 'utf8';
+
+        $dsn = self::buildDsn($driver, $host, $port, $database, $charset);
+
+        // Oracle exige `FROM DUAL` pour un SELECT sans table : la sonde de vie
+        // (« ping-before-dispense ») du pool doit donc être adaptée au moteur.
+        $ping = $driver === 'oci' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
+
+        // Fabrique sans état, rejouée à chaque création de connexion par le pool.
+        return new PDOConnectionPool(factory: static fn(): PDO => new PDO($dsn, $username, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]), pingQuery: $ping, tracker: $tracker, pingFreshnessMs: self::resolvePingFreshness($config));
+    }
+
+    /**
+     * [CARRY-01] : fenêtre de fraîcheur du ping, en millisecondes
+     * (`waffle.database.ping_freshness_ms`, interpolée depuis DB_PING_FRESHNESS_MS,
+     * donc une chaîne), validée en entier >= 0 — 0 est légitime et rétablit le ping
+     * à chaque emprunt. Absente, vide ou invalide ⇒ défaut 500 : une valeur fautive
+     * n'empêche jamais le boot.
+     */
+    public static function resolvePingFreshness(ConfigInterface $config): int
+    {
+        $raw = $config->getString('waffle.database.ping_freshness_ms');
+        if ($raw === null || $raw === '') {
+            return self::DEFAULT_PING_FRESHNESS_MS;
+        }
+
+        $value = filter_var($raw, FILTER_VALIDATE_INT);
+
+        return is_int($value) && $value >= 0 ? $value : self::DEFAULT_PING_FRESHNESS_MS;
+    }
+
+    /**
+     * Construit le DSN PDO propre à chaque moteur (RFC-022).
+     *
+     * PostgreSQL ne reconnaît pas l'attribut DSN `charset` (l'encodage client est
+     * négocié avec le serveur — UTF8 par défaut) ; SQLite n'attend qu'un chemin de
+     * fichier ; SQL Server et Oracle ont leur propre grammaire de DSN. Le format
+     * MySQL/MariaDB reste le cas par défaut.
+     */
+    private static function buildDsn(
+        string $driver,
+        string $host,
+        string $port,
+        string $database,
+        string $charset,
+    ): string {
+        return match ($driver) {
+            'pgsql' => sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database),
+            'sqlite' => sprintf('sqlite:%s', $database),
+            'sqlsrv' => sprintf('sqlsrv:Server=%s,%s;Database=%s', $host, $port, $database),
+            'oci' => sprintf('oci:dbname=//%s:%s/%s;charset=%s', $host, $port, $database, $charset),
+            default => sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', $host, $port, $database, $charset),
+        };
+    }
+}

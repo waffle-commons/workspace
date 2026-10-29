@@ -9,13 +9,16 @@ use Redis;
 use Waffle\Commons\Data\Connection\RedisConnectionPool;
 
 /**
- * Les briques de la file d'attente (QUEUE-02) que `bin/waffle queue:work` assemble.
+ * Pool de connexions Redis (phpredis) de l'état partagé entre tous les workers :
+ * flux de la file (QUEUE-02), seaux du limiteur de débit (NET-01) et circuits du
+ * disjoncteur (NET-03). Chaque consommateur nomme son Redis par sa propre clé
+ * `redis_dsn` (RFC-024 §5.3). Le cache PSR-16, lui, passe par Predis
+ * (`waffle.cache.*`), hors de ce pool (RFC-024 §5.1).
  */
-final class QueueFactory
+final class RedisPoolFactory
 {
     /**
-     * Construit le pool de connexions Redis (phpredis) de la file d'attente
-     * (QUEUE-02) à partir d'un DSN `redis://[:mot-de-passe@]hôte[:port]`.
+     * Construit le pool à partir d'un DSN `redis://[:mot-de-passe@]hôte[:port]`.
      *
      * Comme le pool PDO, il n'ouvre une connexion que lorsqu'on lui en emprunte
      * une, et la sonde `PING` écarte une connexion morte avant de la prêter.
@@ -23,11 +26,11 @@ final class QueueFactory
      * @throws InvalidArgumentException Si le DSN est illisible (son contenu n'est pas
      *                                  repris dans le message : il peut porter un mot de passe).
      */
-    public static function redisPool(string $dsn): RedisConnectionPool
+    public static function create(string $dsn): RedisConnectionPool
     {
         $parts = parse_url($dsn);
         if ($parts === false) {
-            throw new InvalidArgumentException('Le DSN Redis de la file d\'attente est illisible.');
+            throw new InvalidArgumentException('Le DSN Redis est illisible.');
         }
 
         $host = $parts['host'] ?? '127.0.0.1';

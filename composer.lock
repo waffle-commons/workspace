@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99b478a7756e37590155bb0be7e8eb2b",
+    "content-hash": "4ed1be2056687a6e74a1a7c572b46fe2",
     "packages": [
         {
             "name": "brick/math",
@@ -3531,7 +3531,7 @@
             "dist": {
                 "type": "path",
                 "url": "../async",
-                "reference": "5d94834d7c9c5b8508f08f6323dd4b800ca84a1c"
+                "reference": "5d1928549b997fce1f61377196e2da1cc2099432"
             },
             "require": {
                 "php": "^8.5",
@@ -3617,7 +3617,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "0b0a524dd8fed1eadbfaad520b943f7a1b053de8"
+                "reference": "873fd622901bf006e3a5668aeb24829fc4186135"
             },
             "require": {
                 "ext-openssl": "*",
@@ -4556,7 +4556,7 @@
             "dist": {
                 "type": "path",
                 "url": "../http-client",
-                "reference": "aee4099c9619a2210dff81f3fd627e2fe2d7037f"
+                "reference": "e3d5cf4ca082ba4ef02b82b88eb8ebe06dc8d1c3"
             },
             "require": {
                 "ext-curl": "*",
@@ -4564,6 +4564,7 @@
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
+                "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
             },
@@ -4828,10 +4829,12 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "4d04fa59425a9687399c35afcc199fd0e55053d4"
+                "reference": "555c9d83ebbbf0af018c09b2f4501b70aa24e605"
             },
             "require": {
                 "php": "^8.5",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
                 "waffle-commons/contracts": "self.version"
@@ -4840,6 +4843,7 @@
                 "carthage-software/mago": "^1.50",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
                 "igor-php/igor-php": "^0.9.7",
+                "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.19"
@@ -4919,13 +4923,12 @@
             "dist": {
                 "type": "path",
                 "url": "../queue",
-                "reference": "18f1106b8a4a1af68421b4408e9e34eb7eb416d8"
+                "reference": "41969541804bc7f04fef9b8491317b02b304164b"
             },
             "require": {
                 "ext-redis": "*",
                 "php": "^8.5",
                 "psr/clock": "^1.0",
-                "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
@@ -5189,7 +5192,7 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "6d448e17cde62fca34ab8debe502681cbe260a37"
+                "reference": "4fc991cd4bd4cb1b378d1d0cc43cc3c98ce83913"
             },
             "require": {
                 "php": "^8.5",
@@ -5204,6 +5207,7 @@
                 "carthage-software/mago": "^1.50",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
                 "igor-php/igor-php": "^0.9.7",
+                "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.19"
@@ -5375,7 +5379,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry",
-                "reference": "6d7c9b6f9c7cde6cb59222b8961ca6cd04fd260e"
+                "reference": "5c13ebef84b2aed430dbb459f16d6b6e4ba2df76"
             },
             "require": {
                 "php": "^8.5",
@@ -5468,7 +5472,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry-otel",
-                "reference": "09985e8a0f60333b3ffbcf4d1973db68de6bed3b"
+                "reference": "686a2949814a84fab6c3c86165b2991566bf2179"
             },
             "require": {
                 "nyholm/psr7": "^1.8",
@@ -10703,6 +10707,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.5",
+        "ext-redis": "*",
         "ext-yaml": "*"
     },
     "platform-dev": {},

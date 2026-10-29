@@ -72,7 +72,10 @@ final class HttpClientFactoryTest extends TestCase
 
         HttpClientFactory::register(
             $container,
-            self::config(['waffle.http_client.breaker.enabled' => true, 'waffle.queue.redis_dsn' => self::REDIS]),
+            self::config([
+                'waffle.http_client.breaker.enabled' => true,
+                'waffle.http_client.breaker.redis_dsn' => self::REDIS,
+            ]),
             $transport,
             $transport,
             new CircuitObservers(),
@@ -85,7 +88,7 @@ final class HttpClientFactoryTest extends TestCase
     public function testUnDisjoncteurOuvertRepondSansAppelerLeTransport(): void
     {
         $config = self::config([
-            'waffle.queue.redis_dsn' => self::REDIS,
+            'waffle.http_client.breaker.redis_dsn' => self::REDIS,
             'waffle.http_client.resilience.max_attempts' => 1,
             'waffle.http_client.breaker.minimum_calls' => 2,
         ]);
@@ -127,7 +130,7 @@ final class HttpClientFactoryTest extends TestCase
     public function testUnePanneDnsDUnHotePublicOuvreSonCircuit(): void
     {
         $config = self::config([
-            'waffle.queue.redis_dsn' => self::REDIS,
+            'waffle.http_client.breaker.redis_dsn' => self::REDIS,
             'waffle.http_client.resilience.max_attempts' => 1,
             'waffle.http_client.breaker.minimum_calls' => 2,
         ]);

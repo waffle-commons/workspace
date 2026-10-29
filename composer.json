@@ -5,6 +5,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
+        "ext-redis": "*",
         "ext-yaml": "*",
         "waffle-commons/async": "1.0.0-dev",
         "waffle-commons/auth": "1.0.0-dev",

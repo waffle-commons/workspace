@@ -39,7 +39,7 @@ final class HealthFactory
 
         $hostname = gethostname();
         $checks[] = new StreamsHealthCheck(
-            QueueFactory::redisPool($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379'),
+            RedisPoolFactory::create($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379'),
             new StreamOptions(
                 consumer: $hostname === false || $hostname === '' ? 'waffle' : $hostname,
                 prefix: $config->getString(key: 'waffle.queue.prefix') ?? StreamOptions::DEFAULT_PREFIX,

@@ -7,17 +7,17 @@ namespace WorkspaceTests\Factory;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Redis;
-use Workspace\Factory\QueueFactory;
+use Workspace\Factory\RedisPoolFactory;
 
 /**
- * Le pool Redis de la file d'attente (QUEUE-02), contre le Redis du workspace
- * (service compose `waffle-redis`).
+ * Le pool Redis de l'état partagé (file QUEUE-02, limiteur NET-01, disjoncteur
+ * NET-03), contre le Redis du workspace (service compose `waffle-redis`).
  */
-final class QueueFactoryTest extends TestCase
+final class RedisPoolFactoryTest extends TestCase
 {
     public function testLePoolPreteUneConnexionPhpredisVivante(): void
     {
-        $pool = QueueFactory::redisPool('redis://waffle-redis:6379');
+        $pool = RedisPoolFactory::create('redis://waffle-redis:6379');
 
         $lease = $pool->acquire();
         try {
@@ -32,10 +32,10 @@ final class QueueFactoryTest extends TestCase
     public function testUnDsnIllisibleEstRefuseSansEtreRecopie(): void
     {
         try {
-            QueueFactory::redisPool('redis:///');
+            RedisPoolFactory::create('redis://:dsn-secret@waffle-redis:99999');
             static::fail('Le DSN aurait dû être refusé.');
         } catch (InvalidArgumentException $refus) {
-            static::assertStringNotContainsString('redis:', $refus->getMessage());
+            static::assertStringNotContainsString('dsn-secret', $refus->getMessage());
         }
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Workspace\Factory;
 
-use PDO;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -483,16 +482,28 @@ final class AppKernelFactory
 
         // 5a-ratelimit. Limitation de débit (NET-01) : après l'authentification, pour
         // compter par sujet quand il est connu, par IP cliente sinon. Désactivable.
-        RateLimitFactory::register($stack, $config, $securityContext, $responseFactory, $secureLogger);
+        // Une panne de Redis compte dans waffle_ratelimit_storage_errors_total (/waffle-metrics).
+        $rateLimit = RateLimitFactory::middleware(
+            $config,
+            $securityContext,
+            $responseFactory,
+            $secureLogger,
+            $metricsRegistry,
+        );
+        if ($rateLimit !== null) {
+            $stack->add(middleware: $rateLimit);
+        }
 
         // 5b. Mise en place du dispatcher d'événements.
         $listenerProvider = new ListenerProvider();
         $eventDispatcher = new EventDispatcher($listenerProvider);
 
-        // Auto-découverte des listeners dans le dossier EventListener.
+        // Auto-découverte des listeners dans le dossier EventListener, résolu sous la
+        // racine de l'application comme controllers et services : un chemin relatif
+        // laissé tel quel dépendrait du répertoire courant du worker.
         $eventListenersPath = $config->getString('waffle.paths.event_listeners');
         if (is_string($eventListenersPath)) {
-            EventListenerDiscovery::discover($listenerProvider, $eventListenersPath);
+            EventListenerDiscovery::discover($listenerProvider, $root . DIRECTORY_SEPARATOR . $eventListenersPath);
         }
 
         // 6. Logger du kernel. Le kernel lui-même est construit plus bas (étape 9),
@@ -810,57 +821,14 @@ final class AppKernelFactory
     }
 
     /**
-     * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`.
-     *
-     * La fabrique injectée n'ouvre une connexion que lorsque le pool en a besoin :
-     * en mode worker FrankenPHP, les sockets restent tièdes entre les requêtes,
-     * sont sondés (« ping-before-dispense ») puis reconnectés de façon transparente.
+     * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`,
+     * fenêtre de fraîcheur du ping comprise ([CARRY-01]) : voir ConnectionPoolFactory.
+     * Le kernel HTTP et `bin/waffle` le partagent.
      */
     public static function buildConnectionPool(
         Config $config,
         ?ConnectionTrackerInterface $tracker = null,
     ): PDOConnectionPool {
-        $driver = $config->getString('waffle.database.driver') ?? 'pgsql';
-        $host = $config->getString('waffle.database.host') ?? '127.0.0.1';
-        $port = $config->getString('waffle.database.port') ?? '5432';
-        $database = $config->getString('waffle.database.database') ?? '';
-        $username = $config->getString('waffle.database.username') ?? 'waffle';
-        $password = $config->getString('waffle.database.password') ?? '';
-        $charset = $config->getString('waffle.database.charset') ?? 'utf8';
-
-        $dsn = self::buildDsn($driver, $host, $port, $database, $charset);
-
-        // Oracle exige `FROM DUAL` pour un SELECT sans table : la sonde de vie
-        // (« ping-before-dispense ») du pool doit donc être adaptée au moteur.
-        $ping = $driver === 'oci' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
-
-        // Fabrique sans état, rejouée à chaque création de connexion par le pool.
-        return new PDOConnectionPool(factory: static fn(): PDO => new PDO($dsn, $username, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]), pingQuery: $ping, tracker: $tracker);
-    }
-
-    /**
-     * Construit le DSN PDO propre à chaque moteur (RFC-022).
-     *
-     * PostgreSQL ne reconnaît pas l'attribut DSN `charset` (l'encodage client est
-     * négocié avec le serveur — UTF8 par défaut) ; SQLite n'attend qu'un chemin de
-     * fichier ; SQL Server et Oracle ont leur propre grammaire de DSN. Le format
-     * MySQL/MariaDB reste le cas par défaut.
-     */
-    private static function buildDsn(
-        string $driver,
-        string $host,
-        string $port,
-        string $database,
-        string $charset,
-    ): string {
-        return match ($driver) {
-            'pgsql' => sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database),
-            'sqlite' => sprintf('sqlite:%s', $database),
-            'sqlsrv' => sprintf('sqlsrv:Server=%s,%s;Database=%s', $host, $port, $database),
-            'oci' => sprintf('oci:dbname=//%s:%s/%s;charset=%s', $host, $port, $database, $charset),
-            default => sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', $host, $port, $database, $charset),
-        };
+        return ConnectionPoolFactory::create($config, $tracker);
     }
 }

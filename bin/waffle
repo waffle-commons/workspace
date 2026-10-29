@@ -65,7 +65,7 @@ use Waffle\Commons\Security\Security;
 use Waffle\Commons\Serializer\Command\CompileCommand;
 use Waffle\Commons\Utils\Clock\SystemClock;
 use Workspace\Factory\AppKernelFactory;
-use Workspace\Factory\QueueFactory;
+use Workspace\Factory\RedisPoolFactory;
 use Workspace\Mailer\LogMailer;
 use Workspace\Queue\EmailHandler;
 
@@ -201,7 +201,7 @@ $codec = new EnvelopeCodec(
     serializer: AppKernelFactory::buildSerializer($root, $workerLogger),
     messages: array_map(static fn(MessageHandlerInterface $handler): string => $handler->handles(), $messageHandlers),
 );
-$queuePool = QueueFactory::redisPool($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379');
+$queuePool = RedisPoolFactory::create($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379');
 $queuePrefix = $config->getString(key: 'waffle.queue.prefix') ?? StreamOptions::DEFAULT_PREFIX;
 $app->add(command: new QueueWorkCommand(
     consumer: new RedisStreamsQueue(

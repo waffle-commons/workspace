@@ -22,16 +22,18 @@ waffle:
     # le reste du trafic. Ensuite SIGTERM, et le grace_period de Caddy draine l'en-cours.
     drain_marker: '/tmp/waffle-draining'
   security:
-    # Limitation de débit (NET-01, RFC-017 §3.1) : seau à jetons partagé dans Redis
-    # (flux de la file, même DSN). `capacity` requêtes par `period_seconds`, rafales
-    # comprises. `on_storage_failure` : open (laisse passer, journalisé) ou closed
-    # (503). `trusted_proxies` : adresses ou plages CIDR dont on lit X-Forwarded-For.
+    # Limitation de débit (NET-01, RFC-017 §3.1) : seau à jetons partagé dans le
+    # Redis de `redis_dsn`. `capacity` requêtes par `period_seconds`, rafales
+    # comprises. `on_storage_failure` : open (laisse passer, journalisé et compté
+    # dans /waffle-metrics) ou closed (503). `trusted_proxies` : adresses ou plages
+    # CIDR dont on lit X-Forwarded-For.
     rate_limit:
       enabled: true
       capacity: 120
       period_seconds: 60
       on_storage_failure: 'open'
       trusted_proxies: []
+      redis_dsn: '%env(REDIS_DSN)%'    # redis://[:mot-de-passe@]hôte[:port]
     level: 10
     csrf:
       # Secret de signature de 32 octets ou plus pour les jetons CSRF HMAC sans état (Beta-1 / SEC-01).
@@ -84,6 +86,7 @@ waffle:
   paths:
     controllers: 'app/Controller'
     services: 'app/Service'
+    # Résolu sous la racine de l'application, comme controllers et services.
     event_listeners: 'app/EventListener'
   # Configuration de la journalisation (PSR-3).
   log:
@@ -117,8 +120,8 @@ waffle:
       max_delay_ms: 2000
       budget_ms: 15000
       retry_non_idempotent: false
-    # Disjoncteur par origine (schéma, hôte, port), état partagé dans Redis (le DSN
-    # de la file) : il s'ouvre quand `failure_rate_percent` % des appels échouent
+    # Disjoncteur par origine (schéma, hôte, port), état partagé dans le Redis de
+    # `redis_dsn` : il s'ouvre quand `failure_rate_percent` % des appels échouent
     # (réseau ou 5xx) sur `window_seconds`, à partir de `minimum_calls` appels ;
     # ouvert, il répond 503 sans connexion. Après `cool_down_seconds`, il laisse
     # passer `half_open_trials` appel(s) d'essai : un succès le referme. Redis
@@ -130,6 +133,7 @@ waffle:
       window_seconds: 60
       cool_down_seconds: 30
       half_open_trials: 1
+      redis_dsn: '%env(REDIS_DSN)%'    # redis://[:mot-de-passe@]hôte[:port]
   # Configuration de la base de données locale (RFC-022).
   # Le bac à sable PostgreSQL est fourni par le service compose `waffle-postgres`
   # (DB_HOST pointe sur ce nom de service). Moteurs supportés par la fabrique de
@@ -146,5 +150,13 @@ waffle:
     password: '%env(DB_PASSWORD)%'
     # Ignoré par pgsql (encodage client négocié, UTF8) ; utilisé par mysql/oci.
     charset: 'utf8'
+    # [CARRY-01] Fenêtre de fraîcheur du ping, en millisecondes. Une connexion
+    # dont la vivacité a été prouvée (à l'ouverture ou par le ping) il y a moins
+    # de ce délai repart du pool sans nouveau `SELECT 1` : sous charge, le ping
+    # disparaît presque entièrement (deux allers-retours par emprunt sous
+    # PostgreSQL). Contrepartie : si la base coupe ses connexions, des requêtes
+    # peuvent échouer pendant au plus ce délai ; 0 ⇒ ping à chaque emprunt.
+    # Interpolée depuis DB_PING_FRESHNESS_MS ; absente ⇒ défaut 500.
+    ping_freshness_ms: '%env(DB_PING_FRESHNESS_MS)%'
     migrations_path: 'migrations'
 

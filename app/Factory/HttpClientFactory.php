@@ -104,11 +104,11 @@ final class HttpClientFactory
         );
     }
 
-    /** L'état partagé des disjoncteurs, dans le Redis de la file (le même DSN que le limiteur de débit). */
+    /** L'état partagé des disjoncteurs, dans le Redis de `waffle.http_client.breaker.redis_dsn`. */
     public static function circuitStorage(ConfigInterface $config): RedisCircuitStateStorage
     {
-        return new RedisCircuitStateStorage(QueueFactory::redisPool(
-            $config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379',
+        return new RedisCircuitStateStorage(RedisPoolFactory::create(
+            $config->getString(key: self::BREAKER . 'redis_dsn') ?? 'redis://127.0.0.1:6379',
         ));
     }
 }
