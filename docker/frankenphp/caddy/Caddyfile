@@ -3,25 +3,25 @@
 # This file configures the Caddy web server integrated into FrankenPHP.
 #
 {
-# Enable debug mode for more logs during development
-    debug
+	# Enable debug mode for more logs during development
+	debug
 
-# Worker Mode and Hot Reload Configuration
-# Keeps the application in memory and restarts threads on changes.
-    frankenphp {
-        worker {
-            file /waffle-commons/workspace/public/index.php
-            num 4
-            # Hot reload monitoring only on development directories (avoids infinite loops)
-            watch /waffle-commons/workspace/.env
-            watch /waffle-commons/*/src/**/*.php
-            watch /waffle-commons/*/src/**/*.yaml
-            watch /waffle-commons/workspace/app/**/*.php
-            watch /waffle-commons/workspace/config/**/*.yaml
-        }
-    }
+	# Worker Mode and Hot Reload Configuration
+	# Keeps the application in memory and restarts threads on changes.
+	frankenphp {
+		worker {
+			file /waffle-commons/workspace/public/index.php
+			num 4
+			# Hot reload monitoring only on development directories (avoids infinite loops)
+			watch /waffle-commons/workspace/.env
+			watch /waffle-commons/*/src/**/*.php
+			watch /waffle-commons/*/src/**/*.yaml
+			watch /waffle-commons/workspace/app/**/*.php
+			watch /waffle-commons/workspace/config/**/*.yaml
+		}
+	}
 
-    order php_server before file_server
+	order php_server before file_server
 }
 
 # Define the server for our development environment. The site address is driven by the
@@ -29,10 +29,10 @@
 # SERVER_NAME=":80" (e.g. waffle-downstream in the distributed-trace demo) is then served
 # as plain HTTP on the internal network — no auto-HTTPS redirect for service-to-service calls.
 {$SERVER_NAME:localhost} {
-# Set the document root to our public directory
-    root * /waffle-commons/workspace/public
-# Enable compression
-    encode zstd gzip
-# Forward all requests to the PHP-FPM entrypoint
-    php_server
+	# Set the document root to our public directory
+	root * /waffle-commons/workspace/public
+	# Enable compression
+	encode zstd gzip
+	# Forward all requests to the PHP-FPM entrypoint
+	php_server
 }
