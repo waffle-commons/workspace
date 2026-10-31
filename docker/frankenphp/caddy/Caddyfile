@@ -1,18 +1,18 @@
 #
-# Waffle Framework - Caddyfile for FrankenPHP
-# This file configures the Caddy web server integrated into FrankenPHP.
+# Waffle Framework : Caddyfile de FrankenPHP pour le workspace.
+# Ce fichier configure le serveur web Caddy intégré à FrankenPHP.
 #
 {
-	# Enable debug mode for more logs during development
+	# Mode debug : des journaux plus détaillés pendant le développement
 	debug
 
-	# Worker Mode and Hot Reload Configuration
-	# Keeps the application in memory and restarts threads on changes.
+	# Mode worker et rechargement à chaud.
+	# Garde l'application en mémoire et redémarre les threads à chaque modification.
 	frankenphp {
 		worker {
 			file /waffle-commons/workspace/public/index.php
 			num 4
-			# Hot reload monitoring only on development directories (avoids infinite loops)
+			# Surveillance limitée aux répertoires de développement (évite les boucles infinies)
 			watch /waffle-commons/workspace/.env
 			watch /waffle-commons/*/src/**/*.php
 			watch /waffle-commons/*/src/**/*.yaml
@@ -24,15 +24,16 @@
 	order php_server before file_server
 }
 
-# Define the server for our development environment. The site address is driven by the
-# SERVER_NAME env (default: localhost with auto-HTTPS). A service started with
-# SERVER_NAME=":80" (e.g. waffle-downstream in the distributed-trace demo) is then served
-# as plain HTTP on the internal network — no auto-HTTPS redirect for service-to-service calls.
+# Le serveur de l'environnement de développement. L'adresse du site vient de la variable
+# SERVER_NAME (par défaut : localhost avec HTTPS automatique). Un service lancé avec
+# SERVER_NAME=":80" (par exemple waffle-downstream dans la démo de trace distribuée) est
+# alors servi en HTTP simple sur le réseau interne : pas de redirection HTTPS automatique
+# entre services.
 {$SERVER_NAME:localhost} {
-	# Set the document root to our public directory
+	# Racine des documents : le répertoire public
 	root * /waffle-commons/workspace/public
-	# Enable compression
+	# Compression des réponses
 	encode zstd gzip
-	# Forward all requests to the PHP-FPM entrypoint
+	# Transmet chaque requête au point d'entrée PHP de FrankenPHP
 	php_server
 }
