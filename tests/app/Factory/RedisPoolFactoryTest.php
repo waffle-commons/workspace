@@ -29,6 +29,33 @@ final class RedisPoolFactoryTest extends TestCase
         }
     }
 
+    /**
+     * RFC-023 §3.2 : chaque lecture attend au plus une seconde par défaut ; `null`
+     * laisse le délai de PHP au pool de `queue:work`, qui bloque sur le flux.
+     */
+    public function testUneLectureAttendAuPlusUneSecondeSaufPourLeWorker(): void
+    {
+        $pool = RedisPoolFactory::create('redis://waffle-redis:6379');
+        $lease = $pool->acquire();
+        try {
+            $client = $lease->client();
+            static::assertInstanceOf(Redis::class, $client);
+            static::assertSame(RedisPoolFactory::READ_TIMEOUT, $client->getOption(Redis::OPT_READ_TIMEOUT));
+        } finally {
+            $pool->release($lease);
+        }
+
+        $worker = RedisPoolFactory::create('redis://waffle-redis:6379', null);
+        $lease = $worker->acquire();
+        try {
+            $client = $lease->client();
+            static::assertInstanceOf(Redis::class, $client);
+            static::assertNotSame(RedisPoolFactory::READ_TIMEOUT, $client->getOption(Redis::OPT_READ_TIMEOUT));
+        } finally {
+            $worker->release($lease);
+        }
+    }
+
     public function testUnDsnIllisibleEstRefuseSansEtreRecopie(): void
     {
         try {

@@ -206,7 +206,9 @@ $codec = new EnvelopeCodec(
     serializer: AppKernelFactory::buildSerializer($root, $workerLogger),
     messages: array_map(static fn(MessageHandlerInterface $handler): string => $handler->handles(), $messageHandlers),
 );
-$queuePool = RedisPoolFactory::create($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379');
+// Sans délai de lecture : le worker bloque sur le flux jusqu'à `--wait` millisecondes, ce
+// qu'un délai d'une seconde couperait (RedisPoolFactory::READ_TIMEOUT vaut pour les autres pools).
+$queuePool = RedisPoolFactory::create($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379', null);
 $queuePrefix = $config->getString(key: 'waffle.queue.prefix') ?? StreamOptions::DEFAULT_PREFIX;
 $app->add(command: new QueueWorkCommand(
     consumer: new RedisStreamsQueue(

@@ -8,6 +8,7 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Contracts\Constant\Constant;
+use Waffle\Commons\Data\Exception\DatabaseException;
 use Workspace\Factory\ConnectionPoolFactory;
 use WorkspaceTests\Fixture\ArrayConfig;
 
@@ -50,6 +51,41 @@ final class ConnectionPoolFactoryTest extends TestCase
         ]);
 
         static::assertSame(250, ConnectionPoolFactory::resolvePingFreshness($config));
+    }
+
+    public function testLeDelaiDeConnexionVautDeuxSecondesParDefautEtLitUneValeurValide(): void
+    {
+        $key = 'waffle.database.connect_timeout';
+        static::assertSame(2, ConnectionPoolFactory::resolveConnectTimeout(new ArrayConfig([])));
+        static::assertSame(5, ConnectionPoolFactory::resolveConnectTimeout(new ArrayConfig([$key => '5'])));
+        // Zéro supprimerait le délai (attente illimitée) : refusé, comme une valeur non numérique.
+        foreach (['0', '-3', 'deux', ''] as $invalide) {
+            static::assertSame(2, ConnectionPoolFactory::resolveConnectTimeout(new ArrayConfig([$key => $invalide])));
+        }
+    }
+
+    /**
+     * RFC-023 §3.2 : une base qui ne répond jamais (10.255.255.1 ne répond à aucun
+     * SYN) fait échouer l'emprunt dans le délai de connexion, au lieu de bloquer le
+     * worker — et la sonde /readyz — pendant les minutes du délai TCP du système.
+     */
+    public function testUneBaseQuiNeRepondJamaisEchoueDansLeDelaiDeConnexion(): void
+    {
+        $pool = ConnectionPoolFactory::create(new ArrayConfig([
+            'waffle.database.driver' => 'pgsql',
+            'waffle.database.host' => '10.255.255.1',
+            'waffle.database.port' => '5432',
+            'waffle.database.database' => 'waffle_test',
+            'waffle.database.connect_timeout' => '2',
+        ]));
+        $debut = hrtime(true);
+
+        try {
+            $pool->acquire();
+            static::fail('Une base qui ne répond jamais ne peut pas prêter de connexion.');
+        } catch (DatabaseException) {
+            static::assertLessThan(5.0, (hrtime(true) - $debut) / 1e9);
+        }
     }
 
     public function testLePoolSQLiteSOuvreAuPremierEmprunt(): void

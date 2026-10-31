@@ -27,6 +27,17 @@ final class ConnectionPoolFactory
     private const int DEFAULT_PING_FRESHNESS_MS = 500;
 
     /**
+     * RFC-023 §3.2 : délai d'ouverture d'une connexion par défaut, en secondes —
+     * le minimum que libpq applique, plus court que le `timeoutSeconds: 3` de la
+     * sonde de disponibilité documentée. Utilisé quand DB_CONNECT_TIMEOUT est
+     * absente ou invalide.
+     */
+    private const int DEFAULT_CONNECT_TIMEOUT = 2;
+
+    /** Les pilotes réseau dont PDO lit le délai de connexion dans PDO::ATTR_TIMEOUT. */
+    private const array TIMED_DRIVERS = ['pgsql', 'mysql', 'mariadb'];
+
+    /**
      * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`.
      *
      * La fabrique injectée n'ouvre une connexion que lorsque le pool en a besoin :
@@ -52,29 +63,60 @@ final class ConnectionPoolFactory
         // (« ping-before-dispense ») du pool doit donc être adaptée au moteur.
         $ping = $driver === 'oci' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
 
+        // RFC-023 §3.2 : une connexion qui ne s'ouvre pas échoue dans le délai au
+        // lieu de bloquer le worker (et la sonde /readyz, qui emprunte au pool).
+        // SQLite n'ouvre pas de connexion réseau ; pour lui, ATTR_TIMEOUT serait
+        // l'attente d'un verrou, que ce réglage ne doit pas changer.
+        $options = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
+        if (in_array($driver, self::TIMED_DRIVERS, true)) {
+            $options[PDO::ATTR_TIMEOUT] = self::resolveConnectTimeout($config);
+        }
+
         // Fabrique sans état, rejouée à chaque création de connexion par le pool.
-        return new PDOConnectionPool(factory: static fn(): PDO => new PDO($dsn, $username, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]), pingQuery: $ping, tracker: $tracker, pingFreshnessMs: self::resolvePingFreshness($config));
+        return new PDOConnectionPool(
+            factory: static fn(): PDO => new PDO($dsn, $username, $password, $options),
+            pingQuery: $ping,
+            tracker: $tracker,
+            pingFreshnessMs: self::resolvePingFreshness($config),
+        );
     }
 
     /**
      * [CARRY-01] : fenêtre de fraîcheur du ping, en millisecondes
-     * (`waffle.database.ping_freshness_ms`, interpolée depuis DB_PING_FRESHNESS_MS,
-     * donc une chaîne), validée en entier >= 0 — 0 est légitime et rétablit le ping
-     * à chaque emprunt. Absente, vide ou invalide ⇒ défaut 500 : une valeur fautive
-     * n'empêche jamais le boot.
+     * (`waffle.database.ping_freshness_ms`, interpolée depuis DB_PING_FRESHNESS_MS),
+     * validée en entier >= 0 — 0 est légitime et rétablit le ping à chaque emprunt.
+     * Absente, vide ou invalide ⇒ défaut 500.
      */
     public static function resolvePingFreshness(ConfigInterface $config): int
     {
-        $raw = $config->getString('waffle.database.ping_freshness_ms');
+        return self::resolveInt($config, 'waffle.database.ping_freshness_ms', 0, self::DEFAULT_PING_FRESHNESS_MS);
+    }
+
+    /**
+     * RFC-023 §3.2 : délai d'ouverture d'une connexion, en secondes
+     * (`waffle.database.connect_timeout`, interpolé depuis DB_CONNECT_TIMEOUT),
+     * validé en entier >= 1. Absent, vide ou invalide ⇒ défaut 2.
+     */
+    public static function resolveConnectTimeout(ConfigInterface $config): int
+    {
+        return self::resolveInt($config, 'waffle.database.connect_timeout', 1, self::DEFAULT_CONNECT_TIMEOUT);
+    }
+
+    /**
+     * Lit un entier de configuration interpolé depuis l'environnement (donc une
+     * chaîne). Absent, vide, non entier ou sous le minimum ⇒ le défaut : une
+     * valeur fautive n'empêche jamais le boot.
+     */
+    private static function resolveInt(ConfigInterface $config, string $key, int $minimum, int $default): int
+    {
+        $raw = $config->getString($key);
         if ($raw === null || $raw === '') {
-            return self::DEFAULT_PING_FRESHNESS_MS;
+            return $default;
         }
 
         $value = filter_var($raw, FILTER_VALIDATE_INT);
 
-        return is_int($value) && $value >= 0 ? $value : self::DEFAULT_PING_FRESHNESS_MS;
+        return is_int($value) && $value >= $minimum ? $value : $default;
     }
 
     /**
