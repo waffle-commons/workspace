@@ -3531,7 +3531,7 @@
             "dist": {
                 "type": "path",
                 "url": "../async",
-                "reference": "5d1928549b997fce1f61377196e2da1cc2099432"
+                "reference": "aa6025296e71eec723c718246ed1a5fe888961a8"
             },
             "require": {
                 "php": "^8.5",
@@ -3617,7 +3617,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "873fd622901bf006e3a5668aeb24829fc4186135"
+                "reference": "d695d78b16fc41f55bb7b370020648568b1c1c79"
             },
             "require": {
                 "ext-openssl": "*",
@@ -4742,7 +4742,7 @@
             "dist": {
                 "type": "path",
                 "url": "../openapi",
-                "reference": "91cf0bf483afe8c55d39d4c3ff1ca25c1bf4fd36"
+                "reference": "a2c05e919a663e5dd753166e0e8a5ff3119543b3"
             },
             "require": {
                 "php": "^8.5",
@@ -4753,6 +4753,7 @@
                 "carthage-software/mago": "^1.50",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
                 "igor-php/igor-php": "^0.9.7",
+                "nyholm/psr7": "^1.8",
                 "opis/json-schema": "^2.6",
                 "php-mock/php-mock-phpunit": "^2.15",
                 "phpunit/phpunit": "^12.5",
@@ -5379,7 +5380,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry",
-                "reference": "5c13ebef84b2aed430dbb459f16d6b6e4ba2df76"
+                "reference": "86696c66633591717e8ac82717b28f6f11483ac9"
             },
             "require": {
                 "php": "^8.5",
@@ -5472,7 +5473,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry-otel",
-                "reference": "686a2949814a84fab6c3c86165b2991566bf2179"
+                "reference": "fb7b131952959db2fdc050300b61113ff0f68bc6"
             },
             "require": {
                 "nyholm/psr7": "^1.8",
