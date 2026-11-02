@@ -218,7 +218,9 @@ final class AppKernelFactory
         try {
             $config = new Config(configDir: $rootConfig, environment: $env, env: $envRegistry);
         } catch (InvalidConfigurationException $e) {
-            new StreamLogger(channel: LogChannel::CORE)->critical('Configuration failed to load; falling back to Failsafe defaults.', [
+            new StreamLogger(
+                channel: LogChannel::CORE,
+            )->critical('Configuration failed to load; falling back to Failsafe defaults.', [
                 'exception' => $e->getMessage(),
             ]);
             $config = new Config(
