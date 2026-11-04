@@ -9,8 +9,10 @@ It is a **submodule of the [`waffle-commons/monorepo`](https://github.com/waffle
 If you want to **build an application** with Waffle, use the official skeleton instead:
 
 ```shell
-composer create-project waffle-commons/skeleton my-waffle-app
+composer create-project waffle-commons/skeleton:0.1.0-beta7 my-waffle-app
 ```
+
+Name the version: until `1.0.0` every release is a beta, and Composer offers only stable releases unless you name one. Without PHP on your machine, the skeleton's [`create-project.sh`](https://github.com/waffle-commons/skeleton#create-a-new-project) does the same with Docker only.
 
 ## Purpose
 
