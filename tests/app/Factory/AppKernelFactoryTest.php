@@ -30,6 +30,16 @@ final class AppKernelFactoryTest extends TestCase
         }
     }
 
+    #[\Override]
+    protected function tearDown(): void
+    {
+        putenv('APP_SECRET');
+        putenv('WAFFLE_CSRF_SECRET');
+        putenv('WAFFLE_AUTH_SECRET');
+
+        parent::tearDown();
+    }
+
     public function testProdWithDebugTrueThrowsFailClosed(): void
     {
         $this->expectException(RuntimeException::class);
@@ -53,7 +63,23 @@ final class AppKernelFactoryTest extends TestCase
     {
         yield 'dev + debug on' => ['dev', true];
         yield 'dev + debug off' => ['dev', false];
-        yield 'prod + debug off' => ['prod', false];
+    }
+
+    /**
+     * La production démarre sur APP_SECRET, dont dérive la clé CSRF, et le secret du
+     * pont. Les secrets sont fournis ici : le test dépendait d'un `.env` local, absent
+     * de la CI. WAFFLE_CSRF_SECRET est vidé pour l'emporter sur celui du `.env` (le
+     * processus prime) et emprunter la dérivation.
+     */
+    public function testProdWithDebugOffBootsOnAppSecretAndTheAuthSecret(): void
+    {
+        putenv('APP_SECRET=' . bin2hex(random_bytes(32)));
+        putenv('WAFFLE_AUTH_SECRET=' . bin2hex(random_bytes(32)));
+        putenv('WAFFLE_CSRF_SECRET=');
+
+        $kernel = AppKernelFactory::create(env: 'prod', debug: false);
+
+        static::assertInstanceOf(KernelInterface::class, $kernel);
     }
 
     /**

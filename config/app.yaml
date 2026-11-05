@@ -2,8 +2,11 @@
 waffle:
   # Environnement applicatif (dev, prod, test). Renseigné par la variable d'environnement serveur.
   env: '%env(APP_ENV)%'
-  # Mode debug. À mettre à false en production pour des raisons de sécurité.
-  debug: '%env(APP_DEBUG)%'
+  # Secret racine de l'application (APP_SECRET), 32 octets ou plus. La clé CSRF en
+  # dérive (HKDF-SHA256) quand security.csrf.secret est vide ; sans l'un ni l'autre,
+  # la production refuse de démarrer. Le secret du pont d'authentification
+  # (auth.secret), partagé avec le monolithe hérité, n'en dérive jamais.
+  secret: '%env(APP_SECRET)%'
   # Durcissement sécurité : hôtes de confiance.
   # Liste des domaines autorisés. Si vide, tous les hôtes sont acceptés (DEV uniquement).
   # En PROD, ce paramètre DOIT être renseigné pour prévenir l'injection d'en-tête Host.
@@ -11,13 +14,35 @@ waffle:
     - localhost
     # Service aval de la démo de traçage distribué (AXE 5) : reçu avec Host: waffle-downstream.
     - waffle-downstream
+  # Sondes d'orchestrateur (OPS-01, RFC-023) : /healthz (vivacité) et /readyz
+  # (disponibilité). Une sonde listée ici est indispensable : absente ou en échec,
+  # l'instance répond 503 sur /readyz.
+  health:
+    required:
+      - db.pool
+    # Arrêt gracieux (OPS-02, RFC-023 §5.1) : le hook preStop du pod crée ce fichier
+    # puis patiente ; tant qu'il existe, /readyz répond 503 alors que PHP sert encore
+    # le reste du trafic. Ensuite SIGTERM, et le grace_period de Caddy draine l'en-cours.
+    drain_marker: '/tmp/waffle-draining'
   security:
+    # Limitation de débit (NET-01, RFC-017 §3.1) : seau à jetons partagé dans le
+    # Redis de `redis_dsn`. `capacity` requêtes par `period_seconds`, rafales
+    # comprises. `on_storage_failure` : open (laisse passer, journalisé et compté
+    # dans /waffle-metrics) ou closed (503). `trusted_proxies` : adresses ou plages
+    # CIDR dont on lit X-Forwarded-For.
+    rate_limit:
+      enabled: true
+      capacity: 120
+      period_seconds: 60
+      on_storage_failure: 'open'
+      trusted_proxies: []
+      redis_dsn: '%env(REDIS_DSN)%'    # redis://[:mot-de-passe@]hôte[:port]
     level: 10
     csrf:
-      # Secret de signature de 32 octets ou plus pour les jetons CSRF HMAC sans état (Beta-1 / SEC-01).
-      # Résolu depuis l'env WAFFLE_CSRF_SECRET. En prod, un secret absent ou trop
-      # court avorte le boot — renseignez-le dans votre manifeste de déploiement
-      # avant la mise en ligne.
+      # Clé de signature des jetons CSRF HMAC sans état (Beta-1 / SEC-01), 32 octets
+      # ou plus, résolue depuis l'env WAFFLE_CSRF_SECRET. Facultative : vide, elle
+      # dérive de waffle.secret (APP_SECRET), la même dans chaque worker. En prod, une
+      # valeur trop courte, ou ni l'une ni l'autre, avorte le boot.
       secret: '%env(WAFFLE_CSRF_SECRET)%'
     # CORS fail-closed (SEC-04) : liste blanche d'origines exactes
     # (scheme://host[:port]). Vide par défaut ⇒ toute requête cross-origin est
@@ -64,11 +89,8 @@ waffle:
   paths:
     controllers: 'app/Controller'
     services: 'app/Service'
+    # Résolu sous la racine de l'application, comme controllers et services.
     event_listeners: 'app/EventListener'
-  # Configuration de la journalisation (PSR-3).
-  log:
-    channel: app
-    stream: 'php://stderr'
   # Cache PSR-16 (RFC-013). Alimente le cache du Router et le futur store CSRF.
   cache:
     adapter: 'redis'                    # array | file | redis
@@ -76,6 +98,41 @@ waffle:
     redis_dsn: '%env(REDIS_DSN)%'      # adaptateur redis uniquement
     default_ttl: 3600                  # en secondes, optionnel
     prefix: 'waffle:cache:'            # adaptateur redis uniquement, optionnel
+  # File d'attente (QUEUE-02) : flux Redis lus par `bin/waffle queue:work`.
+  queue:
+    redis_dsn: '%env(REDIS_DSN)%'      # redis://[:mot-de-passe@]hôte[:port]
+    prefix: 'waffle:queue:'            # préfixe des flux, des messages différés et des messages en échec
+  # Client HTTP sortant (NET-02/03, RFC-024). Une clé absente prend la valeur par
+  # défaut du contrat.
+  http_client:
+    # Délais de chaque transfert, jamais infinis : 1 à 30000 ms pour la connexion,
+    # 1 à 120000 ms au total. Reprises des seules méthodes idempotentes (GET, HEAD,
+    # OPTIONS, PUT, DELETE, sauf `retry_non_idempotent`), sur échec réseau ou
+    # 429/502/503/504, avec un recul exponentiel à gigue complète plafonné à
+    # `max_delay_ms` ; un Retry-After peut dépasser ce plafond, et aucune attente
+    # ne démarre au-delà de `budget_ms`. `max_attempts: 1` coupe les reprises.
+    resilience:
+      connect_timeout_ms: 1000
+      total_timeout_ms: 10000
+      max_attempts: 3
+      base_delay_ms: 100
+      max_delay_ms: 2000
+      budget_ms: 15000
+      retry_non_idempotent: false
+    # Disjoncteur par origine (schéma, hôte, port), état partagé dans le Redis de
+    # `redis_dsn` : il s'ouvre quand `failure_rate_percent` % des appels échouent
+    # (réseau ou 5xx) sur `window_seconds`, à partir de `minimum_calls` appels ;
+    # ouvert, il répond 503 sans connexion. Après `cool_down_seconds`, il laisse
+    # passer `half_open_trials` appel(s) d'essai : un succès le referme. Redis
+    # indisponible : il laisse passer, avec un avertissement et une métrique.
+    breaker:
+      enabled: true
+      failure_rate_percent: 50
+      minimum_calls: 10
+      window_seconds: 60
+      cool_down_seconds: 30
+      half_open_trials: 1
+      redis_dsn: '%env(REDIS_DSN)%'    # redis://[:mot-de-passe@]hôte[:port]
   # Configuration de la base de données locale (RFC-022).
   # Le bac à sable PostgreSQL est fourni par le service compose `waffle-postgres`
   # (DB_HOST pointe sur ce nom de service). Moteurs supportés par la fabrique de
@@ -92,5 +149,19 @@ waffle:
     password: '%env(DB_PASSWORD)%'
     # Ignoré par pgsql (encodage client négocié, UTF8) ; utilisé par mysql/oci.
     charset: 'utf8'
+    # [CARRY-01] Fenêtre de fraîcheur du ping, en millisecondes. Une connexion
+    # dont la vivacité a été prouvée (à l'ouverture ou par le ping) il y a moins
+    # de ce délai repart du pool sans nouveau `SELECT 1` : sous charge, le ping
+    # disparaît presque entièrement (deux allers-retours par emprunt sous
+    # PostgreSQL). Contrepartie : si la base coupe ses connexions, des requêtes
+    # peuvent échouer pendant au plus ce délai ; 0 ⇒ ping à chaque emprunt.
+    # Interpolée depuis DB_PING_FRESHNESS_MS ; absente ⇒ défaut 500.
+    ping_freshness_ms: '%env(DB_PING_FRESHNESS_MS)%'
+    # Délai d'ouverture d'une connexion, en secondes (PostgreSQL, MySQL, MariaDB).
+    # Sans lui, une base qui ne répond plus bloque le worker plusieurs minutes, sonde
+    # /readyz comprise (RFC-023 §3.2) ; il doit rester plus court que le
+    # `timeoutSeconds` de la sonde de disponibilité. Interpolé depuis
+    # DB_CONNECT_TIMEOUT ; absent ou invalide ⇒ défaut 2 (le minimum de libpq).
+    connect_timeout: '%env(DB_CONNECT_TIMEOUT)%'
     migrations_path: 'migrations'
 

@@ -9,8 +9,10 @@ It is a **submodule of the [`waffle-commons/monorepo`](https://github.com/waffle
 If you want to **build an application** with Waffle, use the official skeleton instead:
 
 ```shell
-composer create-project waffle-commons/skeleton my-waffle-app
+composer create-project waffle-commons/skeleton:0.1.0-beta7 my-waffle-app
 ```
+
+Name the version: until `1.0.0` every release is a beta, and Composer offers only stable releases unless you name one. Without PHP on your machine, the skeleton's [`create-project.sh`](https://github.com/waffle-commons/skeleton#create-a-new-project) does the same with Docker only.
 
 ## Purpose
 
@@ -125,7 +127,9 @@ When integration-testing changes to the `config` package or to `AppKernelFactory
 
 > **Auth secrets.** `workspace/.env.example` ships `WAFFLE_AUTH_SECRET` (the RFC-021 bridge HMAC secret — shared with the `legacy-backend` monolith via `docker-compose.yml` so it can verify assertions) and `WAFFLE_DEMO_API_KEY` (the demo `X-Api-Key` service account). Both are consumed by `waffle.auth.*` in `config/app.yaml`; the committed values are dev-only placeholders.
 
-> **Database & migrations.** The workspace ships the RFC-022 `waffle.database.*` config and a sample `migrations/` script. Apply them inside the container with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle db:migrate`. See [How to: Database Migrations](https://github.com/waffle-commons/documentation/blob/main/how-to/database-migrations.md).
+> **Database & migrations.** The workspace ships the RFC-022 `waffle.database.*` config and a sample `migrations/` script with its down script. Apply them inside the container with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle db:migrate`; `make:migration <Name>`, `db:status` and `db:rollback [--steps=N]` complete the cycle (`[OPS-03]`). The `waffle-mysql` and `waffle-mariadb` services exist only for the `data` component's live migration round trip; the app runs on `waffle-postgres`. See [How to: Database Migrations](https://github.com/waffle-commons/documentation/blob/main/how-to/database-migrations.md).
+
+> **Queue worker.** `bin/waffle queue:work` handles the messages of the Redis Streams queue (`waffle.queue.*` in `config/app.yaml`, on the `waffle-redis` service). Its demo handler, `Workspace\Queue\EmailHandler`, takes each queued `Email` to `Workspace\Mailer\LogMailer`, which writes it to the log instead of sending it. Run it with `docker exec -it -w /waffle-commons/workspace waffle-dev php bin/waffle queue:work -v`; Ctrl+C stops it once the message in flight is settled. Nothing in the HTTP app dispatches messages yet: code that starts background work takes `QueueDispatcherInterface`, which the Redis Streams driver implements.
 
 ## Contribution
 

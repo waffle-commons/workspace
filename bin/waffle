@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 /**
- * Reference entry point for the `waffle` CLI.
+ * Point d'entrée de la CLI `waffle` du workspace.
  *
- * Skeleton-shipped projects ship their own bin/waffle.php that wires the
- * concrete cache + router + container; this file is a minimal reference
- * showing the expected boot shape.
+ * Construit le cache, le routeur, le pool de connexions, la file d'attente et le
+ * conteneur concrets, puis enregistre les commandes de la console.
  *
- * Usage:
- *   php vendor/bin/waffle <command> [options...]
- *   php vendor/bin/waffle list
+ * Usage :
+ *   php bin/waffle <commande> [options...]
+ *   php bin/waffle list
  */
 
+use Composer\InstalledVersions;
 use Waffle\Commons\Config\Config;
 use Waffle\Commons\Config\DotEnv;
 use Waffle\Commons\Console\Command\CacheClearCommand;
@@ -21,6 +21,9 @@ use Waffle\Commons\Console\Command\ContainerCompileCommand;
 use Waffle\Commons\Console\Command\DataWarmupCommand;
 use Waffle\Commons\Console\Command\MemoryAuditCommand;
 use Waffle\Commons\Console\Command\MigrateCommand;
+use Waffle\Commons\Console\Command\MigrationRollbackCommand;
+use Waffle\Commons\Console\Command\MigrationStatusCommand;
+use Waffle\Commons\Console\Command\QueueWorkCommand;
 use Waffle\Commons\Console\Command\RouteCompileCommand;
 use Waffle\Commons\Console\Command\RouteListCommand;
 use Waffle\Commons\Console\Command\SecurityAuditCommand;
@@ -32,6 +35,7 @@ use Waffle\Commons\Console\Maker\Command\MakeEntityCommand;
 use Waffle\Commons\Console\Maker\Command\MakeEventPairCommand;
 use Waffle\Commons\Console\Maker\Command\MakeHttpClientCommand;
 use Waffle\Commons\Console\Maker\Command\MakeMiddlewareCommand;
+use Waffle\Commons\Console\Maker\Command\MakeMigrationCommand;
 use Waffle\Commons\Console\Maker\Command\MakeRepositoryCommand;
 use Waffle\Commons\Console\Maker\Command\MakeVoterCommand;
 use Waffle\Commons\Console\Output\StreamOutput;
@@ -43,14 +47,27 @@ use Waffle\Commons\Data\Compiler\SQLDialect;
 use Waffle\Commons\Data\Migration\MigrationRunner;
 use Waffle\Commons\Data\Query\Query;
 use Waffle\Commons\Data\Warmup\QueryWarmer;
+use Waffle\Commons\Log\Channel\LogChannel;
+use Waffle\Commons\Log\StreamLogger;
+use Waffle\Commons\OpenApi\Command\GenerateCommand;
+use Waffle\Commons\Queue\Envelope\EnvelopeCodec;
+use Waffle\Commons\Queue\RedisStreams\RedisFailedMessageStore;
+use Waffle\Commons\Queue\RedisStreams\RedisStreamsQueue;
+use Waffle\Commons\Queue\RedisStreams\StreamOptions;
 use Waffle\Commons\Routing\Router;
 use Waffle\Commons\Runtime\Audit\ProcessAuditRunner;
 use Waffle\Commons\Contracts\Data\Connection\ConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
+use Waffle\Commons\Contracts\Queue\MessageHandlerInterface;
 use Waffle\Commons\Auth\SecurityContext;
 use Waffle\Commons\Security\Container\SecureContainer;
 use Waffle\Commons\Security\Security;
+use Waffle\Commons\Serializer\Command\CompileCommand;
+use Waffle\Commons\Utils\Clock\SystemClock;
 use Workspace\Factory\AppKernelFactory;
+use Workspace\Factory\RedisPoolFactory;
+use Workspace\Mailer\LogMailer;
+use Workspace\Queue\EmailHandler;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -58,9 +75,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $root = realpath(path: dirname(path: __DIR__));
 $rootConfig = $root . DIRECTORY_SEPARATOR . 'config';
 
-// Setting up the framework. The env registry merges .env with the live process
-// environment (process wins), so `%env(...)%` placeholders — e.g. the RFC-022
-// database credentials — resolve on the CLI path exactly as they do over HTTP.
+// Mise en place du framework. Le registre d'environnement fusionne .env avec
+// l'environnement du processus (le processus l'emporte) : les `%env(...)%`, comme
+// les identifiants de base de données RFC-022, se résolvent en CLI comme en HTTP.
 $container = new Container();
 $envRegistry = array_merge(new DotEnv($root)->load(), getenv());
 $config = new Config(configDir: $rootConfig, environment: Constant::ENV_DEV, env: $envRegistry);
@@ -69,25 +86,29 @@ $security = new Security($config);
 // voter #[Voter] exécuté ; satisfait simplement le SecureContainer).
 $secureContainer = new SecureContainer($container, $security, new SecurityContext());
 $cache = AppKernelFactory::buildCache($root, $config);
-$router = new Router(directory: $config->getString(key: 'waffle.paths.controllers'));
+// Résolu sous la racine de l'application, comme dans AppKernelFactory : un chemin
+// relatif dépendrait du répertoire courant, et security:audit lancé ailleurs ne
+// contrôlerait aucune route.
+$controllers = $config->getString(key: 'waffle.paths.controllers');
+$router = new Router(directory: is_string($controllers) ? $root . DIRECTORY_SEPARATOR . $controllers : false);
 
-// PDO connection pool (RFC-022) + migration runner, built here on the explicit
-// CLI path so no migration scan ever happens during an HTTP request.
+// Pool de connexions PDO (RFC-022) et exécuteur de migrations, construits ici, sur
+// le chemin explicite de la CLI : aucune requête HTTP ne parcourt les migrations.
 $connectionPool = AppKernelFactory::buildConnectionPool($config);
 $migrationRunner = new MigrationRunner(pool: $connectionPool, config: $config);
 
 $container->set(ConnectionPoolInterface::class, $connectionPool);
 $container->set(MigrationRunnerInterface::class, $migrationRunner);
 
-// Console application
+// Application console ; la version affichée est celle du framework installé.
 $app = new ConsoleApplication(
     name: 'Waffle',
-    version: '0.1.0-beta0',
+    version: InstalledVersions::getPrettyVersion('waffle-commons/waffle') ?? 'dev',
     output: new StreamOutput(),
 );
 
 
-// Adding commands
+// Enregistrement des commandes
 $app->add(command: new RouteListCommand(router: $router->boot(container: $secureContainer)));
 $app->add(command: new SecurityAuditCommand(router: $router->boot(container: $secureContainer)));
 $app->add(command: new CacheClearCommand(cache: $cache));
@@ -95,12 +116,24 @@ $app->add(command: new MigrateCommand(
     runner: $container->get(MigrationRunnerInterface::class),
     pool: $container->get(ConnectionPoolInterface::class),
 ));
+// Cycle de vie des migrations (beta7, OPS-03) : `db:status` liste chaque version
+// (appliquée, en attente ou manquante) ; `db:rollback [--steps=N]` annule les N
+// dernières par leurs scripts `.down.sql`, après les avoir toutes vérifiées.
+$app->add(command: new MigrationStatusCommand(
+    runner: $container->get(MigrationRunnerInterface::class),
+    pool: $container->get(ConnectionPoolInterface::class),
+));
+$app->add(command: new MigrationRollbackCommand(
+    runner: $container->get(MigrationRunnerInterface::class),
+    pool: $container->get(ConnectionPoolInterface::class),
+));
 
-// Pre-compiled SQR warmup (`data:warmup`) — Roadmap Beta-3 "CLI Route & Cache
-// Warmup". The hot read queries below are compiled once to parameterised SQL,
-// serialised under var/cache/ and primed into OPcache shared memory, so the
-// first live request never pays the AST walk. Adapt the registry to your own
-// hot paths; warming never executes SQL against the database.
+// Préchauffage SQR précompilé (`data:warmup`), Roadmap Beta-3 « CLI Route & Cache
+// Warmup ». Les requêtes de lecture chaudes ci-dessous sont compilées une fois en
+// SQL paramétré, sérialisées sous var/cache/ et amorcées dans la mémoire partagée
+// d'OPcache : la première requête réelle ne paie jamais le parcours de l'AST.
+// Adaptez ce registre à vos propres chemins chauds ; le préchauffage n'exécute
+// jamais de SQL sur la base.
 $app->add(command: new DataWarmupCommand(warmers: [
     new QueryWarmer(
         queries: [
@@ -114,9 +147,9 @@ $app->add(command: new DataWarmupCommand(warmers: [
     ),
 ]));
 
-// Igor memory-leak & state-mutation audit. igor.sh lives at the monorepo root, one
-// level above this workspace; inside the dev container it runs igor-php directly
-// instead of wrapping itself in another `docker exec`.
+// Audit Igor des fuites mémoire et des mutations d'état. igor.sh vit à la racine du
+// monorepo, un niveau au-dessus du workspace ; dans le conteneur de développement, il
+// lance igor-php directement au lieu de s'envelopper dans un autre `docker exec`.
 $app->add(command: new MemoryAuditCommand(
     runner: new ProcessAuditRunner(),
     projectRoot: dirname($root),
@@ -131,6 +164,12 @@ $app->add(command: new MakeHttpClientCommand());
 $app->add(command: new MakeMiddlewareCommand());
 $app->add(command: new MakeRepositoryCommand());
 $app->add(command: new MakeVoterCommand());
+// `make:migration <Nom>` écrit `Version<AAAAMMJJNN>_<Nom>.sql` et son `.down.sql` dans
+// le répertoire que lit `db:migrate` (OPS-03).
+$app->add(command: new MakeMigrationCommand(
+    clock: new SystemClock(),
+    migrationsPath: $config->getString(key: 'waffle.database.migrations_path') ?? 'migrations',
+));
 
 // Commandes de compilation AOT (AXE 1 / RFC-019). `container:compile` lit la carte
 // de définitions du conteneur *concret* (réflexion sur la propriété `definitions`)
@@ -144,5 +183,45 @@ $app->add(command: new MakeVoterCommand());
 $container->lock();
 $app->add(command: new ContainerCompileCommand(container: $container));
 $app->add(command: new RouteCompileCommand(router: $router->boot(container: $secureContainer)));
+
+// Documentation et sérialiseur (beta7, API-01 / API-02), deux étapes de build qui ne
+// s'exécutent jamais pendant une requête. `openapi:generate` décrit en OpenAPI 3.1 les
+// routes découvertes et leurs DTO (`--output=public/openapi.json`, ou `-` pour la sortie
+// standard). `serializer:compile` compile les normaliseurs des DTO pour le chemin rapide
+// WAFFLE_AOT=1 ; le code du workspace vit dans app/ : `serializer:compile --source=app`.
+$app->add(command: new GenerateCommand(router: $router->boot(container: $secureContainer)));
+$app->add(command: new CompileCommand());
+
+// File d'attente (beta7, QUEUE-02). `queue:work` lit les flux Redis de la file et confie
+// chaque message au gestionnaire de sa classe ; les classes que les gestionnaires
+// déclarent sont les seules que le décodeur accepte de reconstruire. Le conteneur est
+// réinitialisé après chaque message, comme après chaque requête HTTP. Le nom de
+// consommateur est celui de l'hôte (un par conteneur), pas celui du processus : Redis
+// garde chaque nom dans le groupe jusqu'à sa suppression, et le worker se recycle
+// souvent. Un courriel (`Email`, QUEUE-03) part ainsi en tâche de fond.
+$workerLogger = new StreamLogger(channel: LogChannel::APP);
+$clock = new SystemClock();
+$messageHandlers = [new EmailHandler(new LogMailer($workerLogger))];
+$codec = new EnvelopeCodec(
+    serializer: AppKernelFactory::buildSerializer($root, $workerLogger),
+    messages: array_map(static fn(MessageHandlerInterface $handler): string => $handler->handles(), $messageHandlers),
+);
+// Sans délai de lecture : le worker bloque sur le flux jusqu'à `--wait` millisecondes, ce
+// qu'un délai d'une seconde couperait (RedisPoolFactory::READ_TIMEOUT vaut pour les autres pools).
+$queuePool = RedisPoolFactory::create($config->getString(key: 'waffle.queue.redis_dsn') ?? 'redis://127.0.0.1:6379', null);
+$queuePrefix = $config->getString(key: 'waffle.queue.prefix') ?? StreamOptions::DEFAULT_PREFIX;
+$app->add(command: new QueueWorkCommand(
+    consumer: new RedisStreamsQueue(
+        pool: $queuePool,
+        codec: $codec,
+        clock: $clock,
+        options: new StreamOptions(consumer: gethostname() ?: 'waffle', prefix: $queuePrefix),
+    ),
+    failed: new RedisFailedMessageStore(pool: $queuePool, codec: $codec, clock: $clock, prefix: $queuePrefix),
+    handlers: $messageHandlers,
+    resettable: $container,
+    clock: $clock,
+    logger: $workerLogger,
+));
 
 exit($app->run());

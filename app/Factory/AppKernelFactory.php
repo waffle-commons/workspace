@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Workspace\Factory;
 
-use PDO;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Waffle\Commons\Async\DeferredTaskRunner;
 use Waffle\Commons\Auth\AuthenticationBridge;
 use Waffle\Commons\Auth\Authenticator\ApiKeyAuthenticator;
 use Waffle\Commons\Auth\Authenticator\AssertionAuthenticator;
 use Waffle\Commons\Auth\Authenticator\JwtAuthenticator;
-use Waffle\Commons\Auth\Client\AuthenticatedClient;
+use Waffle\Commons\Auth\Client\AuthenticatedSettlingClient;
 use Waffle\Commons\Auth\Credential\AssertionCredentialsProvider;
 use Waffle\Commons\Auth\Identity\UserIdentity;
 use Waffle\Commons\Auth\Jwt\JwtConfig;
@@ -35,7 +35,6 @@ use Waffle\Commons\Config\Exception\InvalidConfigurationException;
 use Waffle\Commons\Container\Container;
 use Waffle\Commons\Contracts\Async\TaskRunnerInterface;
 use Waffle\Commons\Contracts\Auth\AuthenticationBridgeInterface;
-use Waffle\Commons\Contracts\Auth\Constant as AuthConstant;
 use Waffle\Commons\Contracts\Auth\SecurityContextInterface;
 use Waffle\Commons\Contracts\Auth\WebAuthn\CredentialRepositoryInterface;
 use Waffle\Commons\Contracts\Auth\WebAuthn\WebAuthnVerifierInterface;
@@ -51,10 +50,9 @@ use Waffle\Commons\Contracts\Data\Connection\RelationalConnectionPoolInterface;
 use Waffle\Commons\Contracts\Data\Migration\MigrationRunnerInterface;
 use Waffle\Commons\Contracts\Enum\Failsafe;
 use Waffle\Commons\Contracts\Handler\ArgumentResolverInterface;
-use Waffle\Commons\Contracts\HttpClient\ConcurrentClientInterface;
 use Waffle\Commons\Contracts\Reactive\BroadcastBufferInterface;
-use Waffle\Commons\Contracts\Security\Csrf\Constant as CsrfConstant;
 use Waffle\Commons\Contracts\Security\Csrf\CsrfTokenManagerInterface;
+use Waffle\Commons\Contracts\Serializer\DtoSerializerInterface;
 use Waffle\Commons\Contracts\Service\ReflectionServiceInterface;
 use Waffle\Commons\Contracts\Telemetry\Metrics\MetricsCollectorInterface;
 use Waffle\Commons\Contracts\Telemetry\Metrics\MetricsRegistryInterface;
@@ -71,12 +69,15 @@ use Waffle\Commons\ErrorHandler\Renderer\JsonErrorRenderer;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use Waffle\Commons\Http\Factory\ResponseFactory;
+use Waffle\Commons\Http\Factory\ServerRequestFactory;
 use Waffle\Commons\Http\Factory\StreamFactory;
 use Waffle\Commons\HttpClient\Client;
+use Waffle\Commons\HttpClient\Resilience\CircuitObservers;
 use Waffle\Commons\HttpClient\Security\SsrfGuard;
 use Waffle\Commons\Log\Channel\LogChannel;
 use Waffle\Commons\Log\StreamLogger;
 use Waffle\Commons\Pipeline\CoreRoutingMiddleware;
+use Waffle\Commons\Pipeline\Middleware\ProbeMiddleware;
 use Waffle\Commons\Pipeline\Middleware\SecureHeadersMiddleware;
 use Waffle\Commons\Pipeline\Middleware\TrustedHostMiddleware;
 use Waffle\Commons\Pipeline\MiddlewareStack;
@@ -90,6 +91,8 @@ use Waffle\Commons\Security\Middleware\CorsMiddleware;
 use Waffle\Commons\Security\Middleware\CsrfMiddleware;
 use Waffle\Commons\Security\Middleware\SecurityMiddleware;
 use Waffle\Commons\Security\Security;
+use Waffle\Commons\Serializer\Normalizer\CompiledNormalizerLoader;
+use Waffle\Commons\Serializer\Serializer;
 use Waffle\Commons\Telemetry\Cache\MeteredCache;
 use Waffle\Commons\Telemetry\Collector\GcCollector;
 use Waffle\Commons\Telemetry\Collector\MemoryCollector;
@@ -171,6 +174,11 @@ final class AppKernelFactory
         $streamFactory = new StreamFactory($connectionTracker);
         $container->set(StreamFactoryInterface::class, $streamFactory);
 
+        // Enregistrement de la factory PSR-17 des requêtes serveur (CARRY-04) : le pont
+        // de test waffle-commons/testing construit ses requêtes avec elle et la factory
+        // de flux ci-dessus, sans importer le composant http.
+        $container->set(ServerRequestFactoryInterface::class, new ServerRequestFactory());
+
         // Traçage distribué (AXE 5 / OBS-01). Par défaut : NullTracer + propagateur no-op
         // ⇒ surcoût ~0 et aucun en-tête de trace émis. Avec `WAFFLE_TRACING=otel`, on monte
         // le pont OpenTelemetry (paquet telemetry-otel) qui exporte chaque span en JSON sur
@@ -208,7 +216,9 @@ final class AppKernelFactory
         try {
             $config = new Config(configDir: $rootConfig, environment: $env, env: $envRegistry);
         } catch (InvalidConfigurationException $e) {
-            new StreamLogger(channel: LogChannel::CORE)->critical('Configuration failed to load; falling back to Failsafe defaults.', [
+            new StreamLogger(
+                channel: LogChannel::CORE,
+            )->critical('Configuration failed to load; falling back to Failsafe defaults.', [
                 'exception' => $e->getMessage(),
             ]);
             $config = new Config(
@@ -233,15 +243,15 @@ final class AppKernelFactory
         $trustedHosts = $config->getArray(key: 'waffle.trusted_hosts') ?? [];
 
         // SEC-01 (Beta-1, option C) : gestionnaire CSRF sans état, basé sur un HMAC
-        // lié à un SID anonyme par navigateur. Le secret vient de la config (avec
-        // interpolation d'env) ou, à défaut, d'un getenv() direct ; absent ou trop
-        // court ⇒ avortement du boot en production.
-        $csrfTokenManager = new CsrfTokenManager(secret: self::resolveCsrfSecret($config, $env));
+        // lié à un SID anonyme par navigateur. La clé est WAFFLE_CSRF_SECRET, ou à
+        // défaut dérive d'APP_SECRET (SecretFactory::csrf()) ; sans l'un ni l'autre,
+        // la production refuse de démarrer.
+        $csrfTokenManager = new CsrfTokenManager(secret: SecretFactory::csrf($config, $env));
         $container->set(CsrfTokenManagerInterface::class, $csrfTokenManager);
 
         // Client HTTP PSR-18 brut (paquet waffle-commons/http-client). Il n'est
         // PAS enregistré tel quel sous ClientInterface : il sert de transport
-        // interne au décorateur AuthenticatedClient du pont d'authentification,
+        // interne au décorateur AuthenticatedSettlingClient du pont d'authentification,
         // qui est enregistré comme ClientInterface plus bas (RFC-021 §4.7) —
         // ainsi tout consommateur (ex. ProxyService) hérite de la propagation
         // d'assertion sortante. Durci SEC-02 : un SsrfGuard résout et épingle
@@ -253,24 +263,26 @@ final class AppKernelFactory
         $ssrfAllowedHosts = $config->getArray(key: 'waffle.security.ssrf.allowed_hosts') ?? [];
         // Le traceur + le propagateur W3C sont passés au client : chaque requête sortante
         // porte alors le `traceparent` de la trace active (SEC-02 SSRF reste en amont).
+        // Les délais de transfert (NET-02) viennent de `waffle.http_client.resilience.*` :
+        // jamais infinis, bornés par le contrat TimeoutPolicy.
         $httpClient = new Client(
             $responseFactory,
             $streamFactory,
             new SsrfGuard(allowedHosts: $ssrfAllowedHosts),
             $tracer,
             $tracePropagator,
-        );
+        )->withTimeouts(HttpClientFactory::timeouts($config));
         // AXE 2 (ASYNC-02) : le client PSR-18 brut implémente aussi
-        // ConcurrentClientInterface (sendRequests/promise). On l'expose sous CE
+        // ConcurrentClientInterface (sendRequests/promise). Il est exposé sous CE
         // contrat — distinct du ClientInterface décoré par le pont d'auth plus
-        // bas — pour les contrôleurs de fan-out concurrent. Stateless (readonly),
-        // donc aucun reset requis.
-        $container->set(ConcurrentClientInterface::class, $httpClient);
+        // bas — pour les contrôleurs de fan-out concurrent, enveloppé des
+        // décorateurs de résilience à l'étape 5b-bis. Stateless (readonly), donc
+        // aucun reset requis.
 
         // 3-bis. Pont d'Authentification Universel (RFC-021, paquet waffle-commons/auth).
         // Secret partagé fail-closed : absent ou < 32 octets ⇒ avortement du boot
         // en production (MissingAuthSecretException dans les constructeurs).
-        $authSecret = self::resolveAuthSecret($config, $env);
+        $authSecret = SecretFactory::auth($config, $env);
 
         // Porteur d'identité à portée requête — SEUL service mutable du pont.
         // Enregistré dans le conteneur : ResettableInterface ⇒ vidé à chaque
@@ -335,15 +347,18 @@ final class AppKernelFactory
         // Propagation sortante (RFC-021 §4.7) : le client PSR-18 est décoré —
         // toute requête vers le monolithe hérité (hôte sur liste blanche) porte
         // automatiquement l'assertion signée quand une identité est active.
-        // Le ProxyService reçoit donc CE client via le conteneur.
-        $container->set(ClientInterface::class, new AuthenticatedClient($httpClient, [
+        // Le ProxyService reçoit CE client via le conteneur, enveloppé des
+        // décorateurs de résilience à l'étape 5b-bis. La variante « settling »
+        // garde un lot concurrent sous les décorateurs (RFC-024 §3.3) : chaque
+        // requête du lot reçoit ses identifiants, le lot part d'un bloc.
+        $authenticatedClient = new AuthenticatedSettlingClient($httpClient, [
             new AssertionCredentialsProvider(
                 signer: $assertionSigner,
                 context: $securityContext,
                 allowedHosts: ['legacy-backend'],
                 tenant: $config->getString('waffle.auth.tenant'),
             ),
-        ]));
+        ]);
 
         // 3. Instanciation de Security (paquet waffle-commons/security).
         $security = new Security($config);
@@ -387,6 +402,17 @@ final class AppKernelFactory
             : new NullMetricsRegistry();
         $container->set(MetricsRegistryInterface::class, $metricsRegistry);
 
+        // 5u. Cache PSR-16 (RFC-013), pool de connexions + migration runner (RFC-022).
+        //     Construits dès ici : les sondes de disponibilité (5w) en ont besoin.
+        $connectionPool = self::buildConnectionPool($config, $connectionTracker);
+        $rawCache = self::registerDataServices($container, $root, $config, $connectionPool, $connectionTracker);
+
+        // 5v. AXE 5 / OBS-02 : décorateur cache-hit-ratio (`waffle_cache_hits_total` /
+        //     `_misses_total`). Réenregistré dans le conteneur : Router et tout
+        //     consommateur reçoivent la version mesurée.
+        $cache = new MeteredCache($rawCache, $metricsRegistry);
+        $container->set(CacheInterface::class, $cache);
+
         $collectors = [new MemoryCollector(), new GcCollector(), new PoolUtilizationCollector()];
         if ($metricsRegistry instanceof MetricsCollectorInterface) {
             $collectors[] = $metricsRegistry;
@@ -395,6 +421,19 @@ final class AppKernelFactory
         $stack->add(
             middleware: new MetricsMiddleware(
                 new PrometheusExporter($collectors),
+                $responseFactory,
+                $streamFactory,
+                null,
+                ['127.0.0.1', '::1'],
+            ),
+        );
+
+        // 5w. Sondes d'orchestrateur (OPS-01, RFC-023) — /healthz et /readyz, avant le
+        //     traçage (pas de span ni de métrique de requête) et avant TrustedHost (la
+        //     sonde kubelet porte l'IP du pod en Host). Rapport détaillé : localhost.
+        $stack->add(
+            middleware: new ProbeMiddleware(
+                HealthFactory::readinessProbe($config, $connectionPool, $rawCache, $metricsRegistry),
                 $responseFactory,
                 $streamFactory,
                 null,
@@ -441,19 +480,50 @@ final class AppKernelFactory
         // Routing → Csrf → Security → SecureHeaders → Dispatcher.
         $stack->add(middleware: new AuthenticationMiddleware($authBridge, $secureLogger));
 
+        // 5a-ratelimit. Limitation de débit (NET-01) : après l'authentification, pour
+        // compter par sujet quand il est connu, par IP cliente sinon. Désactivable.
+        // Une panne de Redis compte dans waffle_ratelimit_storage_errors_total (/waffle-metrics).
+        $rateLimit = RateLimitFactory::middleware(
+            $config,
+            $securityContext,
+            $responseFactory,
+            $secureLogger,
+            $metricsRegistry,
+        );
+        if ($rateLimit !== null) {
+            $stack->add(middleware: $rateLimit);
+        }
+
         // 5b. Mise en place du dispatcher d'événements.
         $listenerProvider = new ListenerProvider();
         $eventDispatcher = new EventDispatcher($listenerProvider);
 
-        // Auto-découverte des listeners dans le dossier EventListener.
+        // Auto-découverte des listeners dans le dossier EventListener, résolu sous la
+        // racine de l'application comme controllers et services : un chemin relatif
+        // laissé tel quel dépendrait du répertoire courant du worker.
         $eventListenersPath = $config->getString('waffle.paths.event_listeners');
         if (is_string($eventListenersPath)) {
-            EventListenerDiscovery::discover($listenerProvider, $eventListenersPath);
+            EventListenerDiscovery::discover($listenerProvider, $root . DIRECTORY_SEPARATOR . $eventListenersPath);
         }
 
         // 6. Logger du kernel. Le kernel lui-même est construit plus bas (étape 9),
         //    une fois tous ses collaborateurs prêts — injection par constructeur (ARCH-03).
         $kernelLogger = new StreamLogger(channel: LogChannel::CORE);
+
+        // 5b-bis. Résilience sortante (NET-02/03, RFC-024 §3.3) : les clients sortants
+        //     enregistrés sont RetryingClient(CircuitBreakerClient(…)) — reprises bornées
+        //     des méthodes idempotentes, disjoncteur par origine dont l'état vit dans
+        //     Redis. Ses transitions partent en événements PSR-14 (CircuitStateChanged)
+        //     et en métriques (/waffle-metrics) : il lui faut le dispatcher et le
+        //     registre, d'où sa place ici. Les identifiants restent sous les reprises,
+        //     réappliqués à chaque tentative.
+        HttpClientFactory::register(
+            $container,
+            $config,
+            $httpClient,
+            $authenticatedClient,
+            new CircuitObservers($eventDispatcher, $metricsRegistry, $kernelLogger),
+        );
 
         // 5c. AXE 3 (REACTIVE-01) : tampon de diffusion à portée requête + transport
         //     SSE. Les write-hooks `#[Broadcast]` y enregistrent les mutations SANS
@@ -510,17 +580,7 @@ final class AppKernelFactory
         // Closure avec lui-même en argument, cf. container/src/Container.php).
         // Le dispatcher d'événements est capturé dans la closure pour rester
         // injecté sans dépendre d'un slot supplémentaire dans le conteneur.
-        self::registerTerminalHandlers($container, $eventDispatcher);
-
-        // 7. Cache PSR-16 (RFC-013), pool de connexions + migration runner (RFC-022).
-        $cache = self::registerDataServices($container, $root, $config, $connectionTracker);
-
-        // 7b. AXE 5 / OBS-02 : décorateur cache-hit-ratio — enveloppe le cache partagé
-        //     pour alimenter `waffle_cache_hits_total` / `_misses_total` dans le registre
-        //     APCu (jamais sur le tas worker), exposés via /waffle-metrics. Réenregistré
-        //     dans le conteneur : Router et tout consommateur reçoivent la version mesurée.
-        $cache = new MeteredCache($cache, $metricsRegistry);
-        $container->set(CacheInterface::class, $cache);
+        self::registerTerminalHandlers($container, $eventDispatcher, $root, $kernelLogger);
 
         // 8. Instanciation et démarrage du Router.
         $controllersPath = $config->getString(key: 'waffle.paths.controllers');
@@ -539,6 +599,8 @@ final class AppKernelFactory
             // de déclencher l'analyse et de journaliser les refus, y compris un
             // échec fail-closed du résolveur.
             $secureMiddleware = new SecurityMiddleware(secureContainer: $secureContainer, logger: $secureLogger);
+            // [API-01] Documentation de développement (/_docs), en debug seulement, juste avant le routage.
+            ApiDocsFactory::register($stack, $router, $responseFactory, $streamFactory, $debug);
             $stack->add(middleware: $routingMiddleware);
             // Le CsrfMiddleware doit s'exécuter après Routing (il lit `_classname`
             // et `_method` pour repérer #[RequiresCsrfToken]) et avant Security.
@@ -586,23 +648,39 @@ final class AppKernelFactory
     private static function registerTerminalHandlers(
         ContainerInterface $container,
         EventDispatcher $eventDispatcher,
+        string $root,
+        LoggerInterface $logger,
     ): void {
         $container->set(ReflectionServiceInterface::class, new ReflectionService());
+        // Sérialiseur des DTO (API-02) : il hydrate les paramètres #[Dto] (PUT et PATCH
+        // compris) et écrit en JSON les DTO renvoyés par les contrôleurs. Avec
+        // WAFFLE_AOT=1, il sert les normaliseurs compilés par
+        // `bin/waffle serializer:compile --source=app` ; sinon il lit les DTO par réflexion.
+        $serializer = self::buildSerializer($root, $logger);
+        $container->set(DtoSerializerInterface::class, $serializer);
         // Validateur injectable et mockable (DX-05) : enveloppe la façade statique Assert.
         $container->set(ValidatorInterface::class, new AssertValidator());
-        $container->set(ArgumentResolverInterface::class, static function (ContainerInterface $c): ArgumentResolverInterface {
+        $container->set(ArgumentResolverInterface::class, static function (ContainerInterface $c) use (
+            $serializer,
+        ): ArgumentResolverInterface {
             /** @var ReflectionServiceInterface $reflection */
             $reflection = $c->get(ReflectionServiceInterface::class);
 
-            return new ControllerArgumentResolver($c, $reflection);
+            return new ControllerArgumentResolver($c, $reflection, $serializer);
         });
         $container->set(RequestHandlerInterface::class, static function (ContainerInterface $c) use (
             $eventDispatcher,
+            $serializer,
         ): RequestHandlerInterface {
             /** @var ArgumentResolverInterface $resolver */
             $resolver = $c->get(ArgumentResolverInterface::class);
 
-            return new ControllerDispatcher(container: $c, dispatcher: $eventDispatcher, argumentResolver: $resolver);
+            return new ControllerDispatcher(
+                container: $c,
+                dispatcher: $eventDispatcher,
+                argumentResolver: $resolver,
+                serializer: $serializer,
+            );
         });
     }
 
@@ -614,12 +692,12 @@ final class AppKernelFactory
         ContainerInterface $container,
         string $root,
         Config $config,
+        PDOConnectionPool $connectionPool,
         ?ConnectionTrackerInterface $tracker = null,
     ): CacheInterface {
         $cache = self::buildCache($root, $config, $tracker);
         $container->set(CacheInterface::class, $cache);
 
-        $connectionPool = self::buildConnectionPool($config, $tracker);
         $container->set(ConnectionPoolInterface::class, $connectionPool);
         // Contrat relationnel typé : les dépôts SQL s'injectent dessus pour un accès PDO typé.
         $container->set(RelationalConnectionPoolInterface::class, $connectionPool);
@@ -630,81 +708,6 @@ final class AppKernelFactory
         $container->set(MigrationRunner::class, $migrationRunner);
 
         return $cache;
-    }
-
-    /**
-     * Résout le secret de signature CSRF avec des fallbacks raisonnables. La
-     * config gagne ; sinon on lit directement l'environnement. La production
-     * refuse de démarrer si le secret est absent ou plus court que
-     * `CsrfConstant::MIN_SECRET_BYTES` ; en hors-prod, un secret aléatoire
-     * éphémère permet à dev/test de démarrer proprement.
-     */
-    private static function resolveCsrfSecret(Config $config, string $env): string
-    {
-        $fromConfig = $config->getString('waffle.security.csrf.secret');
-        $candidate = is_string($fromConfig) && $fromConfig !== '' ? $fromConfig : null;
-
-        if ($candidate === null) {
-            $fromEnv = getenv(CsrfConstant::SECRET_ENV_KEY);
-            if (is_string($fromEnv) && $fromEnv !== '') {
-                $candidate = $fromEnv;
-            }
-        }
-
-        if ($candidate !== null && strlen($candidate) >= CsrfConstant::MIN_SECRET_BYTES) {
-            return $candidate;
-        }
-
-        if ($env === Constant::ENV_PROD) {
-            throw new RuntimeException(sprintf(
-                'Secret CSRF manquant ou plus court que %d octets en production. '
-                . 'Renseignez "waffle.security.csrf.secret" ou la variable d\'environnement %s.',
-                CsrfConstant::MIN_SECRET_BYTES,
-                CsrfConstant::SECRET_ENV_KEY,
-            ));
-        }
-
-        // Fallback dev/test : secret éphémère par processus. Les jetons émis sous
-        // ce secret ne survivront PAS au redémarrage d'un worker — ce qui est
-        // acceptable hors production.
-        return random_bytes(CsrfConstant::MIN_SECRET_BYTES);
-    }
-
-    /**
-     * Résout le secret partagé du Pont d'Authentification Universel (RFC-021
-     * §4.2) avec la même discipline que le secret CSRF : la config gagne
-     * (`waffle.auth.secret`, interpolée depuis WAFFLE_AUTH_SECRET) ; sinon
-     * lecture directe de l'environnement. En production, absent ou plus court
-     * que 32 octets ⇒ refus de démarrer (fail-closed — jamais de contournement
-     * non authentifié). Hors prod, un secret éphémère permet de démarrer, mais
-     * les assertions émises ne seront vérifiables que par CE processus.
-     */
-    private static function resolveAuthSecret(Config $config, string $env): string
-    {
-        $fromConfig = $config->getString('waffle.auth.secret');
-        $candidate = is_string($fromConfig) && $fromConfig !== '' ? $fromConfig : null;
-
-        if ($candidate === null) {
-            $fromEnv = getenv(AuthConstant::SECRET_ENV_KEY);
-            if (is_string($fromEnv) && $fromEnv !== '') {
-                $candidate = $fromEnv;
-            }
-        }
-
-        if ($candidate !== null && strlen($candidate) >= AuthConstant::MIN_SECRET_BYTES) {
-            return $candidate;
-        }
-
-        if ($env === Constant::ENV_PROD) {
-            throw new RuntimeException(sprintf(
-                'Secret du pont d\'authentification manquant ou plus court que %d octets en production. '
-                . 'Renseignez "waffle.auth.secret" ou la variable d\'environnement %s.',
-                AuthConstant::MIN_SECRET_BYTES,
-                AuthConstant::SECRET_ENV_KEY,
-            ));
-        }
-
-        return random_bytes(AuthConstant::MIN_SECRET_BYTES);
     }
 
     /**
@@ -730,57 +733,29 @@ final class AppKernelFactory
     }
 
     /**
-     * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`.
-     *
-     * La fabrique injectée n'ouvre une connexion que lorsque le pool en a besoin :
-     * en mode worker FrankenPHP, les sockets restent tièdes entre les requêtes,
-     * sont sondés (« ping-before-dispense ») puis reconnectés de façon transparente.
+     * Construit le sérialiseur des DTO (API-02) : les normaliseurs compilés par
+     * `bin/waffle serializer:compile --source=app` avec WAFFLE_AOT=1, la lecture des
+     * DTO par réflexion sinon. Le kernel HTTP et le worker de la file le partagent.
+     */
+    public static function buildSerializer(string $root, LoggerInterface $logger): Serializer
+    {
+        return new Serializer(
+            new CompiledNormalizerLoader(
+                directory: $root . '/' . CompiledNormalizerLoader::DEFAULT_DIRECTORY,
+                logger: $logger,
+            )->load(),
+        );
+    }
+
+    /**
+     * Construit le pool de connexions PDO (RFC-022) à partir de `waffle.database.*`,
+     * fenêtre de fraîcheur du ping comprise ([CARRY-01]) : voir ConnectionPoolFactory.
+     * Le kernel HTTP et `bin/waffle` le partagent.
      */
     public static function buildConnectionPool(
         Config $config,
         ?ConnectionTrackerInterface $tracker = null,
     ): PDOConnectionPool {
-        $driver = $config->getString('waffle.database.driver') ?? 'pgsql';
-        $host = $config->getString('waffle.database.host') ?? '127.0.0.1';
-        $port = $config->getString('waffle.database.port') ?? '5432';
-        $database = $config->getString('waffle.database.database') ?? '';
-        $username = $config->getString('waffle.database.username') ?? 'waffle';
-        $password = $config->getString('waffle.database.password') ?? '';
-        $charset = $config->getString('waffle.database.charset') ?? 'utf8';
-
-        $dsn = self::buildDsn($driver, $host, $port, $database, $charset);
-
-        // Oracle exige `FROM DUAL` pour un SELECT sans table : la sonde de vie
-        // (« ping-before-dispense ») du pool doit donc être adaptée au moteur.
-        $ping = $driver === 'oci' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
-
-        // Fabrique sans état, rejouée à chaque création de connexion par le pool.
-        return new PDOConnectionPool(factory: static fn(): PDO => new PDO($dsn, $username, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]), pingQuery: $ping, tracker: $tracker);
-    }
-
-    /**
-     * Construit le DSN PDO propre à chaque moteur (RFC-022).
-     *
-     * PostgreSQL ne reconnaît pas l'attribut DSN `charset` (l'encodage client est
-     * négocié avec le serveur — UTF8 par défaut) ; SQLite n'attend qu'un chemin de
-     * fichier ; SQL Server et Oracle ont leur propre grammaire de DSN. Le format
-     * MySQL/MariaDB reste le cas par défaut.
-     */
-    private static function buildDsn(
-        string $driver,
-        string $host,
-        string $port,
-        string $database,
-        string $charset,
-    ): string {
-        return match ($driver) {
-            'pgsql' => sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database),
-            'sqlite' => sprintf('sqlite:%s', $database),
-            'sqlsrv' => sprintf('sqlsrv:Server=%s,%s;Database=%s', $host, $port, $database),
-            'oci' => sprintf('oci:dbname=//%s:%s/%s;charset=%s', $host, $port, $database, $charset),
-            default => sprintf('mysql:host=%s;port=%s;dbname=%s;charset=%s', $host, $port, $database, $charset),
-        };
+        return ConnectionPoolFactory::create($config, $tracker);
     }
 }

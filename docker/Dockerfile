@@ -2,16 +2,20 @@
 # Waffle Framework - FrankenPHP Development Dockerfile
 # This builds a modern, all-in-one server environment using FrankenPHP.
 #
-ARG FRANKEN_VERSION='1.12.2'
+ARG FRANKEN_VERSION='1.13.2'
 ARG PHP_VERSION='8'
 ARG OS='trixie'
+# Digest de l'image de base : une étiquette bouge, un digest non (build reproductible et hors ligne).
+# À changer AVEC FRANKEN_VERSION : Docker résout `étiquette@digest` par le seul digest, donc un digest
+# oublié construit l'ancienne image. `wfl images:pin --verify --pull` le signale, `--write` le réécrit.
+ARG FRANKEN_DIGEST='@sha256:8a7a935deb33959200628497b8201423c8b777d513a62ac1b69a91c624afdb3d'
 ARG USER=workspace
 ARG APP_ENV='development'
 
 # --- 1. Builder Stage (Composer Dependencies) ---
-FROM composer:latest AS composer_dependencies
+FROM composer:2.10.3@sha256:da624c2c705d54e2f5a9bb77a5dc6c7d091711433ebefd7035672e84c2010fee AS composer_dependencies
 
-FROM dunglas/frankenphp:${FRANKEN_VERSION}-php${PHP_VERSION}-${OS} AS frankenphp_builder
+FROM dunglas/frankenphp:${FRANKEN_VERSION}-php${PHP_VERSION}-${OS}${FRANKEN_DIGEST} AS frankenphp_builder
 
 ARG APP_ENV
 ARG USER
@@ -24,12 +28,15 @@ WORKDIR /waffle-commons
 # plus the NoSQL clients (MongoDB, Redis). The heavy proprietary drivers — Oracle
 # (oci8/pdo_oci, pulls Instant Client) and MSSQL (sqlsrv/pdo_sqlsrv, pulls MS ODBC)
 # — are opt-in: append them to the list below if your sandbox needs them.
+# pcntl : signaux POSIX (SIGTERM) pour les consommateurs CLI longue durée — l'arrêt
+# propre de `bin/waffle queue:work` (beta7 [QUEUE-02]) en dépend.
 RUN install-php-extensions \
 	apcu \
 	gd \
 	intl \
 	zip \
 	opcache \
+	pcntl \
 	pdo_pgsql \
 	pdo_mysql \
 	pdo_sqlite \

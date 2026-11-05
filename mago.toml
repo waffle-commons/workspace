@@ -19,7 +19,7 @@ excludes = ["vendor/waffle-commons/*/vendor", "vendor/waffle-commons/*/vendor/**
 # applicatif vit sous `Workspace\` (app/) et peut consommer tous les composants
 # waffle-commons ainsi que la façade `Waffle\` du framework.
 [guard]
-mode = "default"
+mode = "perimeter"
 excludes = ["tests/bootstrap.php"]
 
 [guard.perimeter]
@@ -33,6 +33,8 @@ waffle = ["Waffle\\**", "Waffle\\Commons\\**"]
 [[guard.perimeter.rules]]
 namespace = "Workspace"
 permit = [
+    # Worker-safety audit tooling (igor-php): dev-only #[WorkerSafe] metadata, inert at runtime.
+    "IgorPhp\\IgorBundle\\Attribute\\**",
     "Workspace\\**",
     "@layer:core",
     "@layer:psr",

@@ -3,7 +3,8 @@
         "vendor",
         "tests",
         "var",
-        "migrations"
+        "migrations",
+        "docker"
     ],
     "safe_namespaces": [
         "Waffle\\Commons\\Contracts\\"
