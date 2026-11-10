@@ -14,6 +14,10 @@ services:
         FRANKEN_VERSION: 1.13.2
         PHP_VERSION: 8
         OS: trixie
+        # uid/gid du propriétaire du clone (bind mount) : `wfl` les exporte sous Linux,
+        # 1000 par défaut (Docker Desktop masque la propriété).
+        WAFFLE_UID: ${WAFFLE_UID:-1000}
+        WAFFLE_GID: ${WAFFLE_GID:-1000}
     entrypoint: bash /waffle-commons/workspace/docker/docker-entrypoint.sh
     image: waffle-commons:workspace
     container_name: waffle-dev
