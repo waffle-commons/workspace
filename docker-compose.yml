@@ -58,7 +58,9 @@ services:
       interval: 5s
       timeout: 2s
       retries: 3
-      start_period: 10s
+      # Sur un clone neuf, l'entrypoint installe d'abord vendor/ (plusieurs minutes) : les
+      # échecs de cette fenêtre ne comptent pas, et le premier succès la termine.
+      start_period: 600s
     networks:
       - waffle-network
     depends_on:
@@ -102,6 +104,12 @@ services:
     networks:
       - waffle-network
     depends_on:
+      # Même bind mount et même entrypoint que `waffle` : démarrés ensemble sur un clone neuf,
+      # les deux lancent `composer install` dans le même workspace/vendor et corrompent leurs
+      # archives (fresh-install, run 42818676924). L'aval attend donc que l'amont soit sain,
+      # c.-à-d. que vendor/ soit installé.
+      waffle:
+        condition: service_healthy
       waffle-redis:
         condition: service_healthy
       waffle-postgres:
