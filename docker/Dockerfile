@@ -10,6 +10,12 @@ ARG OS='trixie'
 # oublié construit l'ancienne image. `wfl images:pin --verify --pull` le signale, `--write` le réécrit.
 ARG FRANKEN_DIGEST='@sha256:8a7a935deb33959200628497b8201423c8b777d513a62ac1b69a91c624afdb3d'
 ARG USER=workspace
+# uid/gid de l'utilisateur de l'image. Le monorepo arrive en bind mount : sous Linux, l'utilisateur
+# du conteneur doit avoir l'uid du propriétaire du clone, sinon il ne peut pas écrire dans
+# workspace/var (CI GitHub : uid 1001). `wfl init`, `wfl up` et `wfl build` passent `id -u`/`id -g`
+# sous Linux ; Docker Desktop (macOS) masque la propriété, le défaut 1000 y reste.
+ARG WAFFLE_UID=1000
+ARG WAFFLE_GID=1000
 ARG APP_ENV='development'
 
 # --- 1. Builder Stage (Composer Dependencies) ---
@@ -19,6 +25,8 @@ FROM dunglas/frankenphp:${FRANKEN_VERSION}-php${PHP_VERSION}-${OS}${FRANKEN_DIGE
 
 ARG APP_ENV
 ARG USER
+ARG WAFFLE_UID
+ARG WAFFLE_GID
 
 # Set working directory
 WORKDIR /waffle-commons
@@ -86,15 +94,16 @@ RUN php -r "json_decode(file_get_contents('composer.lock'), true) or exit(1); ec
 
 # Non-root user configuration (DevSecOps best practice)
 RUN \
-	useradd ${USER}; \
-	chown -R ${USER}:${USER} /data/caddy; chown -R ${USER}:${USER} /config/caddy; \
-    mkdir -p /home/${USER}/.cache; chown -R ${USER}:${USER} /home/${USER}/.cache; \
-    mkdir -p /home/${USER}/.config; chown -R ${USER}:${USER} /home/${USER}/.config; \
-    touch /home/${USER}/.bash_history; chown -R ${USER}:${USER} /home/${USER}/.bash_history; \
-    touch /home/${USER}/.bashrc; chown -R ${USER}:${USER} /home/${USER}/.bashrc; \
+	getent group ${WAFFLE_GID} >/dev/null || groupadd -g ${WAFFLE_GID} ${USER}; \
+	useradd -o -u ${WAFFLE_UID} -g ${WAFFLE_GID} ${USER}; \
+	chown -R ${WAFFLE_UID}:${WAFFLE_GID} /data/caddy; chown -R ${WAFFLE_UID}:${WAFFLE_GID} /config/caddy; \
+    mkdir -p /home/${USER}/.cache; chown -R ${WAFFLE_UID}:${WAFFLE_GID} /home/${USER}/.cache; \
+    mkdir -p /home/${USER}/.config; chown -R ${WAFFLE_UID}:${WAFFLE_GID} /home/${USER}/.config; \
+    touch /home/${USER}/.bash_history; chown -R ${WAFFLE_UID}:${WAFFLE_GID} /home/${USER}/.bash_history; \
+    touch /home/${USER}/.bashrc; chown -R ${WAFFLE_UID}:${WAFFLE_GID} /home/${USER}/.bashrc; \
     chmod 777 /tmp/xdebug.log; \
-    chown -R ${USER}:${USER} /waffle-commons; \
-    chown ${USER}:${USER} /home/${USER};
+    chown -R ${WAFFLE_UID}:${WAFFLE_GID} /waffle-commons; \
+    chown ${WAFFLE_UID}:${WAFFLE_GID} /home/${USER};
 
 # The monorepo arrives as a bind mount, so its ownership is decided by the host,
 # not by this image (Docker Desktop/macOS virtiofs intermittently reports uid 0
