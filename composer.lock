@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e9f16d44a939dd4dc9fd1d2682c83f3",
+    "content-hash": "5184daf3590e13ecbec2bbb6a83094ea",
     "packages": [
         {
             "name": "brick/math",
@@ -145,20 +145,20 @@
         },
         {
             "name": "doctrine/deprecations",
-            "version": "1.1.6",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/deprecations.git",
-                "reference": "d4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca"
+                "reference": "d2e16653a734c8784c1851ad68b02f997b53ca82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/d4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca",
-                "reference": "d4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca",
+                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/d2e16653a734c8784c1851ad68b02f997b53ca82",
+                "reference": "d2e16653a734c8784c1851ad68b02f997b53ca82",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1 || ^8.0"
+                "php": "^7.4 || ^8.0"
             },
             "conflict": {
                 "phpunit/phpunit": "<=7.5 || >=14"
@@ -187,9 +187,9 @@
             "homepage": "https://www.doctrine-project.org/",
             "support": {
                 "issues": "https://github.com/doctrine/deprecations/issues",
-                "source": "https://github.com/doctrine/deprecations/tree/1.1.6"
+                "source": "https://github.com/doctrine/deprecations/tree/1.2.0"
             },
-            "time": "2026-02-07T07:09:04+00:00"
+            "time": "2026-11-11T10:04:49+00:00"
         },
         {
             "name": "nyholm/psr7",
@@ -999,26 +999,27 @@
         },
         {
             "name": "predis/predis",
-            "version": "v2.4.1",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/predis/predis.git",
-                "reference": "07105e050622ed80bd60808367ced9e379f31530"
+                "reference": "2496e6d91ba4e137b47a6b802dc7e088ebf31df4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/predis/predis/zipball/07105e050622ed80bd60808367ced9e379f31530",
-                "reference": "07105e050622ed80bd60808367ced9e379f31530",
+                "url": "https://api.github.com/repos/predis/predis/zipball/2496e6d91ba4e137b47a6b802dc7e088ebf31df4",
+                "reference": "2496e6d91ba4e137b47a6b802dc7e088ebf31df4",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2 || ^8.0"
+                "php": "^7.2 || ^8.0",
+                "psr/http-message": "^1.0|^2.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.3",
                 "phpstan/phpstan": "^1.9",
                 "phpunit/phpcov": "^6.0 || ^8.0",
-                "phpunit/phpunit": "^8.0 || ^9.4"
+                "phpunit/phpunit": "^8.0 || ~9.4.4"
             },
             "suggest": {
                 "ext-relay": "Faster connection with in-memory caching (>=0.6.2)"
@@ -1049,7 +1050,7 @@
             ],
             "support": {
                 "issues": "https://github.com/predis/predis/issues",
-                "source": "https://github.com/predis/predis/tree/v2.4.1"
+                "source": "https://github.com/predis/predis/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -1057,7 +1058,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-12T18:00:11+00:00"
+            "time": "2026-11-03T17:55:20+00:00"
         },
         {
             "name": "psr/cache",
@@ -3535,17 +3536,17 @@
             "dist": {
                 "type": "path",
                 "url": "../async",
-                "reference": "b220e2b53bc1a43c182528b883a66540900a4c73"
+                "reference": "cc46687b084ff59be595b86511a12d7c38a73ab4"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3621,11 +3622,11 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "120f25b5f120830db46991123cff524d0f0647d9"
+                "reference": "0990c345ce2f2efeeae196421defe865e98e8253"
             },
             "require": {
                 "ext-openssl": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
@@ -3641,7 +3642,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "spomky-labs/cbor-php": "^3.2",
@@ -3723,17 +3724,17 @@
             "dist": {
                 "type": "path",
                 "url": "../cache",
-                "reference": "4bd955af01486d339a24d31e5fda007529a8f421"
+                "reference": "d51b670ab352740306e3c950613e2ad3c65131df"
             },
             "require": {
-                "php": "^8.5",
-                "predis/predis": "^2.4",
+                "php": "^8.5.12",
+                "predis/predis": "^3.7.1",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3813,17 +3814,17 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "1c032f2f05b4cb4d94ef1faf6e03dc1395fe9d58"
+                "reference": "c48fde860cf67adfd6d761e490ce00a2f455c9e3"
             },
             "require": {
                 "ext-yaml": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3903,10 +3904,10 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "13aef855c81409a1b0e1a7720c3c10854fe97d94"
+                "reference": "4f9c0c575b92d8b47c006faef814e32d4a5a65d7"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/clock": "^1.0",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version",
@@ -3915,7 +3916,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3998,17 +3999,17 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "822f029389cd2455ffaed6e91ae6ea088fadfbdc"
+                "reference": "ada5f960566ed7fb2a2a78fa4cf1655643c4aac6"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/container": "^2.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4088,10 +4089,10 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "0bc732f795edd3bb07404effa9faf99e5184736f"
+                "reference": "338836fb7a8d532c8ae75b974453802bbcc1939f"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/cache": "^3.0",
                 "psr/clock": "^1.0",
                 "psr/container": "^2.0",
@@ -4107,7 +4108,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4187,11 +4188,11 @@
             "dist": {
                 "type": "path",
                 "url": "../data",
-                "reference": "9f0b039d1469465fd1ceda2e191f7b998874a617"
+                "reference": "33d26159376c037e0982fffc955b2825a18c0ad5"
             },
             "require": {
                 "ext-pdo": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
@@ -4202,7 +4203,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4286,10 +4287,10 @@
             "dist": {
                 "type": "path",
                 "url": "../error-handler",
-                "reference": "bfe02ff4c02b2d5f1ad083382bd71d98cead3edb"
+                "reference": "ba6f5e81380f4313432b74ab4fc9f2efac580bd8"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "psr/log": "^3.0",
@@ -4298,7 +4299,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4378,17 +4379,17 @@
             "dist": {
                 "type": "path",
                 "url": "../event-dispatcher",
-                "reference": "8836061f2a66dd477d5630655b3ecc575e2e914c"
+                "reference": "4a103a03574e9102804aad7338b7548609b9164d"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/event-dispatcher": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4468,10 +4469,10 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "ff83c04c93a8a11c961e0415aa708837c6c0429b"
+                "reference": "7084994c52662d290e1ef881450faa0e0b40162e"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "waffle-commons/contracts": "self.version",
@@ -4480,7 +4481,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4560,11 +4561,11 @@
             "dist": {
                 "type": "path",
                 "url": "../http-client",
-                "reference": "198537bb8675cd6682459dc8abbe64fb2ec9ee76"
+                "reference": "1cf4f4039d908fac47602eeb77c2fe1a4b169f7c"
             },
             "require": {
                 "ext-curl": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
@@ -4575,7 +4576,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -4656,17 +4657,17 @@
             "dist": {
                 "type": "path",
                 "url": "../log",
-                "reference": "6c977edc27225fc18e47906a8fafa70967f087f8"
+                "reference": "129af5e4a1b533b0935daed0bf212956dc9f51fc"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4746,17 +4747,17 @@
             "dist": {
                 "type": "path",
                 "url": "../openapi",
-                "reference": "f00e4eb382b1f3df90691c7115bdf61314d63392"
+                "reference": "aff0636e9761b8275b03f90bc22d533c3fbcca3e"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "opis/json-schema": "^2.6",
                 "php-mock/php-mock-phpunit": "^2.16",
@@ -4834,10 +4835,10 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "e47f7060d730cdb2c1006dee313de1f552d850d6"
+                "reference": "c76d0e4f40ccc5b43b786d9ac8b02281b4682931"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -4847,7 +4848,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -4928,18 +4929,18 @@
             "dist": {
                 "type": "path",
                 "url": "../queue",
-                "reference": "f5f5276d458f3d301603661f2773c7e1e0f033c5"
+                "reference": "efe01513753621f009e3a439f41a006cebb944bd"
             },
             "require": {
                 "ext-redis": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/clock": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5015,10 +5016,10 @@
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "04ba0a08d535095f82921a78627da34a7b1aa2c4"
+                "reference": "e5093d87affc4849e7c5b515800f7acbf91bf013"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-message": "^2.0",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
@@ -5026,7 +5027,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5106,10 +5107,10 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "073a66aa331aed1f3a316924843f3db84ae34ff9"
+                "reference": "58da466359eea98a429fbfa4cb40c2038e8a0a53"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/container": "^2.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "waffle-commons/contracts": "self.version"
@@ -5117,7 +5118,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5197,10 +5198,10 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "71bca49bc15d61f24a06f33b47d452500d8df246"
+                "reference": "16b280b1d51ce659ab468f585f5c0f46bef404f4"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/container": "^2.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -5211,7 +5212,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -5292,10 +5293,10 @@
             "dist": {
                 "type": "path",
                 "url": "../serializer",
-                "reference": "844455d6e2f0cc6d4358f24ddc843998e56e2126"
+                "reference": "55f8f6aa3eeabfe74258c6212cbce764fe926a91"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -5306,7 +5307,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -5384,16 +5385,16 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry",
-                "reference": "d6c890b683d43a089128d931ac6355e309baeae0"
+                "reference": "ad699e1767ee0d7c4d95e99c3676e5eafaf7b43a"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -5477,20 +5478,20 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry-otel",
-                "reference": "c024e1e3537b21d37aa18d9df1f1496352796fdf"
+                "reference": "9bcee5f0df40c0941ccb00bc5ce476c666dc56c0"
             },
             "require": {
                 "nyholm/psr7": "^1.8",
                 "open-telemetry/api": "^1.0",
                 "open-telemetry/sdk": "^1.0",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "symfony/http-client": "^8.1",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5570,17 +5571,17 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "5d530aaa699083e7347720b63556bd27544f3d24"
+                "reference": "c528086b2b76f43325e62535d696fd5fc58e2e50"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/clock": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5660,10 +5661,10 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "095d6de3bb34e8ca78e4187048c8f5117968d7bc"
+                "reference": "edfe12fcf6ad88c0baba800b91ad04301960c87d"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/cache": "^3.0",
                 "psr/container": "^2.0",
                 "psr/event-dispatcher": "^1.0",
@@ -5677,7 +5678,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5914,16 +5915,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.5.0",
+            "version": "2.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819"
+                "reference": "e578132c01bd0c64108386ab20d8217cd175ddec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/8a163706bbcac613733dba03f51e13b5eb1bb819",
-                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/e578132c01bd0c64108386ab20d8217cd175ddec",
+                "reference": "e578132c01bd0c64108386ab20d8217cd175ddec",
                 "shasum": ""
             },
             "require": {
@@ -5974,9 +5975,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.5.0"
+                "source": "https://github.com/webmozarts/assert/tree/2.5.1"
             },
-            "time": "2026-10-05T23:14:19+00:00"
+            "time": "2026-11-15T13:41:13+00:00"
         }
     ],
     "packages-dev": [
@@ -6505,16 +6506,16 @@
         },
         {
             "name": "amphp/process",
-            "version": "v2.1.1",
+            "version": "v2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/process.git",
-                "reference": "6ee0d11112a9b1338b7dc270d51f254e872c90b5"
+                "reference": "acfd64f68df5fa7f2d674c93d1986b2bf5d02770"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/process/zipball/6ee0d11112a9b1338b7dc270d51f254e872c90b5",
-                "reference": "6ee0d11112a9b1338b7dc270d51f254e872c90b5",
+                "url": "https://api.github.com/repos/amphp/process/zipball/acfd64f68df5fa7f2d674c93d1986b2bf5d02770",
+                "reference": "acfd64f68df5fa7f2d674c93d1986b2bf5d02770",
                 "shasum": ""
             },
             "require": {
@@ -6561,7 +6562,7 @@
             "homepage": "https://amphp.org/process",
             "support": {
                 "issues": "https://github.com/amphp/process/issues",
-                "source": "https://github.com/amphp/process/tree/v2.1.1"
+                "source": "https://github.com/amphp/process/tree/v2.1.2"
             },
             "funding": [
                 {
@@ -6569,7 +6570,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-01T22:46:42+00:00"
+            "time": "2026-11-07T16:33:32+00:00"
         },
         {
             "name": "amphp/serialization",
@@ -6640,16 +6641,16 @@
         },
         {
             "name": "amphp/socket",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/socket.git",
-                "reference": "b347be5aff6b2cc025208bb4d896607eb470c018"
+                "reference": "6e881835c73b75a0a4251a7f58441bc90b9f6c8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/socket/zipball/b347be5aff6b2cc025208bb4d896607eb470c018",
-                "reference": "b347be5aff6b2cc025208bb4d896607eb470c018",
+                "url": "https://api.github.com/repos/amphp/socket/zipball/6e881835c73b75a0a4251a7f58441bc90b9f6c8a",
+                "reference": "6e881835c73b75a0a4251a7f58441bc90b9f6c8a",
                 "shasum": ""
             },
             "require": {
@@ -6712,7 +6713,7 @@
             ],
             "support": {
                 "issues": "https://github.com/amphp/socket/issues",
-                "source": "https://github.com/amphp/socket/tree/v2.4.1"
+                "source": "https://github.com/amphp/socket/tree/v2.4.2"
             },
             "funding": [
                 {
@@ -6720,7 +6721,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-22T18:13:20+00:00"
+            "time": "2026-11-11T03:42:20+00:00"
         },
         {
             "name": "amphp/sync",
@@ -7504,16 +7505,16 @@
         },
         {
             "name": "igor-php/igor-php",
-            "version": "v0.10.1",
+            "version": "v0.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/igor-php/igor-php.git",
-                "reference": "a4f9153de9bae1e746a34dfb571462bcda6f4235"
+                "reference": "0ce6295d7c3546e7b8d8146a60f3ddff7a1d38a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/igor-php/igor-php/zipball/a4f9153de9bae1e746a34dfb571462bcda6f4235",
-                "reference": "a4f9153de9bae1e746a34dfb571462bcda6f4235",
+                "url": "https://api.github.com/repos/igor-php/igor-php/zipball/0ce6295d7c3546e7b8d8146a60f3ddff7a1d38a7",
+                "reference": "0ce6295d7c3546e7b8d8146a60f3ddff7a1d38a7",
                 "shasum": ""
             },
             "require": {
@@ -7523,8 +7524,16 @@
                 "bin/igor-php"
             ],
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "IgorPhp\\Laravel\\IgorServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
                 "psr-4": {
+                    "IgorPhp\\Laravel\\": "src/laravel/",
                     "IgorPhp\\IgorBundle\\": "src/php/"
                 }
             },
@@ -7538,19 +7547,23 @@
                     "email": "kevin.martins@me.com"
                 }
             ],
-            "description": "The faithful assistant for your FrankenPHP Workers.",
+            "description": "The faithful assistant for your FrankenPHP Workers: finds the state that leaks between requests in Symfony and Laravel Octane apps, from the CLI, PhpStorm, Claude Code or any MCP client.",
             "keywords": [
                 "frankenphp",
+                "laravel",
                 "linter",
+                "mcp",
+                "memory-leak",
+                "octane",
                 "static-analysis",
                 "symfony",
                 "worker"
             ],
             "support": {
                 "issues": "https://github.com/igor-php/igor-php/issues",
-                "source": "https://github.com/igor-php/igor-php/tree/v0.10.1"
+                "source": "https://github.com/igor-php/igor-php/tree/v0.11.0"
             },
-            "time": "2026-10-02T23:10:19+00:00"
+            "time": "2026-11-14T15:18:44+00:00"
         },
         {
             "name": "kelunik/certificate",
@@ -7612,21 +7625,21 @@
         },
         {
             "name": "league/uri",
-            "version": "7.9.1",
+            "version": "7.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/uri.git",
-                "reference": "40403f5c3141457a61f7f1aba6706e8fa4a0ece5"
+                "reference": "be89e2382e37acdef232259071ade5180821397b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/uri/zipball/40403f5c3141457a61f7f1aba6706e8fa4a0ece5",
-                "reference": "40403f5c3141457a61f7f1aba6706e8fa4a0ece5",
+                "url": "https://api.github.com/repos/thephpleague/uri/zipball/be89e2382e37acdef232259071ade5180821397b",
+                "reference": "be89e2382e37acdef232259071ade5180821397b",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "league/uri-interfaces": "^7.9.1",
+                "league/uri-interfaces": "^7.10.0",
                 "php": "^8.1",
                 "psr/http-factory": "^1"
             },
@@ -7699,7 +7712,7 @@
                 "docs": "https://uri.thephpleague.com",
                 "forum": "https://thephpleague.slack.com",
                 "issues": "https://github.com/thephpleague/uri-src/issues",
-                "source": "https://github.com/thephpleague/uri/tree/7.9.1"
+                "source": "https://github.com/thephpleague/uri/tree/7.10.0"
             },
             "funding": [
                 {
@@ -7707,20 +7720,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T07:14:23+00:00"
+            "time": "2026-11-04T12:45:07+00:00"
         },
         {
             "name": "league/uri-interfaces",
-            "version": "7.9.1",
+            "version": "7.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/uri-interfaces.git",
-                "reference": "994300a79e17f179112dc259f8df0c4de982f736"
+                "reference": "ea66240cff4ae9a56ce85d577a04d038b771e51c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/uri-interfaces/zipball/994300a79e17f179112dc259f8df0c4de982f736",
-                "reference": "994300a79e17f179112dc259f8df0c4de982f736",
+                "url": "https://api.github.com/repos/thephpleague/uri-interfaces/zipball/ea66240cff4ae9a56ce85d577a04d038b771e51c",
+                "reference": "ea66240cff4ae9a56ce85d577a04d038b771e51c",
                 "shasum": ""
             },
             "require": {
@@ -7783,7 +7796,7 @@
                 "docs": "https://uri.thephpleague.com",
                 "forum": "https://thephpleague.slack.com",
                 "issues": "https://github.com/thephpleague/uri-src/issues",
-                "source": "https://github.com/thephpleague/uri-interfaces/tree/7.9.1"
+                "source": "https://github.com/thephpleague/uri-interfaces/tree/7.10.0"
             },
             "funding": [
                 {
@@ -7791,7 +7804,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T07:14:23+00:00"
+            "time": "2026-11-04T12:45:07+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -8901,16 +8914,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.42",
+            "version": "12.5.45",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "1d6dbe748c079e5d2b03bca1be69d0f4cc52a578"
+                "reference": "ca97be2931de6a0adf824da12889cbf935a016e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1d6dbe748c079e5d2b03bca1be69d0f4cc52a578",
-                "reference": "1d6dbe748c079e5d2b03bca1be69d0f4cc52a578",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ca97be2931de6a0adf824da12889cbf935a016e9",
+                "reference": "ca97be2931de6a0adf824da12889cbf935a016e9",
                 "shasum": ""
             },
             "require": {
@@ -8938,7 +8951,7 @@
                 "sebastian/object-enumerator": "^7.0.0",
                 "sebastian/recursion-context": "^7.0.1",
                 "sebastian/type": "^6.0.4",
-                "sebastian/version": "^6.0.1",
+                "sebastian/version": "^6.0.2",
                 "staabm/side-effects-detector": "^1.0.5"
             },
             "bin": [
@@ -8979,7 +8992,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.42"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.45"
             },
             "funding": [
                 {
@@ -8987,20 +9000,20 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-10-27T04:15:03+00:00"
+            "time": "2026-11-19T12:16:09+00:00"
         },
         {
             "name": "revolt/event-loop",
-            "version": "v1.0.9",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/revoltphp/event-loop.git",
-                "reference": "44061cf513e53c6200372fc935ac42271566295d"
+                "reference": "93999a4ffca70aaa3890c553001e9f8313a1895c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/revoltphp/event-loop/zipball/44061cf513e53c6200372fc935ac42271566295d",
-                "reference": "44061cf513e53c6200372fc935ac42271566295d",
+                "url": "https://api.github.com/repos/revoltphp/event-loop/zipball/93999a4ffca70aaa3890c553001e9f8313a1895c",
+                "reference": "93999a4ffca70aaa3890c553001e9f8313a1895c",
                 "shasum": ""
             },
             "require": {
@@ -9010,7 +9023,7 @@
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "^2019.3",
                 "phpunit/phpunit": "^9",
-                "psalm/phar": "6.16.*"
+                "psalm/phar": "6.20.*"
             },
             "type": "library",
             "extra": {
@@ -9057,9 +9070,9 @@
             ],
             "support": {
                 "issues": "https://github.com/revoltphp/event-loop/issues",
-                "source": "https://github.com/revoltphp/event-loop/tree/v1.0.9"
+                "source": "https://github.com/revoltphp/event-loop/tree/v1.1.0"
             },
-            "time": "2026-05-16T17:55:38+00:00"
+            "time": "2026-11-14T19:05:53+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -9930,16 +9943,16 @@
         },
         {
             "name": "sebastian/version",
-            "version": "6.0.1",
+            "version": "6.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/version.git",
-                "reference": "9e935a16187e14f39b0e79910dabd614972cdb26"
+                "reference": "a8b6643a19ba6c8125a473623e45fb8cbb0e4159"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/version/zipball/9e935a16187e14f39b0e79910dabd614972cdb26",
-                "reference": "9e935a16187e14f39b0e79910dabd614972cdb26",
+                "url": "https://api.github.com/repos/sebastianbergmann/version/zipball/a8b6643a19ba6c8125a473623e45fb8cbb0e4159",
+                "reference": "a8b6643a19ba6c8125a473623e45fb8cbb0e4159",
                 "shasum": ""
             },
             "require": {
@@ -9972,7 +9985,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/version/issues",
                 "security": "https://github.com/sebastianbergmann/version/security/policy",
-                "source": "https://github.com/sebastianbergmann/version/tree/6.0.1"
+                "source": "https://github.com/sebastianbergmann/version/tree/6.0.2"
             },
             "funding": [
                 {
@@ -9992,7 +10005,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-04T05:50:08+00:00"
+            "time": "2026-11-09T06:30:55+00:00"
         },
         {
             "name": "spatie/array-to-xml",
@@ -10116,16 +10129,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v8.1.10",
+            "version": "v8.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "5b6d9b127ec27bc6db59bf65e2e37b6fe5b00083"
+                "reference": "5a315b092b81f3e920e9daea1a2ae4c66ed298b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/5b6d9b127ec27bc6db59bf65e2e37b6fe5b00083",
-                "reference": "5b6d9b127ec27bc6db59bf65e2e37b6fe5b00083",
+                "url": "https://api.github.com/repos/symfony/console/zipball/5a315b092b81f3e920e9daea1a2ae4c66ed298b9",
+                "reference": "5a315b092b81f3e920e9daea1a2ae4c66ed298b9",
                 "shasum": ""
             },
             "require": {
@@ -10192,7 +10205,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v8.1.10"
+                "source": "https://github.com/symfony/console/tree/v8.1.11"
             },
             "funding": [
                 {
@@ -10212,7 +10225,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-28T11:16:19+00:00"
+            "time": "2026-11-04T07:07:11+00:00"
         },
         {
             "name": "symfony/filesystem",
@@ -10367,16 +10380,16 @@
         },
         {
             "name": "symfony/polyfill-php85",
-            "version": "v1.43.0",
+            "version": "v1.44.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php85.git",
-                "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6"
+                "reference": "94c794cb5ba51784bc259f11e9f128593297d8dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/86a42cbcc07adc331481a5ab310a4024bfc227f6",
-                "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
+                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/94c794cb5ba51784bc259f11e9f128593297d8dc",
+                "reference": "94c794cb5ba51784bc259f11e9f128593297d8dc",
                 "shasum": ""
             },
             "require": {
@@ -10423,7 +10436,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php85/tree/v1.43.0"
+                "source": "https://github.com/symfony/polyfill-php85/tree/v1.44.0"
             },
             "funding": [
                 {
@@ -10443,7 +10456,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-25T15:46:47+00:00"
+            "time": "2026-10-30T15:20:09+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -10497,16 +10510,16 @@
         },
         {
             "name": "vimeo/psalm",
-            "version": "6.20.5",
+            "version": "6.20.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "e447b655502f2058630e6ee03f2ea1c3789fe166"
+                "reference": "9dd07528c4f058df1572d40ab2db5c1566a728f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/e447b655502f2058630e6ee03f2ea1c3789fe166",
-                "reference": "e447b655502f2058630e6ee03f2ea1c3789fe166",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/9dd07528c4f058df1572d40ab2db5c1566a728f2",
+                "reference": "9dd07528c4f058df1572d40ab2db5c1566a728f2",
                 "shasum": ""
             },
             "require": {
@@ -10611,7 +10624,7 @@
                 "issues": "https://github.com/vimeo/psalm/issues",
                 "source": "https://github.com/vimeo/psalm"
             },
-            "time": "2026-10-31T16:01:17+00:00"
+            "time": "2026-11-18T12:17:11+00:00"
         },
         {
             "name": "waffle-commons/testing",
@@ -10619,10 +10632,10 @@
             "dist": {
                 "type": "path",
                 "url": "../testing",
-                "reference": "d663c0d92117401bb48386750c1dfdcd15649d69"
+                "reference": "fcd43d86112beb1e980c275a9048951e15e3f82d"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "phpunit/phpunit": "^12.5",
                 "psr/clock": "^1.0",
                 "psr/http-client": "^1.0",
@@ -10633,7 +10646,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "vimeo/psalm": "^6.20"
@@ -10736,7 +10749,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.5",
+        "php": "^8.5.12",
         "ext-redis": "*",
         "ext-yaml": "*"
     },
