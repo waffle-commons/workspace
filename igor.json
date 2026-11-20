@@ -7,7 +7,8 @@
         "docker"
     ],
     "safe_namespaces": [
-        "Waffle\\Commons\\Contracts\\"
+        "Waffle\\Commons\\Contracts\\",
+        "Psr\\"
     ],
     "verbose": false
 }
