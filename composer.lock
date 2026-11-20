@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e9f16d44a939dd4dc9fd1d2682c83f3",
+    "content-hash": "ba0cedaa320e04da0902536155e73c10",
     "packages": [
         {
             "name": "brick/math",
@@ -3535,17 +3535,17 @@
             "dist": {
                 "type": "path",
                 "url": "../async",
-                "reference": "b220e2b53bc1a43c182528b883a66540900a4c73"
+                "reference": "bef2aded4f4e0bc7d58657057387be01eb1e992c"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3621,11 +3621,11 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "120f25b5f120830db46991123cff524d0f0647d9"
+                "reference": "162d9070063b94460488fc049a3010ecaddcf0a2"
             },
             "require": {
                 "ext-openssl": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
@@ -3641,7 +3641,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "spomky-labs/cbor-php": "^3.2",
@@ -3723,17 +3723,17 @@
             "dist": {
                 "type": "path",
                 "url": "../cache",
-                "reference": "4bd955af01486d339a24d31e5fda007529a8f421"
+                "reference": "ef32699860e655900af3f4dc110df30a214eb3fd"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "predis/predis": "^2.4",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3813,17 +3813,17 @@
             "dist": {
                 "type": "path",
                 "url": "../config",
-                "reference": "1c032f2f05b4cb4d94ef1faf6e03dc1395fe9d58"
+                "reference": "c48fde860cf67adfd6d761e490ce00a2f455c9e3"
             },
             "require": {
                 "ext-yaml": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3903,10 +3903,10 @@
             "dist": {
                 "type": "path",
                 "url": "../console",
-                "reference": "13aef855c81409a1b0e1a7720c3c10854fe97d94"
+                "reference": "4f9c0c575b92d8b47c006faef814e32d4a5a65d7"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/clock": "^1.0",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version",
@@ -3915,7 +3915,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -3998,17 +3998,17 @@
             "dist": {
                 "type": "path",
                 "url": "../container",
-                "reference": "822f029389cd2455ffaed6e91ae6ea088fadfbdc"
+                "reference": "ada5f960566ed7fb2a2a78fa4cf1655643c4aac6"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/container": "^2.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4088,10 +4088,10 @@
             "dist": {
                 "type": "path",
                 "url": "../contracts",
-                "reference": "0bc732f795edd3bb07404effa9faf99e5184736f"
+                "reference": "338836fb7a8d532c8ae75b974453802bbcc1939f"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/cache": "^3.0",
                 "psr/clock": "^1.0",
                 "psr/container": "^2.0",
@@ -4107,7 +4107,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4187,11 +4187,11 @@
             "dist": {
                 "type": "path",
                 "url": "../data",
-                "reference": "9f0b039d1469465fd1ceda2e191f7b998874a617"
+                "reference": "33d26159376c037e0982fffc955b2825a18c0ad5"
             },
             "require": {
                 "ext-pdo": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
@@ -4202,7 +4202,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4286,10 +4286,10 @@
             "dist": {
                 "type": "path",
                 "url": "../error-handler",
-                "reference": "bfe02ff4c02b2d5f1ad083382bd71d98cead3edb"
+                "reference": "ba6f5e81380f4313432b74ab4fc9f2efac580bd8"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "psr/log": "^3.0",
@@ -4298,7 +4298,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4378,17 +4378,17 @@
             "dist": {
                 "type": "path",
                 "url": "../event-dispatcher",
-                "reference": "8836061f2a66dd477d5630655b3ecc575e2e914c"
+                "reference": "4a103a03574e9102804aad7338b7548609b9164d"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/event-dispatcher": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4468,10 +4468,10 @@
             "dist": {
                 "type": "path",
                 "url": "../http",
-                "reference": "ff83c04c93a8a11c961e0415aa708837c6c0429b"
+                "reference": "7084994c52662d290e1ef881450faa0e0b40162e"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "waffle-commons/contracts": "self.version",
@@ -4480,7 +4480,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4560,11 +4560,11 @@
             "dist": {
                 "type": "path",
                 "url": "../http-client",
-                "reference": "198537bb8675cd6682459dc8abbe64fb2ec9ee76"
+                "reference": "1cf4f4039d908fac47602eeb77c2fe1a4b169f7c"
             },
             "require": {
                 "ext-curl": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
@@ -4575,7 +4575,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -4656,17 +4656,17 @@
             "dist": {
                 "type": "path",
                 "url": "../log",
-                "reference": "6c977edc27225fc18e47906a8fafa70967f087f8"
+                "reference": "129af5e4a1b533b0935daed0bf212956dc9f51fc"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/log": "^3.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -4746,17 +4746,17 @@
             "dist": {
                 "type": "path",
                 "url": "../openapi",
-                "reference": "f00e4eb382b1f3df90691c7115bdf61314d63392"
+                "reference": "aff0636e9761b8275b03f90bc22d533c3fbcca3e"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "opis/json-schema": "^2.6",
                 "php-mock/php-mock-phpunit": "^2.16",
@@ -4834,10 +4834,10 @@
             "dist": {
                 "type": "path",
                 "url": "../pipeline",
-                "reference": "e47f7060d730cdb2c1006dee313de1f552d850d6"
+                "reference": "c76d0e4f40ccc5b43b786d9ac8b02281b4682931"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
@@ -4847,7 +4847,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -4928,18 +4928,18 @@
             "dist": {
                 "type": "path",
                 "url": "../queue",
-                "reference": "f5f5276d458f3d301603661f2773c7e1e0f033c5"
+                "reference": "efe01513753621f009e3a439f41a006cebb944bd"
             },
             "require": {
                 "ext-redis": "*",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/clock": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5015,10 +5015,10 @@
             "dist": {
                 "type": "path",
                 "url": "../routing",
-                "reference": "04ba0a08d535095f82921a78627da34a7b1aa2c4"
+                "reference": "e5093d87affc4849e7c5b515800f7acbf91bf013"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-message": "^2.0",
                 "waffle-commons/contracts": "self.version",
                 "waffle-commons/utils": "self.version"
@@ -5026,7 +5026,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5106,10 +5106,10 @@
             "dist": {
                 "type": "path",
                 "url": "../runtime",
-                "reference": "073a66aa331aed1f3a316924843f3db84ae34ff9"
+                "reference": "58da466359eea98a429fbfa4cb40c2038e8a0a53"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/container": "^2.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "waffle-commons/contracts": "self.version"
@@ -5117,7 +5117,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5197,10 +5197,10 @@
             "dist": {
                 "type": "path",
                 "url": "../security",
-                "reference": "71bca49bc15d61f24a06f33b47d452500d8df246"
+                "reference": "16b280b1d51ce659ab468f585f5c0f46bef404f4"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/container": "^2.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -5211,7 +5211,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -5292,10 +5292,10 @@
             "dist": {
                 "type": "path",
                 "url": "../serializer",
-                "reference": "844455d6e2f0cc6d4358f24ddc843998e56e2126"
+                "reference": "55f8f6aa3eeabfe74258c6212cbce764fe926a91"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -5306,7 +5306,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -5384,16 +5384,16 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry",
-                "reference": "d6c890b683d43a089128d931ac6355e309baeae0"
+                "reference": "94445150d3fbb1ae6edc17f70b37a97a180cbb39"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
@@ -5477,20 +5477,20 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry-otel",
-                "reference": "c024e1e3537b21d37aa18d9df1f1496352796fdf"
+                "reference": "e26a8d2741081b0382f7f4d34752af49220c8ec6"
             },
             "require": {
                 "nyholm/psr7": "^1.8",
                 "open-telemetry/api": "^1.0",
                 "open-telemetry/sdk": "^1.0",
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "symfony/http-client": "^8.1",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5570,17 +5570,17 @@
             "dist": {
                 "type": "path",
                 "url": "../utils",
-                "reference": "5d530aaa699083e7347720b63556bd27544f3d24"
+                "reference": "c528086b2b76f43325e62535d696fd5fc58e2e50"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/clock": "^1.0",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -5660,10 +5660,10 @@
             "dist": {
                 "type": "path",
                 "url": "../waffle",
-                "reference": "095d6de3bb34e8ca78e4187048c8f5117968d7bc"
+                "reference": "edfe12fcf6ad88c0baba800b91ad04301960c87d"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "psr/cache": "^3.0",
                 "psr/container": "^2.0",
                 "psr/event-dispatcher": "^1.0",
@@ -5677,7 +5677,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "phpunit/phpunit": "^12.5",
                 "vimeo/psalm": "^6.20"
@@ -10619,10 +10619,10 @@
             "dist": {
                 "type": "path",
                 "url": "../testing",
-                "reference": "d663c0d92117401bb48386750c1dfdcd15649d69"
+                "reference": "fcd43d86112beb1e980c275a9048951e15e3f82d"
             },
             "require": {
-                "php": "^8.5",
+                "php": "^8.5.12",
                 "phpunit/phpunit": "^12.5",
                 "psr/clock": "^1.0",
                 "psr/http-client": "^1.0",
@@ -10633,7 +10633,7 @@
             "require-dev": {
                 "carthage-software/mago": "^1.59",
                 "cyclonedx/cyclonedx-php-composer": "^6.2",
-                "igor-php/igor-php": "^0.10.1",
+                "igor-php/igor-php": "^0.11.0",
                 "nyholm/psr7": "^1.8",
                 "php-mock/php-mock-phpunit": "^2.16",
                 "vimeo/psalm": "^6.20"
@@ -10736,7 +10736,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.5",
+        "php": "^8.5.12",
         "ext-redis": "*",
         "ext-yaml": "*"
     },

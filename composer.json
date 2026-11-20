@@ -4,7 +4,7 @@
     "type": "project",
     "license": "MIT",
     "require": {
-        "php": "^8.5",
+        "php": "^8.5.12",
         "ext-redis": "*",
         "ext-yaml": "*",
         "waffle-commons/async": "1.0.0-dev",
