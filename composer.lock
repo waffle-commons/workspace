@@ -999,26 +999,27 @@
         },
         {
             "name": "predis/predis",
-            "version": "v2.4.1",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/predis/predis.git",
-                "reference": "07105e050622ed80bd60808367ced9e379f31530"
+                "reference": "2496e6d91ba4e137b47a6b802dc7e088ebf31df4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/predis/predis/zipball/07105e050622ed80bd60808367ced9e379f31530",
-                "reference": "07105e050622ed80bd60808367ced9e379f31530",
+                "url": "https://api.github.com/repos/predis/predis/zipball/2496e6d91ba4e137b47a6b802dc7e088ebf31df4",
+                "reference": "2496e6d91ba4e137b47a6b802dc7e088ebf31df4",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2 || ^8.0"
+                "php": "^7.2 || ^8.0",
+                "psr/http-message": "^1.0|^2.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.3",
                 "phpstan/phpstan": "^1.9",
                 "phpunit/phpcov": "^6.0 || ^8.0",
-                "phpunit/phpunit": "^8.0 || ^9.4"
+                "phpunit/phpunit": "^8.0 || ~9.4.4"
             },
             "suggest": {
                 "ext-relay": "Faster connection with in-memory caching (>=0.6.2)"
@@ -1049,7 +1050,7 @@
             ],
             "support": {
                 "issues": "https://github.com/predis/predis/issues",
-                "source": "https://github.com/predis/predis/tree/v2.4.1"
+                "source": "https://github.com/predis/predis/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -1057,7 +1058,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-12T18:00:11+00:00"
+            "time": "2026-11-03T17:55:20+00:00"
         },
         {
             "name": "psr/cache",
@@ -3535,7 +3536,7 @@
             "dist": {
                 "type": "path",
                 "url": "../async",
-                "reference": "bef2aded4f4e0bc7d58657057387be01eb1e992c"
+                "reference": "cc46687b084ff59be595b86511a12d7c38a73ab4"
             },
             "require": {
                 "php": "^8.5.12",
@@ -3621,7 +3622,7 @@
             "dist": {
                 "type": "path",
                 "url": "../auth",
-                "reference": "162d9070063b94460488fc049a3010ecaddcf0a2"
+                "reference": "0990c345ce2f2efeeae196421defe865e98e8253"
             },
             "require": {
                 "ext-openssl": "*",
@@ -3723,11 +3724,11 @@
             "dist": {
                 "type": "path",
                 "url": "../cache",
-                "reference": "ef32699860e655900af3f4dc110df30a214eb3fd"
+                "reference": "d51b670ab352740306e3c950613e2ad3c65131df"
             },
             "require": {
                 "php": "^8.5.12",
-                "predis/predis": "^2.4",
+                "predis/predis": "^3.7.1",
                 "waffle-commons/contracts": "self.version"
             },
             "require-dev": {
@@ -5384,7 +5385,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry",
-                "reference": "94445150d3fbb1ae6edc17f70b37a97a180cbb39"
+                "reference": "ad699e1767ee0d7c4d95e99c3676e5eafaf7b43a"
             },
             "require": {
                 "php": "^8.5.12",
@@ -5477,7 +5478,7 @@
             "dist": {
                 "type": "path",
                 "url": "../telemetry-otel",
-                "reference": "e26a8d2741081b0382f7f4d34752af49220c8ec6"
+                "reference": "9bcee5f0df40c0941ccb00bc5ce476c666dc56c0"
             },
             "require": {
                 "nyholm/psr7": "^1.8",
