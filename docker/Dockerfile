@@ -38,7 +38,14 @@ WORKDIR /waffle-commons
 # — are opt-in: append them to the list below if your sandbox needs them.
 # pcntl : signaux POSIX (SIGTERM) pour les consommateurs CLI longue durée — l'arrêt
 # propre de `bin/waffle queue:work` (beta7 [QUEUE-02]) en dépend.
-RUN install-php-extensions \
+# Toute étape qui échoue arrête la construction : `set -eux` et une commande par
+# instruction, sans `&&` (sous `set -e`, l'échec du membre gauche d'un `&&` ne
+# l'arrête pas). Une panne de pecl.php.net (HTTP 500, run 42819602213) donnait sinon
+# une image sans xdebug ni yaml, et l'erreur n'apparaissait qu'au `composer install`.
+# Le contrôle `php -r` vérifie que les extensions PECL sont chargées, même si `pecl`
+# sortait en 0 après un téléchargement raté.
+RUN set -eux; \
+    install-php-extensions \
 	apcu \
 	gd \
 	intl \
@@ -50,9 +57,11 @@ RUN install-php-extensions \
 	pdo_sqlite \
 	mongodb \
 	redis; \
-    apt-get update && apt-get install -y --no-install-recommends bash libyaml-dev zip git curl unzip; \
-    pecl install xdebug yaml && \
+    apt-get update; \
+    apt-get install -y --no-install-recommends bash libyaml-dev zip git curl unzip; \
+    pecl install xdebug yaml; \
     docker-php-ext-enable xdebug yaml; \
+    php -r 'foreach (["xdebug", "yaml"] as $e) { if (!extension_loaded($e)) { fwrite(STDERR, "extension PHP manquante : $e\n"); exit(1); } }'; \
     echo "apc.enable_cli=1" >> "$PHP_INI_DIR/conf.d/docker-php-ext-apcu.ini"; \
     rm -rf /var/lib/apt/lists/*
 
